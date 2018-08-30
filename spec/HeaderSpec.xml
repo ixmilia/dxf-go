@@ -1,0 +1,3 @@
+<Header>
+    <Variable Name="ACADVER" Code="1" Type="AcadVersion" Field="Version" DefaultValue="R12" WriteConverter="%v.String()" Comment="The AutoCAD drawing database version number." />
+</Header>

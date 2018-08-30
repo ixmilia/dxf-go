@@ -6,10 +6,13 @@ import (
 )
 
 type Drawing struct {
+	Header Header
 }
 
 func NewDrawing() *Drawing {
-	return &Drawing{}
+	return &Drawing{
+		Header: *NewHeader(),
+	}
 }
 
 func (d Drawing) SaveFile(path string) error {
@@ -23,7 +26,12 @@ func (d Drawing) SaveFile(path string) error {
 }
 
 func (d Drawing) saveToWriter(writer CodePairWriter) error {
-	err := writer.writeCodePair(NewStringCodePair(0, "EOF"))
+	err := d.Header.writeHeader(writer)
+	if err != nil {
+		return err
+	}
+
+	err = writer.writeCodePair(NewStringCodePair(0, "EOF"))
 	return err
 }
 

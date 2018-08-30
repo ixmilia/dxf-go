@@ -2,9 +2,9 @@ package dxf
 
 import "testing"
 
-func TestEmptyDrawing(t *testing.T) {
+func TestDefaultDrawingVersion(t *testing.T) {
 	drawing := *NewDrawing()
 	actual := drawing.String()
-	expected := "  0\r\nEOF\r\n"
-	assertEq(t, expected, actual)
+	expected := "  1\r\nAC1009\r\n"
+	assertContains(t, expected, actual)
 }
