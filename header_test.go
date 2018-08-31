@@ -7,24 +7,16 @@ import (
 )
 
 func TestReadNonDefaultHeaderVersion(t *testing.T) {
-	header := parseHeader(t, `
-  9
-$UNSUPPORTED_HEADER_VARIABLE
-  1
-UNSUPPORTED_VALUE
-  9
-$ACADVER
-  1
-AC1014
-  9
-$ACADMAINTVER
- 70
-6
-  9
-$ANOTHER_UNSUPPORTED_HEADER_VARIABLE
-  1
-ANOTHER_UNSUPPORTED_VALUE
-`)
+	header := parseHeader(t, join(
+		"  9", "$UNSUPPORTED_HEADER_VARIABLE",
+		"  1", "UNSUPPORTED_VALUE",
+		"  9", "$ACADVER",
+		"  1", "AC1014",
+		"  9", "$ACADMAINTVER",
+		" 70", "6",
+		"  9", "$UNSUPPORTED_HEADER_VARIABLE",
+		"  1", "UNSUPPORTED_VALUE",
+	))
 	assertEqInt(t, int(R14), int(header.Version))
 	assertEqInt(t, 6, int(header.MaintenanceVersion))
 }
@@ -42,12 +34,10 @@ func TestWriteVersionSpecificVariables(t *testing.T) {
 }
 
 func TestReadHeaderFlag(t *testing.T) {
-	header := parseHeader(t, `
-  9
-$OSMODE
- 70
-1
-`)
+	header := parseHeader(t, join(
+		"  9", "$OSMODE",
+		" 70", "1",
+	))
 	assert(t, header.EndPointSnap(), "expected OSMODE.EndPointSnap")
 	assert(t, !header.MidPointSnap(), "expected !OSMODE.MidPointSnap")
 	assert(t, !header.CenterSnap(), "expected !OSMODE.CenterSnap")
@@ -78,20 +68,19 @@ func TestWriteHeaderFlag(t *testing.T) {
 	header.SetApparentIntersectionSnap(false)
 	header.SetExtensionSnap(false)
 	header.SetParallelSnap(false)
-	assertContains(t, "  9\r\n$OSMODE\r\n 70\r\n     1\r\n", fileStringFromHeader(header))
+	assertContains(t, join(
+		"  9", "$OSMODE",
+		" 70", "     1",
+	), fileStringFromHeader(header))
 }
 
 func TestReadPoint(t *testing.T) {
-	header := parseHeader(t, `
-  9
-$INSBASE
- 10
-1
- 20
-2
- 30
-3
-`)
+	header := parseHeader(t, join(
+		"  9", "$INSBASE",
+		" 10", "1",
+		" 20", "2",
+		" 30", "3",
+	))
 	expected := Point{1.0, 2.0, 3.0}
 	assert(t, header.InsertionBase == expected, fmt.Sprintf("expected %s, got %s", expected.String(), header.InsertionBase.String()))
 }
@@ -99,21 +88,22 @@ $INSBASE
 func TestWritePoint(t *testing.T) {
 	header := *NewHeader()
 	header.InsertionBase = Point{1.0, 2.0, 3.0}
-	assertContains(t, "  9\r\n$INSBASE\r\n 10\r\n1.0\r\n 20\r\n2.0\r\n 30\r\n3.0\r\n", fileStringFromHeader(header))
+	assertContains(t, join(
+		"  9", "$INSBASE",
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+	), fileStringFromHeader(header))
 }
 
 func parseHeader(t *testing.T, content string) Header {
-	drawing := parse(t, `
-  0
-SECTION
-  2
-HEADER
-`+strings.TrimSpace(content)+`
-  0
-ENDSEC
-  0
-EOF
-`)
+	drawing := parse(t, join(
+		"  0", "SECTION",
+		"  2", "HEADER",
+	)+"\r\n"+strings.TrimSpace(content)+"\r\n"+join(
+		"  0", "ENDSEC",
+		"  0", "EOF",
+	))
 	return drawing.Header
 }
 

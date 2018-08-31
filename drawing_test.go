@@ -5,6 +5,7 @@ import "testing"
 func TestDefaultDrawingVersion(t *testing.T) {
 	drawing := *NewDrawing()
 	actual := drawing.String()
-	expected := "  1\r\nAC1009\r\n"
+	expected := join(
+		"  1", "AC1009")
 	assertContains(t, expected, actual)
 }

@@ -35,6 +35,10 @@ func assertEqString(t *testing.T, expected, actual string) {
 	}
 }
 
+func join(vals ...string) string {
+	return strings.Join(vals, "\r\n")
+}
+
 func parse(t *testing.T, content string) Drawing {
 	drawing, err := ParseDrawing(strings.TrimSpace(content))
 	if err != nil {
