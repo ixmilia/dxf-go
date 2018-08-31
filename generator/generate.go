@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 )
 
 func main() {
@@ -14,16 +15,11 @@ func check(e error) {
 	}
 }
 
-func writeFile(path, content string) {
+func writeFile(path string, content strings.Builder) {
 	f, err := os.Create(path)
 	check(err)
 
-	content = `// Code generated at build time; DO NOT EDIT.
-
-package dxf
-
-` + content
-	_, err = f.WriteString(content)
+	_, err = f.WriteString(content.String())
 	check(err)
 
 	err = f.Close()
