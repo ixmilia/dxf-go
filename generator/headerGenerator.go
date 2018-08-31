@@ -14,17 +14,25 @@ type XMLHeader struct {
 }
 
 type XMLHeaderVariable struct {
-	XMLName        xml.Name `xml:"Variable"`
-	Name           string   `xml:"Name,attr"`
-	Code           int      `xml:"Code,attr"`
-	Type           string   `xml:"Type,attr"`
-	FieldName      string   `xml:"Field,attr"`
-	DefaultValue   string   `xml:"DefaultValue,attr"`
-	ReadConverter  string   `xml:"ReadConverter,attr"`
-	WriteConverter string   `xml:"WriteConverter,attr"`
-	MinVersion     string   `xml:"MinVersion,attr"`
-	MaxVersion     string   `xml:"MaxVersion,attr"`
-	Comment        string   `xml:"Comment,attr"`
+	XMLName        xml.Name                `xml:"Variable"`
+	Name           string                  `xml:"Name,attr"`
+	Code           int                     `xml:"Code,attr"`
+	Type           string                  `xml:"Type,attr"`
+	FieldName      string                  `xml:"Field,attr"`
+	DefaultValue   string                  `xml:"DefaultValue,attr"`
+	ReadConverter  string                  `xml:"ReadConverter,attr"`
+	WriteConverter string                  `xml:"WriteConverter,attr"`
+	MinVersion     string                  `xml:"MinVersion,attr"`
+	MaxVersion     string                  `xml:"MaxVersion,attr"`
+	Comment        string                  `xml:"Comment,attr"`
+	Flags          []XMLHeaderVariableFlag `xml:"Flag"`
+}
+
+type XMLHeaderVariableFlag struct {
+	XMLName xml.Name `xml:"Flag"`
+	Name    string   `xml:"Name,attr"`
+	Mask    int      `xml:"Mask,attr"`
+	Comment string   `xml:"Comment,attr"`
 }
 
 func generateHeader() {
@@ -46,6 +54,8 @@ func generateHeader() {
 	builder.WriteString("	\"errors\"\n")
 	builder.WriteString(")\n")
 	builder.WriteString("\n")
+
+	// definition
 	builder.WriteString("type Header struct {\n")
 	for _, variable := range variables {
 		builder.WriteString(fmt.Sprintf("	// The $%s header variable.  %s\n", variable.Name, variable.Comment))
@@ -54,6 +64,7 @@ func generateHeader() {
 	builder.WriteString("}\n")
 	builder.WriteString("\n")
 
+	// constructor
 	builder.WriteString("func NewHeader() *Header {\n")
 	builder.WriteString("	return &Header{\n")
 	for _, variable := range variables {
@@ -63,6 +74,26 @@ func generateHeader() {
 	builder.WriteString("}\n")
 	builder.WriteString("\n")
 
+	// flags
+	for _, variable := range variables {
+		for _, flag := range variable.Flags {
+			builder.WriteString(fmt.Sprintf("func (h *Header) %s() bool {\n", flag.Name))
+			builder.WriteString(fmt.Sprintf("	return h.%s & %d != 0\n", variable.FieldName, flag.Mask))
+			builder.WriteString("}\n")
+			builder.WriteString("\n")
+
+			builder.WriteString(fmt.Sprintf("func (h *Header) Set%s(val bool) {\n", flag.Name))
+			builder.WriteString("	if val {\n")
+			builder.WriteString(fmt.Sprintf("		h.%s = h.%s | %d\n", variable.FieldName, variable.FieldName, flag.Mask))
+			builder.WriteString("	} else {\n")
+			builder.WriteString(fmt.Sprintf("		h.%s = h.%s & ^%d\n", variable.FieldName, variable.FieldName, flag.Mask))
+			builder.WriteString("	}\n")
+			builder.WriteString("}\n")
+			builder.WriteString("\n")
+		}
+	}
+
+	// writeHeader()
 	builder.WriteString("func (h Header) writeHeader(writer CodePairWriter) error {\n")
 	builder.WriteString("	pairs := make([]CodePair, 0)\n")
 	builder.WriteString("	pairs = append(pairs, NewStringCodePair(0, \"SECTION\"))\n")
@@ -105,6 +136,7 @@ func generateHeader() {
 	builder.WriteString("}\n")
 	builder.WriteString("\n")
 
+	// readHeader()
 	builder.WriteString("func readHeader(nextPair CodePair, reader CodePairReader) (Header, CodePair, error) {\n")
 	builder.WriteString("	header := *NewHeader()\n")
 	builder.WriteString("	var err error\n")

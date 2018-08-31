@@ -1,4 +1,19 @@
 <Header>
     <Variable Name="ACADVER" Code="1" Type="AcadVersion" Field="Version" DefaultValue="R12" ReadConverter="parseAcadVersion(%v)" WriteConverter="%v.ToHeaderVersion()" Comment="The AutoCAD drawing database version number." />
     <Variable Name="ACADMAINTVER" Code="70" Type="int16" Field="MaintenanceVersion" DefaultValue="0" MinVersion="R14" Comment="Maintenance version number (should be ignored)." />
+    <Variable Name="OSMODE" Code="70" Type="int" Field="ObjectSnapFlags" DefaultValue="37" ReadConverter="int(%v)" WriteConverter="int16(%v)" MaxVersion="R14" Comment="Running object snap modes.">
+        <Flag Name="EndPointSnap" Mask="1" Comment="Snap to line segment endpoints." />
+        <Flag Name="MidPointSnap" Mask="2" Comment="Snap to line segment midpoints." />
+        <Flag Name="CenterSnap" Mask="4" Comment="Snap to circle and arc center points." />
+        <Flag Name="NodeSnap" Mask="8" Comment="Snap to nodes." />
+        <Flag Name="QuadrantSnap" Mask="16" Comment="Snap to circle quadrants." />
+        <Flag Name="IntersectionSnap" Mask="32" Comment="Snap to segment intersections." />
+        <Flag Name="InsertionSnap" Mask="64" Comment="Snap to block insertion points." />
+        <Flag Name="PerpendicularSnap" Mask="128" Comment="Snap to perpendicular points." />
+        <Flag Name="TangentSnap" Mask="256" Comment="Snap to tangent points." />
+        <Flag Name="NearestSnap" Mask="512" Comment="Snap to nearest object points." />
+        <Flag Name="ApparentIntersectionSnap" Mask="2048" Comment="Snap to apparent intersection points." />
+        <Flag Name="ExtensionSnap" Mask="4096" Comment="Snap to extension points." />
+        <Flag Name="ParallelSnap" Mask="8192" Comment="Snap to parallel points." />
+</Variable>
 </Header>

@@ -20,6 +20,10 @@ func NewAsciiCodePairWriter(writer io.Writer) CodePairWriter {
 	}
 }
 
+func (a AsciiCodePairWriter) writeShort(val int16) error {
+	return a.writeString(fmt.Sprintf("%6d", val))
+}
+
 func (a AsciiCodePairWriter) writeString(val string) error {
 	bytes := []byte(fmt.Sprintf("%s\r\n", val))
 	_, err := a.writer.Write(bytes)
@@ -32,9 +36,11 @@ func (a AsciiCodePairWriter) writeCodePair(codePair CodePair) error {
 		return nil
 	}
 
-	stringValue, ok := codePair.Value.(StringCodePairValue)
-	if ok {
-		return a.writeString(stringValue.Value)
+	switch t := codePair.Value.(type) {
+	case ShortCodePairValue:
+		return a.writeShort(t.Value)
+	case StringCodePairValue:
+		return a.writeString(t.Value)
 	}
 
 	return nil

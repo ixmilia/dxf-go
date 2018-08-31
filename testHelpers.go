@@ -5,6 +5,12 @@ import (
 	"testing"
 )
 
+func assert(t *testing.T, condition bool, message string) {
+	if !condition {
+		t.Error(message)
+	}
+}
+
 func assertContains(t *testing.T, expected, actual string) {
 	if !strings.Contains(actual, expected) {
 		t.Errorf("Unable to find '%s' in '%s'", expected, actual)
