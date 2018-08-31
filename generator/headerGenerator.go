@@ -56,9 +56,11 @@ func generateHeader() {
 	builder.WriteString("\n")
 
 	// definition
+	builder.WriteString("// Header contains the values common to an AutoCAD DXF drawing.\n")
 	builder.WriteString("type Header struct {\n")
 	for _, variable := range variables {
-		builder.WriteString(fmt.Sprintf("	// The $%s header variable.  %s\n", variable.Name, variable.Comment))
+		comment := generateComment(fmt.Sprintf("The $%s header variable.  %s", variable.Name, variable.Comment), variable.MinVersion, variable.MaxVersion)
+		builder.WriteString(fmt.Sprintf("	// %s\n", comment))
 		builder.WriteString(fmt.Sprintf("	%s %s\n", variable.FieldName, variable.Type))
 	}
 	builder.WriteString("}\n")
@@ -77,11 +79,14 @@ func generateHeader() {
 	// flags
 	for _, variable := range variables {
 		for _, flag := range variable.Flags {
-			builder.WriteString(fmt.Sprintf("func (h *Header) %s() bool {\n", flag.Name))
+			comment := generateComment(fmt.Sprintf("%s status flag.", flag.Name), variable.MinVersion, variable.MaxVersion)
+			builder.WriteString(fmt.Sprintf("// %s\n", comment))
+			builder.WriteString(fmt.Sprintf("func (h *Header) %s() (val bool) {\n", flag.Name))
 			builder.WriteString(fmt.Sprintf("	return h.%s & %d != 0\n", variable.FieldName, flag.Mask))
 			builder.WriteString("}\n")
 			builder.WriteString("\n")
 
+			builder.WriteString(fmt.Sprintf("// %s\n", comment))
 			builder.WriteString(fmt.Sprintf("func (h *Header) Set%s(val bool) {\n", flag.Name))
 			builder.WriteString("	if val {\n")
 			builder.WriteString(fmt.Sprintf("		h.%s = h.%s | %d\n", variable.FieldName, variable.FieldName, flag.Mask))
@@ -177,6 +182,17 @@ func generateHeader() {
 	builder.WriteString("}\n")
 
 	writeFile("header.generated.go", builder)
+}
+
+func generateComment(mainComment, minVersion, maxVersion string) string {
+	comment := mainComment
+	if len(minVersion) > 0 {
+		comment += fmt.Sprintf("  Minimum AutoCAD version %s.", minVersion)
+	}
+	if len(maxVersion) > 0 {
+		comment += fmt.Sprintf("  Maximum AutoCAD version %s.", maxVersion)
+	}
+	return comment
 }
 
 func ReadHeader(reader io.Reader) ([]XMLHeaderVariable, error) {
