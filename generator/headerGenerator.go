@@ -123,8 +123,19 @@ func generateHeader() {
 		if len(variable.WriteConverter) > 0 {
 			value = strings.Replace(variable.WriteConverter, "%v", value, -1)
 		}
-		codeTypeName := CodeTypeName(variable.Code)
-		builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indention, codeTypeName, variable.Code, value))
+
+		// write the value
+		if variable.Code < 0 {
+			// either a Point or Vector
+			for code := 10; code <= variable.Code*-10; code += 10 {
+				component := 'X' + (code-10)/10
+				builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, NewDoubleCodePair(%d, h.%s.%c))\n", indention, code, variable.FieldName, component))
+			}
+		} else {
+			codeTypeName := CodeTypeName(variable.Code)
+			builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indention, codeTypeName, variable.Code, value))
+		}
+
 		if len(predicates) > 0 {
 			builder.WriteString(fmt.Sprintf("	}\n"))
 		}
@@ -155,17 +166,27 @@ func generateHeader() {
 	builder.WriteString("			switch variableName {\n")
 	for _, variable := range variables {
 		builder.WriteString(fmt.Sprintf("			case \"$%s\":\n", variable.Name))
-		// validate code
-		builder.WriteString(fmt.Sprintf("				if nextPair.Code != %d {\n", variable.Code))
-		builder.WriteString(fmt.Sprintf("					return header, nextPair, errors.New(\"expected code %d\")\n", variable.Code))
-		builder.WriteString("				}\n")
-
 		// read the value
-		readValue := fmt.Sprintf("nextPair.Value.(%sCodePairValue).Value", CodeTypeName(variable.Code))
-		if len(variable.ReadConverter) > 0 {
-			readValue = strings.Replace(variable.ReadConverter, "%v", readValue, -1)
+		if variable.Code < 0 {
+			// either a Point or a Vector
+			builder.WriteString("				switch nextPair.Code {\n")
+			for code := 10; code <= variable.Code*-10; code += 10 {
+				component := 'X' + (code-10)/10
+				builder.WriteString(fmt.Sprintf("				case %d:\n", code))
+				builder.WriteString(fmt.Sprintf("					header.%s.%c = nextPair.Value.(DoubleCodePairValue).Value\n", variable.FieldName, component))
+			}
+			builder.WriteString("				}\n")
+		} else {
+			// validate code
+			builder.WriteString(fmt.Sprintf("				if nextPair.Code != %d {\n", variable.Code))
+			builder.WriteString(fmt.Sprintf("					return header, nextPair, errors.New(\"expected code %d\")\n", variable.Code))
+			builder.WriteString("				}\n")
+			readValue := fmt.Sprintf("nextPair.Value.(%sCodePairValue).Value", CodeTypeName(variable.Code))
+			if len(variable.ReadConverter) > 0 {
+				readValue = strings.Replace(variable.ReadConverter, "%v", readValue, -1)
+			}
+			builder.WriteString(fmt.Sprintf("				header.%s = %s\n", variable.FieldName, readValue))
 		}
-		builder.WriteString(fmt.Sprintf("				header.%s = %s\n", variable.FieldName, readValue))
 	}
 	builder.WriteString("			default:\n")
 	builder.WriteString("				// ignore unsupported header variable\n")

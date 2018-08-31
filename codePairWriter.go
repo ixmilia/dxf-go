@@ -3,6 +3,7 @@ package dxf
 import (
 	"fmt"
 	"io"
+	"strings"
 )
 
 type CodePairWriter interface {
@@ -18,6 +19,18 @@ func NewAsciiCodePairWriter(writer io.Writer) CodePairWriter {
 	return AsciiCodePairWriter{
 		writer: writer,
 	}
+}
+
+func (a AsciiCodePairWriter) writeDouble(val float64) error {
+	// trim trailing zeros
+	display := strings.TrimRight(fmt.Sprintf("%.12f", val), "0")
+
+	// ensure it doesn't end with a decimal
+	if strings.HasSuffix(display, ".") {
+		display += "0"
+	}
+
+	return a.writeString(display)
 }
 
 func (a AsciiCodePairWriter) writeShort(val int16) error {
@@ -37,6 +50,8 @@ func (a AsciiCodePairWriter) writeCodePair(codePair CodePair) error {
 	}
 
 	switch t := codePair.Value.(type) {
+	case DoubleCodePairValue:
+		return a.writeDouble(t.Value)
 	case ShortCodePairValue:
 		return a.writeShort(t.Value)
 	case StringCodePairValue:

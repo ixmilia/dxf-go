@@ -1,6 +1,7 @@
 package dxf
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -38,21 +39,6 @@ func TestWriteVersionSpecificVariables(t *testing.T) {
 	// value is missing < R14
 	header.Version = R13
 	assertNotContains(t, "$ACADMAINTVER", fileStringFromHeader(header))
-}
-
-func parseHeader(t *testing.T, content string) Header {
-	drawing := parse(t, `
-  0
-SECTION
-  2
-HEADER
-`+strings.TrimSpace(content)+`
-  0
-ENDSEC
-  0
-EOF
-`)
-	return drawing.Header
 }
 
 func TestReadHeaderFlag(t *testing.T) {
@@ -93,6 +79,42 @@ func TestWriteHeaderFlag(t *testing.T) {
 	header.SetExtensionSnap(false)
 	header.SetParallelSnap(false)
 	assertContains(t, "  9\r\n$OSMODE\r\n 70\r\n     1\r\n", fileStringFromHeader(header))
+}
+
+func TestReadPoint(t *testing.T) {
+	header := parseHeader(t, `
+  9
+$INSBASE
+ 10
+1
+ 20
+2
+ 30
+3
+`)
+	expected := Point{1.0, 2.0, 3.0}
+	assert(t, header.InsertionBase == expected, fmt.Sprintf("expected %s, got %s", expected.String(), header.InsertionBase.String()))
+}
+
+func TestWritePoint(t *testing.T) {
+	header := *NewHeader()
+	header.InsertionBase = Point{1.0, 2.0, 3.0}
+	assertContains(t, "  9\r\n$INSBASE\r\n 10\r\n1.0\r\n 20\r\n2.0\r\n 30\r\n3.0\r\n", fileStringFromHeader(header))
+}
+
+func parseHeader(t *testing.T, content string) Header {
+	drawing := parse(t, `
+  0
+SECTION
+  2
+HEADER
+`+strings.TrimSpace(content)+`
+  0
+ENDSEC
+  0
+EOF
+`)
+	return drawing.Header
 }
 
 func fileStringFromHeader(h Header) string {

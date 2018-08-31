@@ -1,6 +1,7 @@
 <Header>
     <Variable Name="ACADVER" Code="1" Type="AcadVersion" Field="Version" DefaultValue="R12" ReadConverter="parseAcadVersion(%v)" WriteConverter="%v.ToHeaderVersion()" Comment="The AutoCAD drawing database version number." />
     <Variable Name="ACADMAINTVER" Code="70" Type="int16" Field="MaintenanceVersion" DefaultValue="0" MinVersion="R14" Comment="Maintenance version number (should be ignored)." />
+    <Variable Name="INSBASE" Code="-3" Type="Point" Field="InsertionBase" DefaultValue="*NewOrigin()" Comment="Insertion base set by BASE command (in WCS)." />
     <Variable Name="OSMODE" Code="70" Type="int" Field="ObjectSnapFlags" DefaultValue="37" ReadConverter="int(%v)" WriteConverter="int16(%v)" MaxVersion="R14" Comment="Running object snap modes.">
         <Flag Name="EndPointSnap" Mask="1" Comment="Snap to line segment endpoints." />
         <Flag Name="MidPointSnap" Mask="2" Comment="Snap to line segment midpoints." />
