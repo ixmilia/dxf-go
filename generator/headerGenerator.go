@@ -22,6 +22,8 @@ type XMLHeaderVariable struct {
 	DefaultValue   string   `xml:"DefaultValue,attr"`
 	ReadConverter  string   `xml:"ReadConverter,attr"`
 	WriteConverter string   `xml:"WriteConverter,attr"`
+	MinVersion     string   `xml:"MinVersion,attr"`
+	MaxVersion     string   `xml:"MaxVersion,attr"`
 	Comment        string   `xml:"Comment,attr"`
 }
 
@@ -68,13 +70,28 @@ func generateHeader() {
 	for _, variable := range variables {
 		builder.WriteString("\n")
 		builder.WriteString(fmt.Sprintf("	// $%s\n", variable.Name))
-		builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewStringCodePair(9, \"$%s\"))\n", variable.Name))
+		var predicates []string
+		if len(variable.MinVersion) > 0 {
+			predicates = append(predicates, fmt.Sprintf("h.Version >= %s", variable.MinVersion))
+		}
+		if len(variable.MaxVersion) > 0 {
+			predicates = append(predicates, fmt.Sprintf("h.Version <= %s", variable.MaxVersion))
+		}
+		indention := ""
+		if len(predicates) > 0 {
+			indention = "	"
+			builder.WriteString(fmt.Sprintf("	if %s {\n", strings.Join(predicates, " && ")))
+		}
+		builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, NewStringCodePair(9, \"$%s\"))\n", indention, variable.Name))
 		value := fmt.Sprintf("h.%s", variable.FieldName)
 		if len(variable.WriteConverter) > 0 {
 			value = strings.Replace(variable.WriteConverter, "%v", value, -1)
 		}
 		codeTypeName := CodeTypeName(variable.Code)
-		builder.WriteString(fmt.Sprintf("	pairs = append(pairs, New%sCodePair(%d, %s))\n", codeTypeName, variable.Code, value))
+		builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indention, codeTypeName, variable.Code, value))
+		if len(predicates) > 0 {
+			builder.WriteString(fmt.Sprintf("	}\n"))
+		}
 	}
 	builder.WriteString("\n")
 	builder.WriteString("	pairs = append(pairs, NewStringCodePair(0, \"ENDSEC\"))\n")

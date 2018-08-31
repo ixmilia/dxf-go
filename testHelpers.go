@@ -11,6 +11,12 @@ func assertContains(t *testing.T, expected, actual string) {
 	}
 }
 
+func assertNotContains(t *testing.T, notExpected, actual string) {
+	if strings.Contains(actual, notExpected) {
+		t.Errorf("Unexpectedly found '%s' in '%s'", notExpected, actual)
+	}
+}
+
 func assertEqInt(t *testing.T, expected, actual int) {
 	if expected != actual {
 		t.Errorf("Expected: %d\nActual: %d", expected, actual)

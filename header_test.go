@@ -28,6 +28,18 @@ ANOTHER_UNSUPPORTED_VALUE
 	assertEqInt(t, 6, int(header.MaintenanceVersion))
 }
 
+func TestWriteVersionSpecificVariables(t *testing.T) {
+	header := *NewHeader()
+
+	// value is present >= R14
+	header.Version = R14
+	assertContains(t, "$ACADMAINTVER", fileStringFromHeader(header))
+
+	// value is missing < R14
+	header.Version = R13
+	assertNotContains(t, "$ACADMAINTVER", fileStringFromHeader(header))
+}
+
 func parseHeader(t *testing.T, content string) Header {
 	drawing := parse(t, `
   0
@@ -41,4 +53,10 @@ ENDSEC
 EOF
 `)
 	return drawing.Header
+}
+
+func fileStringFromHeader(h Header) string {
+	drawing := *NewDrawing()
+	drawing.Header = h
+	return drawing.String()
 }
