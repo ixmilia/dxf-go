@@ -1,7 +1,7 @@
-package main
+package dxf
 
 func CodeTypeName(code int) string {
-	if between(code, 1, 9) {
+	if between(code, 0, 9) {
 		return "String"
 	} else if between(code, 10, 39) {
 		return "Double"

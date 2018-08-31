@@ -20,6 +20,7 @@ type XMLHeaderVariable struct {
 	Type           string   `xml:"Type,attr"`
 	FieldName      string   `xml:"Field,attr"`
 	DefaultValue   string   `xml:"DefaultValue,attr"`
+	ReadConverter  string   `xml:"ReadConverter,attr"`
 	WriteConverter string   `xml:"WriteConverter,attr"`
 	Comment        string   `xml:"Comment,attr"`
 }
@@ -36,6 +37,7 @@ func generateHeader() {
 
 	var content string
 	content += "import (\n"
+	content += "	\"errors\"\n"
 	content += ")\n"
 	content += "\n"
 	content += "type Header struct {\n"
@@ -80,6 +82,47 @@ func generateHeader() {
 	content += "	}\n"
 	content += "	return nil\n"
 	content += "}\n"
+	content += "\n"
+
+	content += "func readHeader(nextPair CodePair, reader CodePairReader) (Header, CodePair, error) {\n"
+	content += "	header := *NewHeader()\n"
+	content += "	var err error\n"
+	content += "	var variableName string\n"
+	content += "	for nextPair.Code != 0 {\n"
+
+	// look for 9/$VARNAME
+	content += "		if nextPair.Code == 9 {\n"
+	content += "			variableName = nextPair.Value.(StringCodePairValue).Value\n"
+	content += "		} else {\n"
+	content += "			switch variableName {\n"
+	for _, variable := range variables {
+		content += fmt.Sprintf("			case \"$%s\":\n", variable.Name)
+		// validate code
+		content += fmt.Sprintf("				if nextPair.Code != %d {\n", variable.Code)
+		content += fmt.Sprintf("					return header, nextPair, errors.New(\"expected code %d\")\n", variable.Code)
+		content += "				}\n"
+
+		// read the value
+		readValue := fmt.Sprintf("nextPair.Value.(%sCodePairValue).Value", CodeTypeName(variable.Code))
+		if len(variable.ReadConverter) > 0 {
+			readValue = strings.Replace(variable.ReadConverter, "%v", readValue, -1)
+		}
+		content += fmt.Sprintf("				header.%s = %s\n", variable.FieldName, readValue)
+	}
+	content += "			default:\n"
+	content += "				// ignore unsupported header variable\n"
+	content += "			}\n"
+	content += "		}\n"
+	content += "\n"
+	content += "		nextPair, err = reader.readCodePair()\n"
+	content += "		if err != nil {\n"
+	content += "			return header, nextPair, err\n"
+	content += "		}\n"
+	content += "	}\n"
+	content += "\n"
+	content += "	return header, nextPair, nil\n"
+	content += "}\n"
+
 	writeFile("header.generated.go", content)
 }
 

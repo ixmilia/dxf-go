@@ -11,8 +11,23 @@ func assertContains(t *testing.T, expected, actual string) {
 	}
 }
 
-func assertEq(t *testing.T, expected, actual string) {
+func assertEqInt(t *testing.T, expected, actual int) {
+	if expected != actual {
+		t.Errorf("Expected: %d\nActual: %d", expected, actual)
+	}
+}
+
+func assertEqString(t *testing.T, expected, actual string) {
 	if expected != actual {
 		t.Errorf("Expected: %s\nActual: %s", expected, actual)
 	}
+}
+
+func parse(t *testing.T, content string) Drawing {
+	drawing, err := ParseDrawing(strings.TrimSpace(content))
+	if err != nil {
+		t.Error(err)
+	}
+
+	return drawing
 }
