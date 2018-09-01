@@ -14,18 +14,20 @@ type XMLHeader struct {
 }
 
 type XMLHeaderVariable struct {
-	XMLName        xml.Name                `xml:"Variable"`
-	Name           string                  `xml:"Name,attr"`
-	Code           int                     `xml:"Code,attr"`
-	Type           string                  `xml:"Type,attr"`
-	FieldName      string                  `xml:"Field,attr"`
-	DefaultValue   string                  `xml:"DefaultValue,attr"`
-	ReadConverter  string                  `xml:"ReadConverter,attr"`
-	WriteConverter string                  `xml:"WriteConverter,attr"`
-	MinVersion     string                  `xml:"MinVersion,attr"`
-	MaxVersion     string                  `xml:"MaxVersion,attr"`
-	Comment        string                  `xml:"Comment,attr"`
-	Flags          []XMLHeaderVariableFlag `xml:"Flag"`
+	XMLName          xml.Name                `xml:"Variable"`
+	Name             string                  `xml:"Name,attr"`
+	Code             int                     `xml:"Code,attr"`
+	Type             string                  `xml:"Type,attr"`
+	FieldName        string                  `xml:"Field,attr"`
+	DefaultValue     string                  `xml:"DefaultValue,attr"`
+	ReadConverter    string                  `xml:"ReadConverter,attr"`
+	WriteConverter   string                  `xml:"WriteConverter,attr"`
+	MinVersion       string                  `xml:"MinVersion,attr"`
+	MaxVersion       string                  `xml:"MaxVersion,attr"`
+	SuppressWriting  bool                    `xml:"SuppressWriting,attr"`
+	DontWriteDefault bool                    `xml:"DontWriteDefault,attr"`
+	Comment          string                  `xml:"Comment,attr"`
+	Flags            []XMLHeaderVariableFlag `xml:"Flag"`
 }
 
 type XMLHeaderVariableFlag struct {
@@ -52,16 +54,24 @@ func generateHeader() {
 	builder.WriteString("\n")
 	builder.WriteString("import (\n")
 	builder.WriteString("	\"errors\"\n")
+	builder.WriteString("	\"math\"\n")
+	builder.WriteString("	\"time\"\n")
+	builder.WriteString("\n")
+	builder.WriteString("	\"github.com/google/uuid\"\n")
 	builder.WriteString(")\n")
 	builder.WriteString("\n")
 
 	// definition
 	builder.WriteString("// Header contains the values common to an AutoCAD DXF drawing.\n")
 	builder.WriteString("type Header struct {\n")
+	seenVariables := make(map[string]bool)
 	for _, variable := range variables {
-		comment := generateComment(fmt.Sprintf("The $%s header variable.  %s", variable.Name, variable.Comment), variable.MinVersion, variable.MaxVersion)
-		builder.WriteString(fmt.Sprintf("	// %s\n", comment))
-		builder.WriteString(fmt.Sprintf("	%s %s\n", variable.FieldName, variable.Type))
+		if !seenVariables[variable.FieldName] {
+			seenVariables[variable.FieldName] = true
+			comment := generateComment(fmt.Sprintf("The $%s header variable.  %s", variable.Name, variable.Comment), variable.MinVersion, variable.MaxVersion)
+			builder.WriteString(fmt.Sprintf("	// %s\n", comment))
+			builder.WriteString(fmt.Sprintf("	%s %s\n", variable.FieldName, variable.Type))
+		}
 	}
 	builder.WriteString("}\n")
 	builder.WriteString("\n")
@@ -69,8 +79,12 @@ func generateHeader() {
 	// constructor
 	builder.WriteString("func NewHeader() *Header {\n")
 	builder.WriteString("	return &Header{\n")
+	seenVariables = make(map[string]bool)
 	for _, variable := range variables {
-		builder.WriteString(fmt.Sprintf("		%s: %s,\n", variable.FieldName, variable.DefaultValue))
+		if !seenVariables[variable.FieldName] {
+			seenVariables[variable.FieldName] = true
+			builder.WriteString(fmt.Sprintf("		%s: %s,\n", variable.FieldName, variable.DefaultValue))
+		}
 	}
 	builder.WriteString("	}\n")
 	builder.WriteString("}\n")
@@ -104,6 +118,9 @@ func generateHeader() {
 	builder.WriteString("	pairs = append(pairs, NewStringCodePair(0, \"SECTION\"))\n")
 	builder.WriteString("	pairs = append(pairs, NewStringCodePair(2, \"HEADER\"))\n")
 	for _, variable := range variables {
+		if variable.SuppressWriting {
+			continue
+		}
 		builder.WriteString("\n")
 		builder.WriteString(fmt.Sprintf("	// $%s\n", variable.Name))
 		var predicates []string
@@ -112,6 +129,9 @@ func generateHeader() {
 		}
 		if len(variable.MaxVersion) > 0 {
 			predicates = append(predicates, fmt.Sprintf("h.Version <= %s", variable.MaxVersion))
+		}
+		if variable.DontWriteDefault {
+			predicates = append(predicates, fmt.Sprintf("h.%s != %s", variable.FieldName, variable.DefaultValue))
 		}
 		indention := ""
 		if len(predicates) > 0 {
@@ -164,28 +184,32 @@ func generateHeader() {
 	builder.WriteString("			variableName = nextPair.Value.(StringCodePairValue).Value\n")
 	builder.WriteString("		} else {\n")
 	builder.WriteString("			switch variableName {\n")
+	seenVariables = make(map[string]bool)
 	for _, variable := range variables {
-		builder.WriteString(fmt.Sprintf("			case \"$%s\":\n", variable.Name))
-		// read the value
-		if variable.Code < 0 {
-			// either a Point or a Vector
-			builder.WriteString("				switch nextPair.Code {\n")
-			for code := 10; code <= variable.Code*-10; code += 10 {
-				component := 'X' + (code-10)/10
-				builder.WriteString(fmt.Sprintf("				case %d:\n", code))
-				builder.WriteString(fmt.Sprintf("					header.%s.%c = nextPair.Value.(DoubleCodePairValue).Value\n", variable.FieldName, component))
+		if !seenVariables[variable.FieldName] {
+			seenVariables[variable.FieldName] = true
+			builder.WriteString(fmt.Sprintf("			case \"$%s\":\n", variable.Name))
+			// read the value
+			if variable.Code < 0 {
+				// either a Point or a Vector
+				builder.WriteString("				switch nextPair.Code {\n")
+				for code := 10; code <= variable.Code*-10; code += 10 {
+					component := 'X' + (code-10)/10
+					builder.WriteString(fmt.Sprintf("				case %d:\n", code))
+					builder.WriteString(fmt.Sprintf("					header.%s.%c = nextPair.Value.(DoubleCodePairValue).Value\n", variable.FieldName, component))
+				}
+				builder.WriteString("				}\n")
+			} else {
+				// validate code
+				builder.WriteString(fmt.Sprintf("				if nextPair.Code != %d {\n", variable.Code))
+				builder.WriteString(fmt.Sprintf("					return header, nextPair, errors.New(\"expected code %d\")\n", variable.Code))
+				builder.WriteString("				}\n")
+				readValue := fmt.Sprintf("nextPair.Value.(%sCodePairValue).Value", CodeTypeName(variable.Code))
+				if len(variable.ReadConverter) > 0 {
+					readValue = strings.Replace(variable.ReadConverter, "%v", readValue, -1)
+				}
+				builder.WriteString(fmt.Sprintf("				header.%s = %s\n", variable.FieldName, readValue))
 			}
-			builder.WriteString("				}\n")
-		} else {
-			// validate code
-			builder.WriteString(fmt.Sprintf("				if nextPair.Code != %d {\n", variable.Code))
-			builder.WriteString(fmt.Sprintf("					return header, nextPair, errors.New(\"expected code %d\")\n", variable.Code))
-			builder.WriteString("				}\n")
-			readValue := fmt.Sprintf("nextPair.Value.(%sCodePairValue).Value", CodeTypeName(variable.Code))
-			if len(variable.ReadConverter) > 0 {
-				readValue = strings.Replace(variable.ReadConverter, "%v", readValue, -1)
-			}
-			builder.WriteString(fmt.Sprintf("				header.%s = %s\n", variable.FieldName, readValue))
 		}
 	}
 	builder.WriteString("			default:\n")

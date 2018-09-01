@@ -59,31 +59,31 @@ func (a *AsciiCodePairReader) readCodePair() (CodePair, error) {
 
 	switch CodeTypeName(code) {
 	case "Bool":
-		value, err := strconv.ParseInt(stringValue, 10, 16)
+		value, err := strconv.ParseInt(strings.TrimSpace(stringValue), 10, 16)
 		if err != nil {
 			return codePair, err
 		}
 		codePair = NewBoolCodePair(code, value != 0)
 	case "Double":
-		value, err := strconv.ParseFloat(stringValue, 64)
+		value, err := strconv.ParseFloat(strings.TrimSpace(stringValue), 64)
 		if err != nil {
 			return codePair, err
 		}
 		codePair = NewDoubleCodePair(code, value)
 	case "Int":
-		value, err := strconv.ParseInt(stringValue, 10, 32)
+		value, err := strconv.ParseInt(strings.TrimSpace(stringValue), 10, 32)
 		if err != nil {
 			return codePair, err
 		}
 		codePair = NewIntCodePair(code, int(value))
 	case "Long":
-		value, err := strconv.ParseInt(stringValue, 10, 64)
+		value, err := strconv.ParseInt(strings.TrimSpace(stringValue), 10, 64)
 		if err != nil {
 			return codePair, err
 		}
 		codePair = NewLongCodePair(code, value)
 	case "Short":
-		value, err := strconv.ParseInt(stringValue, 10, 16)
+		value, err := strconv.ParseInt(strings.TrimSpace(stringValue), 10, 16)
 		if err != nil {
 			return codePair, err
 		}

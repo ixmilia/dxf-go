@@ -1,7 +1,21 @@
 <Header>
     <Variable Name="ACADVER" Code="1" Type="AcadVersion" Field="Version" DefaultValue="R12" ReadConverter="parseAcadVersion(%v)" WriteConverter="%v.ToHeaderVersion()" Comment="The AutoCAD drawing database version number." />
     <Variable Name="ACADMAINTVER" Code="70" Type="int16" Field="MaintenanceVersion" DefaultValue="0" MinVersion="R14" Comment="Maintenance version number (should be ignored)." />
+    <Variable Name="DWGCODEPAGE" Code="3" Type="string" Field="DrawingCodePage" DefaultValue='"ANSI_1252"' MinVersion="R13" Comment="Drawing code page; set to the system code page when a new drawing is created, but not otherwise maintained by AutoCAD." />
+    <Variable Name="LASTSAVEDBY" Code="1" Type="string" Field="LastSavedBy" DefaultValue='""' MinVersion="R2004" Comment="Name of the last user to modify the file." />
+    <Variable Name="REQUIREDVERSIONS" Code="160" Type="int64" Field="RequiredVersions" DefaultValue="0" MinVersion="R2013" Comment="Unknown." />
     <Variable Name="INSBASE" Code="-3" Type="Point" Field="InsertionBase" DefaultValue="*NewOrigin()" Comment="Insertion base set by BASE command (in WCS)." />
+    <Variable Name="EXTMIN" Code="-3" Type="Point" Field="MinimumDrawingExtents" DefaultValue="*NewOrigin()" Comment="X, Y, and Z drawing extents lower-left corner (in WCS)." />
+    <Variable Name="EXTMAX" Code="-3" Type="Point" Field="MaximumDrawingExtents" DefaultValue="*NewOrigin()" Comment="X, Y, and Z drawing extents upper-right corner (in WCS)." />
+    <Variable Name="LIMMIN" Code="-2" Type="Point" Field="MinimumDrawingLimits" DefaultValue="*NewOrigin()" Comment="XY drawing limits lower-left corner (in WCS)." />
+    <Variable Name="LIMMAX" Code="-2" Type="Point" Field="MaximumDrawingLimits" DefaultValue="Point{12.0, 9.0, 0.0}" Comment="XY drawing limits upper-right corner (in WCS)." />
+    <Variable Name="ORTHOMODE" Code="70" Type="bool" Field="DrawOrthoganalLines" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Ortho mode on." />
+    <Variable Name="REGENMODE" Code="70" Type="bool" Field="UseRegenMode" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="REGENAUTO mode on." />
+    <Variable Name="FILLMODE" Code="70" Type="bool" Field="FillModeOn" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Fill mode on." />
+    <Variable Name="QTEXTMODE" Code="70" Type="bool" Field="UseQuickTextMode" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Quick text mode on." />
+    <Variable Name="MIRRTEXT" Code="70" Type="bool" Field="MirrorText" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Mirror text." />
+    <Variable Name="DRAGMODE" Code="70" Type="DragMode" Field="DragMode" DefaultValue="DragModeAuto" ReadConverter="DragMode(%v)" WriteConverter="int16(%v)" MaxVersion="R14" Comment="Controls the way dragged objects are displayed." />
+    <Variable Name="LTSCALE" Code="40" Type="float64" Field="LineTypeScale" DefaultValue="1.0" Comment="Global line type scale." />
     <Variable Name="OSMODE" Code="70" Type="int" Field="ObjectSnapFlags" DefaultValue="37" ReadConverter="int(%v)" WriteConverter="int16(%v)" MaxVersion="R14" Comment="Running object snap modes.">
         <Flag Name="EndPointSnap" Mask="1" Comment="Snap to line segment endpoints." />
         <Flag Name="MidPointSnap" Mask="2" Comment="Snap to line segment midpoints." />
@@ -16,5 +30,306 @@
         <Flag Name="ApparentIntersectionSnap" Mask="2048" Comment="Snap to apparent intersection points." />
         <Flag Name="ExtensionSnap" Mask="4096" Comment="Snap to extension points." />
         <Flag Name="ParallelSnap" Mask="8192" Comment="Snap to parallel points." />
-</Variable>
+    </Variable>
+    <Variable Name="ATTMODE" Code="70" Type="AttributeVisibility" Field="AttributeVisibility" DefaultValue="AttributeVisibilityNormal" ReadConverter="AttributeVisibility(%v)" WriteConverter="int16(%v)" Comment="Attribute visibility." />
+    <Variable Name="TEXTSIZE" Code="40" Type="float64" Field="DefaultTextHeight" DefaultValue="0.2" WriteConverter="ensurePositiveOrDefault(%v, 0.2)" Comment="Default text height." />
+    <Variable Name="TRACEWID" Code="40" Type="float64" Field="TraceWidth" DefaultValue="0.05" WriteConverter="ensurePositiveOrDefault(%v, 0.05)" Comment="Default trace width." />
+    <Variable Name="TEXTSTYLE" Code="7" Type="string" Field="TextStyle" DefaultValue='"STANDARD"' WriteConverter='defaultIfEmpty(%v, "STANDARD")' Comment="Current text style name." />
+    <Variable Name="CLAYER" Code="8" Type="string" Field="CurrentLayer" DefaultValue='"0"' WriteConverter='defaultIfEmpty(%v, "0")' Comment="Current layer name." />
+    <Variable Name="CELTYPE" Code="6" Type="string" Field="CurrentEntityLineType" DefaultValue='"BYLAYER"' WriteConverter='defaultIfEmpty(%v, "BYLAYER")' Comment="Entity line type name, or BYBLOCK or BYLAYER." />
+    <Variable Name="CECOLOR" Code="62" Type="Color" Field="CurrentEntityColor" DefaultValue="ByLayer()" ReadConverter="Color(%v)" WriteConverter="int16(%v)" Comment="Current entity color." />
+    <Variable Name="CELTSCALE" Code="40" Type="float64" Field="CurrentEntityLineTypeScale" DefaultValue="1.0" MinVersion="R13" Comment="Current entity line type scale." />
+    <Variable Name="DELOBJ" Code="70" Type="bool" Field="RetainDeletedObjects" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R13" MaxVersion="R14" Comment="Controls object deletion." />
+    <Variable Name="DISPSILH" Code="70" Type="bool" Field="DisplaySilhouetteCurvesInWireframeMode" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R13" Comment="Controls the display of silhouette curves of body objects in wireframe mode." />
+    <Variable Name="DRAGVS" Code="349" Type="Handle" Field="SolidVisualStylePointer" DefaultValue="Handle(0)" ReadConverter="handleFromString(%v)" WriteConverter="stringFromHandle(%v)" DontWriteDefault="true" MinVersion="R2007" Comment="Hard-pointer ID to visual style when creating 3D solid primitives." />
+    <Variable Name="DIMSCALE" Code="40" Type="float64" Field="DimensioningScaleFactor" DefaultValue="1.0" Comment="Overall dimensioning scale factor." />
+    <Variable Name="DIMASZ" Code="40" Type="float64" Field="DimensioningArrowSize" DefaultValue="0.18" Comment="Dimensioning arrow size." />
+    <Variable Name="DIMEXO" Code="40" Type="float64" Field="DimensionExtensionLineOffset" DefaultValue="0.0625" Comment="Extension line offset." />
+    <!-- The spec says that DIMFAC should exist, but the Teigha libraries don't like it. -->
+    <Variable Name="DIMDLI" Code="40" Type="float64" Field="DimensionLineIncrement" DefaultValue="0.38" Comment="Dimension line increment." />
+    <Variable Name="DIMRND" Code="40" Type="float64" Field="DimensionDistanceRoundingValue" DefaultValue="0.0" Comment="Rounding value for dimension distances." />
+    <Variable Name="DIMDLE" Code="40" Type="float64" Field="DimensionLineExtension" DefaultValue="0.0" Comment="Dimension line extension." />
+    <Variable Name="DIMEXE" Code="40" Type="float64" Field="DimensionExtensionLineExtension" DefaultValue="0.18" Comment="Extension line extension." />
+    <Variable Name="DIMTP" Code="40" Type="float64" Field="DimensionPlusTolerance" DefaultValue="0.0" Comment="Plus tolerance." />
+    <Variable Name="DIMTM" Code="40" Type="float64" Field="DimensionMinusTolerance" DefaultValue="0.0" Comment="Minus tolerance." />
+    <Variable Name="DIMTXT" Code="40" Type="float64" Field="DimensioningTextHeight" DefaultValue="0.18" Comment="Dimensioning text height." />
+    <Variable Name="DIMCEN" Code="40" Type="float64" Field="CenterMarkSize" DefaultValue="0.09" Comment="Size of center mark/lines." />
+    <Variable Name="DIMTSZ" Code="40" Type="float64" Field="DimensioningTickSize" DefaultValue="0.0" Comment="Dimensioning tick size." />
+    <Variable Name="DIMTOL" Code="70" Type="bool" Field="GenerateDimensionTolerances" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Dimension tolerances generated." />
+    <Variable Name="DIMLIM" Code="70" Type="bool" Field="GenerateDimensionLimits" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Dimension limits generated." />
+    <Variable Name="DIMTIH" Code="70" Type="bool" Field="DimensionTextInsideHorizontal" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Text inside horizontal." />
+    <Variable Name="DIMTOH" Code="70" Type="bool" Field="DimensionTextOutsideHorizontal" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Text outside horizontal." />
+
+    <!-- DIMSE1 and DIMSE2 appear to be identical to DIMSD1 and DIMSD2 -->
+    <Variable Name="DIMSE1" Code="70" Type="bool" Field="SuppressFirstDimensionExtensionLine" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R12" Comment="Suppression of first extension line." />
+    <Variable Name="DIMSE2" Code="70" Type="bool" Field="SuppressSecondDimensionExtensionLine" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R12" Comment="Suppression of second extension line." />
+
+    <Variable Name="DIMTAD" Code="70" Type="bool" Field="TextAboveDimensionLine" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Text above dimension line." />
+    <Variable Name="DIMZIN" Code="70" Type="UnitZeroSuppression" Field="DimensionUnitZeroSuppression" DefaultValue="UnitZeroSuppressionSuppressZeroFeetAndZeroInches" ReadConverter="UnitZeroSuppression(%v)" WriteConverter="int16(%v)" Comment="Controls suppression of zeros for primary unit values." />
+    <Variable Name="DIMBLK" Code="1" Type="string" Field="ArrowBlockName" DefaultValue='""' Comment="Arrow block name." />
+    <Variable Name="DIMASO" Code="70" Type="bool" Field="CreateAssociativeDimensioning" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Controls associative dimensioning." />
+    <Variable Name="DIMSHO" Code="70" Type="bool" Field="RecomputeDimensionsWhileDragging" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Recompute dimensions while dragging." />
+    <Variable Name="DIMPOST" Code="1" Type="string" Field="DimensioningSuffix" DefaultValue='""' Comment="General dimensioning suffix." />
+    <Variable Name="DIMAPOST" Code="1" Type="string" Field="AlternateDimensioningSuffix" DefaultValue='""' Comment="Alternate dimensioning suffix." />
+    <Variable Name="DIMALT" Code="70" Type="bool" Field="UseAlternateDimensioning" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Alternate unit dimensioning performed." />
+    <Variable Name="DIMALTD" Code="70" Type="int16" Field="AlternateDimensioningDecimalPlaces" DefaultValue="2" Comment="Alternate unit decimal places." />
+    <Variable Name="DIMALTF" Code="40" Type="float64" Field="AlternateDimensioningScaleFactor" DefaultValue="25.4" Comment="Alternate unit scale factor." />
+    <Variable Name="DIMLFAC" Code="40" Type="float64" Field="DimensionLinearMeasurementsScaleFactor" DefaultValue="1.0" Comment="Linear measurements scale factor." />
+    <Variable Name="DIMTOFL" Code="70" Type="bool" Field="ForceDimensionLineExtensionsOutsideIfTextIs" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="If text is outside extensions, force line extensions between extensions." />
+    <Variable Name="DIMTVP" Code="40" Type="float64" Field="DimensionVerticalTextPosition" DefaultValue="0.0" Comment="Text vertical position." />
+    <Variable Name="DIMTIX" Code="70" Type="bool" Field="ForceDimensionTextInsideExtensions" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Force text inside extensions." />
+    <Variable Name="DIMSOXD" Code="70" Type="bool" Field="SuppressOutsideExtensionDimensionLines" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Suppress outside-extensions dimension lines." />
+    <Variable Name="DIMSAH" Code="70" Type="bool" Field="UseSeparateArrowBlocksForDimensions" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Use separate arrow blocks." />
+    <Variable Name="DIMBLK1" Code="1" Type="string" Field="FirstArrowBlockName" DefaultValue='""' Comment="First arrow block name." />
+    <Variable Name="DIMBLK2" Code="1" Type="string" Field="SecondArrowBlockName" DefaultValue='""' Comment="Second arrow block name." />
+    <Variable Name="DIMSTYLE" Code="2" Type="string" Field="DimensionStyleName" DefaultValue='"STANDARD"' WriteConverter='defaultIfEmpty(%v, "STANDARD")' Comment="Dimension style name." />
+    <Variable Name="DIMCLRD" Code="70" Type="Color" Field="DimensionLineColor" DefaultValue="ByBlock()" ReadConverter="Color(%v)" WriteConverter="int16(%v)" MinVersion="R11" Comment="Dimension line color." />
+    <Variable Name="DIMCLRE" Code="70" Type="Color" Field="DimensionExtensionLineColor" DefaultValue="ByBlock()" ReadConverter="Color(%v)" WriteConverter="int16(%v)" MinVersion="R11" Comment="Dimension extension line color." />
+    <Variable Name="DIMCLRT" Code="70" Type="Color" Field="DimensionTextColor" DefaultValue="ByBlock()" ReadConverter="Color(%v)" WriteConverter="int16(%v)" MinVersion="R11" Comment="Dimension text color." />
+    <Variable Name="DIMTFAC" Code="40" Type="float64" Field="DimensionToleranceDisplayScaleFactor" DefaultValue="1.0" MinVersion="R12" Comment="Dimension tolerance display factor." />
+    <Variable Name="DIMGAP" Code="40" Type="float64" Field="DimensionLineGap" DefaultValue="0.09" MinVersion="R11" Comment="Dimension line gap." />
+    <Variable Name="DIMJUST" Code="70" Type="DimensionTextJustification" Field="DimensionTextJustification" DefaultValue="DimensionTextJustificationAboveLineCenter" ReadConverter="DimensionTextJustification(%v)" WriteConverter="int16(%v)" MinVersion="R13" Comment="Horizontal dimension text position." />
+    <Variable Name="DIMSD1" Code="70" Type="bool" Field="SuppressFirstDimensionExtensionLine" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R13" Comment="Suppression of first extension line." />
+    <Variable Name="DIMSD2" Code="70" Type="bool" Field="SuppressSecondDimensionExtensionLine" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R13" Comment="Suppression of second extension line." />
+    <Variable Name="DIMTOLJ" Code="70" Type="Justification" Field="DimensionToleranceVerticalJustification" DefaultValue="JustificationMiddle" ReadConverter="Justification(%v)" WriteConverter="int16(%v)" MinVersion="R13" Comment="Vertical justification for tolerance values." />
+    <Variable Name="DIMTZIN" Code="70" Type="UnitZeroSuppression" Field="DimensionToleranceZeroSuppression" DefaultValue="UnitZeroSuppressionSuppressZeroFeetAndZeroInches" ReadConverter="UnitZeroSuppression(%v)" WriteConverter="int16(%v)" MinVersion="R13" Comment="Controls suppression of zeros for tolerance values." />
+    <Variable Name="DIMALTZ" Code="70" Type="UnitZeroSuppression" Field="AlternateDimensioningZeroSupression" DefaultValue="UnitZeroSuppressionSuppressZeroFeetAndZeroInches" ReadConverter="UnitZeroSuppression(%v)" WriteConverter="int16(%v)" MinVersion="R13" Comment="Controls suppression of zeros for alternate unit dimension values." />
+    <Variable Name="DIMALTTZ" Code="70" Type="UnitZeroSuppression" Field="AlternateDimensioningToleranceZeroSupression" DefaultValue="UnitZeroSuppressionSuppressZeroFeetAndZeroInches" ReadConverter="UnitZeroSuppression(%v)" WriteConverter="int16(%v)" MinVersion="R13" Comment="Controls suppression of zeros for alternate tolerance values." />
+    <Variable Name="DIMFIT" Code="70" Type="DimensionFit" Field="DimensionTextAndArrowPlacement" DefaultValue="DimensionFitTextAndArrowsOutsideLines" ReadConverter="DimensionFit(%v)" WriteConverter="int16(%v)" MinVersion="R13" MaxVersion="R14" Comment="Placement of text and arrowheads." />
+    <Variable Name="DIMUPT" Code="70" Type="bool" Field="DimensionCursorControlsTextPosition" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R13" Comment="Cursor functionality for user-positioned text." />
+    <Variable Name="DIMUNIT" Code="70" Type="UnitFormat" Field="DimensionUnitFormat" DefaultValue="UnitFormatDecimal" ReadConverter="UnitFormat(%v)" WriteConverter="int16(%v)" MinVersion="R13" MaxVersion="R14" Comment="Units format for all dimension style family members except angular." />
+    <Variable Name="DIMDEC" Code="70" Type="int16" Field="DimensionUnitToleranceDecimalPlaces" DefaultValue="4" MinVersion="R13" Comment="Number of decimal places for the tolerance values of a primary units dimension." />
+    <Variable Name="DIMTDEC" Code="70" Type="int16" Field="DimensionToleranceDecimalPlaces" DefaultValue="4" MinVersion="R13" Comment="Number of decimal places to display the tolerance values." />
+    <Variable Name="DIMALTU" Code="70" Type="UnitFormat" Field="AlternateDimensioningUnits" DefaultValue="UnitFormatDecimal" ReadConverter="UnitFormat(%v)" WriteConverter="int16(%v)" MinVersion="R13" Comment="Units format for alternate units of all dimension style family members except angular." />
+    <Variable Name="DIMALTTD" Code="70" Type="int16" Field="AlternateDimensioningToleranceDecimalPlaces" DefaultValue="2" MinVersion="R13" Comment="Number of decimal places for tolerance values of an alternate units dimension." />
+    <Variable Name="DIMTXSTY" Code="7" Type="string" Field="DimensionTextStyle" DefaultValue='"STANDARD"' MinVersion="R13" Comment="Dimension text style." />
+    <Variable Name="DIMAUNIT" Code="70" Type="AngleFormat" Field="DimensioningAngleFormat" DefaultValue="AngleFormatDecimalDegrees" ReadConverter="AngleFormat(%v)" WriteConverter="int16(%v)" MinVersion="R13" Comment="Angle format for angular dimensions." />
+    <Variable Name="DIMADEC" Code="70" Type="int16" Field="AngularDimensionPrecision" DefaultValue="0" MinVersion="R2000" Comment="Number of precision places displayed in angular dimensions." />
+    <Variable Name="DIMALTRND" Code="40" Type="float64" Field="AlternateDimensioningUnitRounding" DefaultValue="0.0" MinVersion="R2000" Comment="Determines rounding of alternate units." />
+    <Variable Name="DIMAZIN" Code="70" Type="UnitZeroSuppression" Field="DimensionAngleZeroSuppression" DefaultValue="UnitZeroSuppressionSuppressZeroFeetAndZeroInches" ReadConverter="UnitZeroSuppression(%v)" WriteConverter="int16(%v)" MinVersion="R2000" Comment="Controls suppression of zeros for angular dimensions." />
+    <Variable Name="DIMDSEP" Code="70" Type="rune" Field="DimensionDecimalSeparatorRune" DefaultValue="'.'" ReadConverter="rune(%v)" WriteConverter="int16(%v)" MinVersion="R2000" Comment="Single-character decimal separator used when creating dimensions whose unit format is decimal." />
+    <Variable Name="DIMATFIT" Code="70" Type="DimensionFit" Field="DimensionTextAndArrowPlacement" DefaultValue="MoveEitherForBestFit" ReadConverter="DimensionFit(%v)" WriteConverter="int16(%v)" MinVersion="R2000" Comment="Controls dimension text and arrow placement when space is not sufficient to place both within the extension lines." />
+    <Variable Name="DIMFRAC" Code="70" Type="DimensionFractionFormat" Field="DimensionTextHeightScaleFactor" DefaultValue="DimensionFractionFormatHorizontalStacking" ReadConverter="DimensionFractionFormat(%v)" WriteConverter="int16(%v)" MinVersion="R2000" Comment="Sets the fraction format when DIMLUNIT is set to Architectural or Fractional." />
+    <Variable Name="DIMLDRBLK" Code="1" Type="string" Field="DimensionLeaderBlockName" DefaultValue='""' MinVersion="R2000" Comment="Arrow block name for leaders." />
+    <Variable Name="DIMLUNIT" Code="70" Type="NonAngularUnits" Field="DimensionNonAngularUnits" DefaultValue="NonAngularUnitsDecimal" ReadConverter="NonAngularUnits(%v)" WriteConverter="int16(%v)" MinVersion="R2000" Comment="Sets units for all dimension types except angular." />
+    <Variable Name="DIMLWD" Code="70" Type="LineWeight" Field="DimensionLineWeight" DefaultValue="NewLineWeightByLayer()" ReadConverter="LineWeight(%v)" WriteConverter="int16(%v)" MinVersion="R2000" Comment="Dimension line lineweight." />
+    <Variable Name="DIMLWE" Code="70" Type="LineWeight" Field="DimensionExtensionLineWeight" DefaultValue="NewLineWeightByLayer()" ReadConverter="LineWeight(%v)" WriteConverter="int16(%v)" MinVersion="R2000" Comment="Extension line lineweight." />
+    <Variable Name="DIMTMOVE" Code="70" Type="DimensionTextMovementRule" Field="DimensionTextMovementRule" DefaultValue="DimensionTextMovementRuleMoveLineWithText" ReadConverter="DimensionTextMovementRule(%v)" WriteConverter="int16(%v)" MinVersion="R2000" Comment="Dimension text movement rules." />
+    <Variable Name="DIMFXL" Code="40" Type="float64" Field="DimensionLineFixedLength" DefaultValue="1.0" MinVersion="R2007" Comment="Sets the total length of the extension lines starting from the dimension line toward the dimension origin." />
+    <Variable Name="DIMFXLON" Code="70" Type="bool" Field="DimensionLineFixedLengthOn" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2007" Comment="Controls whether extension lines are set to a fixed length." />
+    <Variable Name="DIMJOGANG" Code="40" Type="float64" Field="DimensionTransverseSegmentAngleInJoggedRadius" DefaultValue="math.Pi / 4.0" MinVersion="R2007" Comment="Determines the angle of the transverse segment of the dimension line in a jogged radius dimension." />
+    <Variable Name="DIMTFILL" Code="70" Type="DimensionTextBackgroundColorMode" Field="DimensionTextBackgroundColorMode" DefaultValue="DimensionTextBackgroundColorModeNone" ReadConverter="DimensionTextBackgroundColorMode(%v)" WriteConverter="int16(%v)" MinVersion="R2007" Comment="Controls the background of dimension text." />
+    <Variable Name="DIMTFILLCLR" Code="70" Type="Color" Field="DimensionTextBackgroundCustomColor" DefaultValue="ByBlock()" ReadConverter="Color(%v)" WriteConverter="int16(%v)" MinVersion="R2007" Comment="Sets the color for the text background in dimensions." />
+    <Variable Name="DIMARCSYM" Code="70" Type="DimensionArcSymbolDisplayMode" Field="DimensionArcSymbolDisplayMode" DefaultValue="DimensionArcSymbolDisplayModeSymbolBeforeText" ReadConverter="DimensionArcSymbolDisplayMode(%v)" WriteConverter="int16(%v)" MinVersion="R2007" Comment="Controls the display of the arc symbol in an arc length dimension." />
+    <Variable Name="DIMLTYPE" Code="6" Type="string" Field="DimensionLineType" DefaultValue='""' MinVersion="R2007" Comment="Sets the line type of the dimension line." />
+    <Variable Name="DIMLTEX1" Code="6" Type="string" Field="DimensionFirstExtensionLineType" DefaultValue='""' MinVersion="R2007" Comment="Sets the line type of the first extension line." />
+    <Variable Name="DIMLTEX2" Code="6" Type="string" Field="DimensionSecondExtensionLineType" DefaultValue='""' MinVersion="R2007" Comment="Sets the line type of the second extension line." />
+    <Variable Name="DIMTXTDIRECTION" Code="70" Type="TextDirection" Field="DimensionTextDirection" DefaultValue="TextDirectionLeftToRight" ReadConverter="TextDirection(%v)" WriteConverter="int16(%v)" MinVersion="R2010" Comment="Specifies the reading direction of the dimension text." />
+    <Variable Name="LUNITS" Code="70" Type="UnitFormat" Field="UnitFormat" DefaultValue="UnitFormatDecimal" ReadConverter="UnitFormat(%v)" WriteConverter="int16(%v)" Comment="Units format for coordinates and distances." />
+    <Variable Name="LUPREC" Code="70" Type="int16" Field="UnitPrecision" DefaultValue="4" Comment="Units precision for coordinates and distances." />
+    <Variable Name="SKETCHINC" Code="40" Type="float64" Field="SketchRecordIncrement" DefaultValue="0.1" Comment="Sketch record increment." />
+    <Variable Name="FILLETRAD" Code="40" Type="float64" Field="FilletRadius" DefaultValue="0.0" Comment="Fillet radius." />
+    <Variable Name="AUNITS" Code="70" Type="AngleFormat" Field="AngleUnitFormat" DefaultValue="AngleFormatDecimalDegrees" ReadConverter="AngleFormat(%v)" WriteConverter="int16(%v)" Comment="Units format for angles." />
+    <Variable Name="AUPREC" Code="70" Type="int16" Field="AngleUnitPrecision" DefaultValue="0" Comment="Units precision for angles." />
+    <Variable Name="MENU" Code="1" Type="string" Field="FileName" DefaultValue='"."' WriteConverter='defaultIfEmpty(%v, ".")' Comment="Name of menu file." />
+    <Variable Name="ELEVATION" Code="40" Type="float64" Field="Elevation" DefaultValue="0.0" Comment="Current elevation set by ELEV command." />
+    <Variable Name="PELEVATION" Code="40" Type="float64" Field="PaperspaceElevation" DefaultValue="0.0" MinVersion="R11" Comment="Current paper space elevation." />
+    <Variable Name="THICKNESS" Code="40" Type="float64" Field="Thickness" DefaultValue="0.0" Comment="Current thickness set by ELEV command." />
+    <Variable Name="LIMCHECK" Code="70" Type="bool" Field="UseLimitsChecking" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Limits checking." />
+    <Variable Name="BLIPMODE" Code="70" Type="bool" Field="BlipMode" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MaxVersion="R14" Comment="Display blips for click locations." />
+    <Variable Name="CHAMFERA" Code="40" Type="float64" Field="FirstChamferDistance" DefaultValue="0.0" Comment="First chamfer distance." />
+    <Variable Name="CHAMFERB" Code="40" Type="float64" Field="SecondChamferDistance" DefaultValue="0.0" Comment="Second chamfer distance." />
+    <Variable Name="CHAMFERC" Code="40" Type="float64" Field="ChamferLength" DefaultValue="0.0" MinVersion="R14" Comment="Chamfer length." />
+    <Variable Name="CHAMFERD" Code="40" Type="float64" Field="ChamferAngle" DefaultValue="0.0" MinVersion="R14" Comment="Chamfer angle." />
+    <Variable Name="SKPOLY" Code="70" Type="PolySketchMode" Field="PolylineSketchMode" DefaultValue="PolySketchModeSketchLines" ReadConverter="PolySketchMode(%v)" WriteConverter="int16(%v)" Comment="Controls polyline sketch mode." />
+    <Variable Name="TDCREATE" Code="40" Type="time.Time" Field="CreationDate" DefaultValue="time.Now()" ReadConverter="timeFromJulianDays(%v)" WriteConverter="julianDateFromTime(%v)" Comment="Local date/time of drawing creation." />
+    <Variable Name="TDUCREATE" Code="40" Type="time.Time" Field="CreationDateUniversal" DefaultValue="time.Now().UTC()" ReadConverter="timeFromJulianDays(%v)" WriteConverter="julianDateFromTime(%v)" MinVersion="R2000" Comment="Universal date/time the drawing was created." />
+    <Variable Name="TDUPDATE" Code="40" Type="time.Time" Field="UpdateDate" DefaultValue="time.Now()" ReadConverter="timeFromJulianDays(%v)" WriteConverter="julianDateFromTime(%v)" Comment="Local date/time of last drawing update." />
+    <Variable Name="TDUUPDATE" Code="40" Type="time.Time" Field="UpdateDateUniversal" DefaultValue="time.Now().UTC()" ReadConverter="timeFromJulianDays(%v)" WriteConverter="julianDateFromTime(%v)" MinVersion="R2000" Comment="Universal date/time of the last update/save." />
+    <Variable Name="TDINDWG" Code="40" Type="time.Duration" Field="TimeInDrawing" DefaultValue="time.Duration(0)" ReadConverter="durationFromDays(%v)" WriteConverter="daysFromDuration(%v)" Comment="Cumulative editing time for this drawing." />
+    <Variable Name="TDUSRTIMER" Code="40" Type="time.Duration" Field="UserElapsedTimer" DefaultValue="time.Duration(0)" ReadConverter="durationFromDays(%v)" WriteConverter="daysFromDuration(%v)" Comment="User-elapsed timer." />
+    <Variable Name="USRTIMER" Code="70" Type="bool" Field="UserTimerOn" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="User timer on." />
+    <Variable Name="ANGBASE" Code="50" Type="float64" Field="AngleZeroDirection" DefaultValue="0.0" Comment="Angle 0 direction." />
+    <Variable Name="ANGDIR" Code="70" Type="AngleDirection" Field="AngleDirection" DefaultValue="AngleDirectionCounterClockwise" ReadConverter="AngleDirection(%v)" WriteConverter="int16(%v)" Comment="Angle directions." />
+    <Variable Name="PDMODE" Code="70" Type="int" Field="PointDisplayMode" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" Comment="Point display mode." />
+    <Variable Name="PDSIZE" Code="40" Type="float64" Field="PointDisplaySize" DefaultValue="0.0" Comment="Point display size." />
+    <Variable Name="PLINEWID" Code="40" Type="float64" Field="DefaultPolylineWidth" DefaultValue="0.0" Comment="Default polyline width." />
+    <Variable Name="COORDS" Code="70" Type="CoordinateDisplay" Field="CoordinateDisplay" DefaultValue="CoordinateDisplayContinuousUpdate" ReadConverter="CoordinateDisplay(%v)" WriteConverter="int16(%v)" MaxVersion="R14" Comment="Controls the display of coordinates." />
+    <Variable Name="SPLFRAME" Code="70" Type="bool" Field="DisplaySplinePolygonControl" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MaxVersion="R2013" Comment="Controls the display of helixes and smoothed mesh objects." />
+    <Variable Name="SPLINETYPE" Code="70" Type="PolylineCurvedAndSmoothSurfaceType" Field="PEditSplineCurveType" DefaultValue="PolylineCurvedAndSmoothSurfaceTypeCubicBSpline" ReadConverter="PolylineCurvedAndSmoothSurfaceType(%v)" WriteConverter="int16(%v)" Comment="Spline curve type for PEDIT Spline." />
+    <Variable Name="SPLINESEGS" Code="70" Type="int16" Field="LineSegmentsPerSplinePatch" DefaultValue="8" Comment="Number of line segments per spline hatch." />
+    <Variable Name="ATTDIA" Code="70" Type="bool" Field="ShowAttributeEntryDialogs" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MaxVersion="R14" Comment="Controls whether the INSERT command uses a dialog box for attribute value entry." />
+    <Variable Name="ATTREQ" Code="70" Type="bool" Field="PromptForAttributeOnInsert" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MaxVersion="R14" Comment="Controls whether INSERT uses default attribute settings during insertion of blocks." />
+    <Variable Name="HANDLING" Code="70" Type="bool" Field="HandlesEnabled" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MaxVersion="R12" Comment="Handles available." />
+    <Variable Name="HANDSEED" Code="5" Type="Handle" Field="NextAvailableHandle" DefaultValue="0" ReadConverter="handleFromString(%v)" WriteConverter="stringFromHandle(%v)" Comment="Next available handle." />
+    <Variable Name="SURFTAB1" Code="70" Type="int16" Field="MeshTabulationsInFirstDirection" DefaultValue="6" Comment="Number of mesh tabulations in first direction." />
+    <Variable Name="SURFTAB2" Code="70" Type="int16" Field="MeshTabulationsInSecondDirection" DefaultValue="6" Comment="Number of mesh tabulations in second direction." />
+    <Variable Name="SURFTYPE" Code="70" Type="PolylineCurvedAndSmoothSurfaceType" Field="PEditSmoothSurfaceType" DefaultValue="PolylineCurvedAndSmoothSurfaceTypeCubicBSpline" ReadConverter="PolylineCurvedAndSmoothSurfaceType(%v)" WriteConverter="int16(%v)" Comment="Surface type for PEDIT Smooth." />
+    <Variable Name="SURFU" Code="70" Type="int16" Field="PEditSmoothMDensith" DefaultValue="6" Comment="Surface density (for PEDIT Smooth) in M direction." />
+    <Variable Name="SURFV" Code="70" Type="int16" Field="PEditSmoothNDensith" DefaultValue="6" Comment="Surface density (for PEDIT Smooth) in N direction." />
+    <Variable Name="UCSBASE" Code="2" Type="string" Field="UCSDefinitionName" DefaultValue='""' MinVersion="R2000" Comment="Name of the UCS that defines the origin and orientation of orthographic UCS settings." />
+
+    <!-- spec says code 1 in R10, but AutoCAD only opens if it's a code 2, regardless of version -->
+    <Variable Name="UCSNAME" Code="2" Type="string" Field="UCSName" DefaultValue='""' Comment="Name of current UCS." />
+
+    <Variable Name="UCSORG" Code="-3" Type="Point" Field="UCSOrigin" DefaultValue="*NewOrigin()" Comment="Origin of current UCS (in WCS)." />
+    <Variable Name="UCSXDIR" Code="-3" Type="Vector" Field="UCSXAxis" DefaultValue="*NewXAxis()" Comment="Direction of the current UCS X axis (in WCS)." />
+    <Variable Name="UCSYDIR" Code="-3" Type="Vector" Field="UCSYAxis" DefaultValue="*NewYAxis()" Comment="Direction of the current UCS Y axis (in WCS)." />
+    <Variable Name="UCSORTHOREF" Code="2" Type="string" Field="OrthoUCSReference" DefaultValue='""' MinVersion="R2000" Comment="If model space UCS is orthographic (UCSORTHOVIEW not equal to 0), this is the name of the UCS that the orthographic UCS is relative to. If blank, UCS is relative to WORLD." />
+    <Variable Name="UCSORTHOVIEW" Code="70" Type="OrthographicViewType" Field="OrthgraphicViewType" DefaultValue="OrthographicViewTypeNone" ReadConverter="OrthographicViewType(%v)" WriteConverter="int16(%v)" MinVersion="R2000" Comment="Orthographic view type of model space UCS." />
+    <Variable Name="UCSORGTOP" Code="-3" Type="Point" Field="UCSOriginTop" DefaultValue="*NewOrigin()" MinVersion="R2000" Comment="Point which becomes the new UCS origin after changing model space UCS to TOP when UCSBASE is set to WORLD." />
+    <Variable Name="UCSORGBOTTOM" Code="-3" Type="Point" Field="UCSOriginBottom" DefaultValue="*NewOrigin()" MinVersion="R2000" Comment="Point which becomes the new UCS origin after changing model space UCS to BOTTOM when UCSBASE is set to WORLD." />
+    <Variable Name="UCSORGLEFT" Code="-3" Type="Point" Field="UCSOriginLeft" DefaultValue="*NewOrigin()" MinVersion="R2000" Comment="Point which becomes the new UCS origin after changing model space UCS to LEFT when UCSBASE is set to WORLD." />
+    <Variable Name="UCSORGRIGHT" Code="-3" Type="Point" Field="UCSOriginRight" DefaultValue="*NewOrigin()" MinVersion="R2000" Comment="Point which becomes the new UCS origin after changing model space UCS to RIGHT when UCSBASE is set to WORLD." />
+    <Variable Name="UCSORGFRONT" Code="-3" Type="Point" Field="UCSOriginFront" DefaultValue="*NewOrigin()" MinVersion="R2000" Comment="Point which becomes the new UCS origin after changing model space UCS to FRONT when UCSBASE is set to WORLD." />
+    <Variable Name="UCSORGBACK" Code="-3" Type="Point" Field="UCSOriginBack" DefaultValue="*NewOrigin()" MinVersion="R2000" Comment="Point which becomes the new UCS origin after changing model space UCS to BACK when UCSBASE is set to WORLD." />
+    <Variable Name="PUCSBASE" Code="2" Type="string" Field="PaperspaceUCSDefinitionName" DefaultValue='""' MinVersion="R2000" Comment="Name of the UCS that defines the origin and orientation of orthographics UCS settings (paper space only)." />
+    <Variable Name="PUCSNAME" Code="2" Type="string" Field="PaperspaceUCSName" DefaultValue='""' MinVersion="R11" Comment="Current paper space UCS name." />
+    <Variable Name="PUCSORG" Code="-3" Type="Point" Field="PaperspaceUCSOrigin" DefaultValue="*NewOrigin()" MinVersion="R11" Comment="Current paper space UCS origin." />
+    <Variable Name="PUCSXDIR" Code="-3" Type="Vector" Field="PaperspaceXAxis" DefaultValue="*NewXAxis()" MinVersion="R11" Comment="Current paper space UCS X axis." />
+    <Variable Name="PUCSYDIR" Code="-3" Type="Vector" Field="PaperspaceYAxis" DefaultValue="*NewYAxis()" MinVersion="R11" Comment="Current paper space UCS Y axis." />
+    <Variable Name="PUCSORTHOREF" Code="2" Type="string" Field="PaperspaceOrthoUCSReference" DefaultValue='""' MinVersion="R2000" Comment="If paper space UCS is orthographic (PUCSORTHOVIEW not equal to 0), this is the name of the UCS that the orthographic UCS is relative to. If blank, UCS is relative to WORLD." />
+    <Variable Name="PUCSORTHOVIEW" Code="70" Type="OrthographicViewType" Field="PaperspaceOrthographicViewType" DefaultValue="OrthographicViewTypeNone" ReadConverter="OrthographicViewType(%v)" WriteConverter="int16(%v)" MinVersion="R2000" Comment="Orthographic view type of paper space UCS." />
+    <Variable Name="PUCSORGTOP" Code="-3" Type="Point" Field="PaperspaceUCSOriginTop" DefaultValue="*NewOrigin()" MinVersion="R2000" Comment="Point which becomes the new UCS origin after changing paper space UCS to TOP when PUCSBASE is set to WORLD." />
+    <Variable Name="PUCSORGBOTTOM" Code="-3" Type="Point" Field="PaperspaceUCSOriginBottom" DefaultValue="*NewOrigin()" MinVersion="R2000" Comment="Point which becomes the new UCS origin after changing paper space UCS to BOTTOM when PUCSBASE is set to WORLD." />
+    <Variable Name="PUCSORGLEFT" Code="-3" Type="Point" Field="PaperspaceUCSOriginLeft" DefaultValue="*NewOrigin()" MinVersion="R2000" Comment="Point which becomes the new UCS origin after changing paper space UCS to LEFT when PUCSBASE is set to WORLD." />
+    <Variable Name="PUCSORGRIGHT" Code="-3" Type="Point" Field="PaperspaceUCSOriginRight" DefaultValue="*NewOrigin()" MinVersion="R2000" Comment="Point which becomes the new UCS origin after changing paper space UCS to RIGHT when PUCSBASE is set to WORLD." />
+    <Variable Name="PUCSORGFRONT" Code="-3" Type="Point" Field="PaperspaceUCSOriginFront" DefaultValue="*NewOrigin()" MinVersion="R2000" Comment="Point which becomes the new UCS origin after changing paper space UCS to FRONT when PUCSBASE is set to WORLD." />
+    <Variable Name="PUCSORGBACK" Code="-3" Type="Point" Field="PaperspaceUCSOriginBack" DefaultValue="*NewOrigin()" MinVersion="R2000" Comment="Point which becomes the new UCS origin after changing paper space UCS to BACK when PUCSBASE is set to WORLD." />
+    <Variable Name="USERI1" Code="70" Type="int16" Field="UserInt1" DefaultValue="0" Comment="Integer variable intended for use by third-party developers." />
+    <Variable Name="USERI2" Code="70" Type="int16" Field="UserInt2" DefaultValue="0" Comment="Integer variable intended for use by third-party developers." />
+    <Variable Name="USERI3" Code="70" Type="int16" Field="UserInt3" DefaultValue="0" Comment="Integer variable intended for use by third-party developers." />
+    <Variable Name="USERI4" Code="70" Type="int16" Field="UserInt4" DefaultValue="0" Comment="Integer variable intended for use by third-party developers." />
+    <Variable Name="USERI5" Code="70" Type="int16" Field="UserInt5" DefaultValue="0" Comment="Integer variable intended for use by third-party developers." />
+    <Variable Name="USERR1" Code="40" Type="float64" Field="UserReal1" DefaultValue="0.0" Comment="Real variable indented for use by third-party developers." />
+    <Variable Name="USERR2" Code="40" Type="float64" Field="UserReal2" DefaultValue="0.0" Comment="Real variable indented for use by third-party developers." />
+    <Variable Name="USERR3" Code="40" Type="float64" Field="UserReal3" DefaultValue="0.0" Comment="Real variable indented for use by third-party developers." />
+    <Variable Name="USERR4" Code="40" Type="float64" Field="UserReal4" DefaultValue="0.0" Comment="Real variable indented for use by third-party developers." />
+    <Variable Name="USERR5" Code="40" Type="float64" Field="UserReal5" DefaultValue="0.0" Comment="Real variable indented for use by third-party developers." />
+    <Variable Name="WORLDVIEW" Code="70" Type="bool" Field="SetUCSToWCSInDViewOrVPoint" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" Comment="Set UCS to WCS during DVIEW/VPOINT." />
+    <Variable Name="SHADEDGE" Code="70" Type="ShadeEdgeMode" Field="EdgeShading" DefaultValue="ShadeEdgeModeFacesInEntityColorEdgesInBlack" ReadConverter="ShadeEdgeMode(%v)" WriteConverter="int16(%v)" MinVersion="R11" Comment="Controls shading of faces." />
+    <Variable Name="SHADEDIF" Code="70" Type="int16" Field="PercentAmbientToDiffuse" DefaultValue="70" MinVersion="R11" Comment="Percent ambient/diffuse light; range 1-100." />
+    <Variable Name="TILEMODE" Code="70" Type="bool" Field="PreviousReleaseTileCompatability" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R11" Comment="Use previous release compatibility mode." />
+    <Variable Name="MAXACTVP" Code="70" Type="int16" Field="MaximumActiveViewports" DefaultValue="64" MinVersion="R11" Comment="Sets the maximum number of viewports to be regenerated." />
+    <Variable Name="PINSBASE" Code="-3" Type="Point" Field="PaperspaceInsertionBase" DefaultValue="*NewOrigin()" MinVersion="R14" Comment="Paper space insertion base point." />
+    <Variable Name="PLIMCHECK" Code="70" Type="bool" Field="LimitCheckingInPaperspace" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R11" Comment="Limits checking in paper space." />
+    <Variable Name="PEXTMIN" Code="-3" Type="Point" Field="PaperspaceMinimumDrawingExtents" DefaultValue="Point{1.0e20, 1.0e20, 1.0e20}" MinVersion="R11" Comment="Minimum X, Y, and Z extents for paper space." />
+    <Variable Name="PEXTMAX" Code="-3" Type="Point" Field="PaperspaceMaximumDrawingExtents" DefaultValue="Point{-1.0e20, -1.0e20, -1.0e20}" MinVersion="R11" Comment="Maximum X, Y, and Z extents for paper space." />
+    <Variable Name="PLIMMIN" Code="-2" Type="Point" Field="PaperspaceMinimumDrawingLimits" DefaultValue="*NewOrigin()" MinVersion="R11" Comment="Minimum X and Y limits in paper space." />
+    <Variable Name="PLIMMAX" Code="-2" Type="Point" Field="PaperspaceMaximumDrawingLimits" DefaultValue="Point{12.0, 9.0, 0.0}" MinVersion="R11" Comment="Maximum X and Y limits in paper space." />
+    <Variable Name="UNITMODE" Code="70" Type="bool" Field="DisplayFractionsInInput" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R11" Comment="Display fractions, feet-and-inches, and surveyor's angles in input format." />
+    <Variable Name="VISRETAIN" Code="70" Type="bool" Field="RetainXRefDependentVisibilitySettings" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R12" Comment="Retain xref-dependent visibility settings." />
+    <Variable Name="PLINEGEN" Code="70" Type="bool" Field="IsPolylineContinuousAroundVerticies" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R11" Comment="Governs the generation of line type patterns around the vertices of a 2D polyline." />
+    <Variable Name="PSLTSCALE" Code="70" Type="bool" Field="ScaleLineTypesInPaperspace" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R11" Comment="Controls paper space line type scaling." />
+    <Variable Name="TREEDEPTH" Code="70" Type="int16" Field="SpacialIndexMaxDepth" DefaultValue="3020" MinVersion="R14" Comment="Specifies the maximum depth of the spatial index." />
+    <Variable Name="PICKSTYLE" Code="70" Type="PickStyle" Field="PickStyle" DefaultValue="PickStyleGroup" ReadConverter="PickStyle(%v)" WriteConverter="int16(%v)" MinVersion="R13" MaxVersion="R14" Comment="Controls the group selection and associative hatch selection." />
+
+    <!-- code 7 in R13, code 2 in R14+ -->
+    <Variable Name="CMLSTYLE" Code="7" Type="string" Field="CurrentMultilineStyle" DefaultValue='"STANDARD"' MinVersion="R13" MaxVersion="R13" Comment="Current multiline style name." />
+    <Variable Name="CMLSTYLE" Code="2" Type="string" Field="CurrentMultilineStyle" DefaultValue='"STANDARD"' MinVersion="R14" Comment="Current multiline style name." />
+
+    <Variable Name="CMLJUST" Code="70" Type="Justification" Field="CurrentMultilineJustification" DefaultValue="JustificationTop" ReadConverter="Justification(%v)" WriteConverter="int16(%v)" MinVersion="R13" Comment="Current multiline justification." />
+    <Variable Name="CMLSCALE" Code="40" Type="float64" Field="CurrentMultilineScale" DefaultValue="1.0" MinVersion="R13" Comment="Current multiline scale." />
+    <Variable Name="PROXYGRAPHICS" Code="70" Type="bool" Field="SaveProxyGraphics" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R14" Comment="Controls the saving of proxy object images." />
+    <Variable Name="MEASUREMENT" Code="70" Type="DrawingUnits" Field="DrawingUnits" DefaultValue="DrawingUnitsEnglish" ReadConverter="DrawingUnits(%v)" WriteConverter="int16(%v)" MinVersion="R14" Comment="Sets drawing units." />
+    <Variable Name="CELWEIGHT" Code="370" Type="LineWeight" Field="NewObjectLineWeight" DefaultValue="LineWeightByBlock" ReadConverter="LineWeight(%v)" WriteConverter="int16(%v)" MinVersion="R2000" Comment="Lineweight of new objects." />
+    <Variable Name="ENDCAPS" Code="280" Type="EndCapSetting" Field="EndCapSetting" DefaultValue="EndCapSettingNone" ReadConverter="EndCapSetting(%v)" WriteConverter="int16(%v)" MinVersion="R2000" Comment="Lineweight endcaps setting for new objects." />
+    <Variable Name="JOINSTYLE" Code="280" Type="JoinStyle" Field="LineweightJointSetting" DefaultValue="JoinStyleNone" ReadConverter="JoinStyle(%v)" WriteConverter="int16(%v)" MinVersion="R2000" Comment="Lineweight join setting for new objects." />
+    <Variable Name="LWDISPLAY" Code="290" Type="bool" Field="DisplayLinewieghtInModelAndLayoutTab" DefaultValue="false" MinVersion="R2000" Comment="Controls the display of lineweights on the Model or Layout tab." />
+    <Variable Name="INSUNITS" Code="70" Type="Units" Field="DefaultDrawingUnits" DefaultValue="UnitsUnitless" ReadConverter="Units(%v)" WriteConverter="int16(%v)" MinVersion="R2000" Comment="Default drawing units for AutoCAD DesignCenter blocks." />
+    <Variable Name="HYPERLINKBASE" Code="1" Type="string" Field="HyperlinkBase" DefaultValue='""' MinVersion="R2000" Comment="Path for all relative hyperlinks in the drawing.  If null, the drawing path is used." />
+    <Variable Name="STYLESHEET" Code="1" Type="string" Field="Stylesheet" DefaultValue='""' MinVersion="R2000" Comment="Path to the stylesheet for the drawing." />
+    <Variable Name="XEDIT" Code="290" Type="bool" Field="CanUseInPlaceReferenceEditing" DefaultValue="true" MinVersion="R2000" Comment="Controls whether the current drawing can be edited in-place when being referenced by another drawing." />
+    <Variable Name="CEPSNID" Code="390" Type="Handle" Field="NewObjectPlotStyleHandle" DefaultValue="0" ReadConverter="handleFromString(%v)" WriteConverter="stringFromHandle(%v)" MinVersion="R2000" DontWriteDefault="true" Comment="PlotStyle handle of new objects." />
+    <Variable Name="CEPSNTYPE" Code="380" Type="PlotStyle" Field="NewObjectPlotStyle" DefaultValue="PlotStyleByLayer" ReadConverter="PlotStyle(%v)" WriteConverter="int16(%v)" MinVersion="R2000" Comment="Plot style of new objects." />
+    <Variable Name="PSTYLEMODE" Code="290" Type="bool" Field="UsesColorDependentPlotStyleTables" DefaultValue="true" MinVersion="R2000" Comment="Indicates whether the current drawing is in a Color-Dependent or Named Plot Style mode." />
+    <Variable Name="FINGERPRINTGUID" Code="2" Type="uuid.UUID" Field="FingerprintGuid" DefaultValue="uuid.New()" ReadConverter="uuidFromString(%v)" WriteConverter="%v.String()" MinVersion="R2000" Comment="Set at creation time, uniquely identifies a particular drawing." />
+    <Variable Name="VERSIONGUID" Code="2" Type="uuid.UUID" Field="VersionGuid" DefaultValue="uuid.New()" ReadConverter="uuidFromString(%v)" WriteConverter="%v.String()" MinVersion="R2000" Comment="Uniquely identifies a particular version of a drawing.  Updated when the drawing is modified." />
+    <Variable Name="EXTNAMES" Code="290" Type="bool" Field="UseACad2000SymbolTableNaming" DefaultValue="true" MinVersion="R2000" Comment="Controls symbol table naming." />
+    <Variable Name="PSVPSCALE" Code="40" Type="float64" Field="ViewportViewScaleFactor" DefaultValue="0.0" MinVersion="R2000" Comment="View scale factor for new viewports." />
+    <Variable Name="OLESTARTUP" Code="290" Type="bool" Field="OleStartup" DefaultValue="false" MinVersion="R2000" Comment="Controls whether the source application of an embedded OLE object loads when plotting." />
+    <Variable Name="SORTENTS" Code="280" Type="int" Field="ObjectSortingMethodsFlags" DefaultValue="127" ReadConverter="int(%v)" WriteConverter="int16(%v)" MinVersion="R2004" Comment="Controls the object sorting methods; accessible from the Options dialog box User Preferences tab.">
+        <Flag Name="SortObjectsForObjectSelection" Mask="1" Comment="Sorts for object selection." />
+        <Flag Name="SortObjectsForObjectSnap" Mask="2" Comment="Sorts for object snap." />
+        <Flag Name="SortObjectsForRedraw" Mask="4" Comment="Sorts for redraws." />
+        <Flag Name="SortObjectsForMSlide" Mask="8" Comment="Sorts for MSLIDE command slide creation." />
+        <Flag Name="SortObjectsForRegen" Mask="16" Comment="Sorts for REGEN commands." />
+        <Flag Name="SortObjectsForPlotting" Mask="32" Comment="Sorts for plotting." />
+        <Flag Name="SortObjectsForPostScriptOutput" Mask="64" Comment="Sorts for PostScript output." />
+    </Variable>
+    <Variable Name="INDEXCTL" Code="280" Type="LayerAndSpatialIndexSaveMode" Field="LayerAndSpatialIndexSaveMode" DefaultValue="LayerAndSpatialIndexSaveModeNone" ReadConverter="LayerAndSpatialIndexSaveMode(%v)" WriteConverter="int16(%v)" MinVersion="R2004" Comment="Controls whether layer and spatial indexes are created and saved in drawing files." />
+
+    <!-- the spec says this should be a code 290 bool, but most files encountered in the wild have a code 280 short instead -->
+    <Variable Name="HIDETEXT" Code="280" Type="bool" Field="HideTextObjectsWhenProducintHiddenView" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2004" Comment="Ignore text objects." />
+    <Variable Name="HIDETEXT" Code="290" Type="bool" Field="HideTextObjectsWhenProducintHiddenView" DefaultValue="false" MinVersion="R2004" SuppressWriting="true" Comment="Ignore text objects." />
+
+    <!-- R2004-R2007 this is a 290 bool, but R2010+ this is a 280 short -->
+    <Variable Name="XCLIPFRAME" Code="290" Type="XrefClippingBoundaryVisibility" Field="XRefClippingBoundaryVisible" DefaultValue="XrefClippingBoundaryVisibilityDisplayedNotPlotted" ReadConverter="XrefClippingBoundaryVisibility(shortFromBool(%v))" WriteConverter="boolFromShort(int16(%v))" MinVersion="R2004" MaxVersion="R2007" Comment="Controls the visibility of xref clipping boundaries." />
+    <Variable Name="XCLIPFRAME" Code="280" Type="XrefClippingBoundaryVisibility" Field="XRefClippingBoundaryVisible" DefaultValue="XrefClippingBoundaryVisibilityDisplayedNotPlotted" ReadConverter="XrefClippingBoundaryVisibility(%v)" WriteConverter="int16(%v)" MinVersion="R2010" Comment="Controls the visibility of xref clipping boundaries." />
+
+    <Variable Name="HALOGAP" Code="280" Type="float64" Field="HaloGapPercent" DefaultValue="0.0" ReadConverter="float64(%v)" WriteConverter="int16(%v)" MinVersion="R2004" Comment="Specifies a gap to be displayed where an object is hidden by another object; the value is specified as a percent of one unit and is independent of the zoom level.  A haloed line is shortened at the point where it is hidden when HIDE or the Hidden option of SHADEMODE is used." />
+    <Variable Name="OBSCOLOR" Code="70" Type="Color" Field="ObscuredLineColor" DefaultValue="ByEntity()" ReadConverter="Color(%v)" WriteConverter="int16(%v)" MinVersion="R2004" Comment="Specifies the color of obscured lines.  An obscured line is a hidden line made visible by changing its color and line type and is visible only when the HIDE or SHADEMODE command is used.  The OBSCUREDCOLOR setting is visible only if the OBSCUREDLTYPE is turned ON by setting it to a value other than 0." />
+    <Variable Name="OBSLTYPE" Code="280" Type="LineTypeStyle" Field="ObscuredLineTypeStyle" DefaultValue="LineTypeStyleOff" ReadConverter="LineTypeStyle(%v)" WriteConverter="int16(%v)" MinVersion="R2004" Comment="Specifies the line type of obscured lines.  Obscured line types are independent of zoom level, unlike regular AutoCAD line types.  Value 0 turns off display of obscured lines and is the default." />
+
+    <!-- the spec says this should be a code 290 bool, but most files encountered in the wild have a code 280 short instead -->
+    <Variable Name="INTERSECTIONDISPLAY" Code="280" Type="bool" Field="DisplayIntersectionPolylines" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2004" Comment="Specifies the display of intersection polylines." />
+    <Variable Name="INTERSECTIONDISPLAY" Code="290" Type="bool" Field="DisplayIntersectionPolylines" DefaultValue="false" MinVersion="R2004" SuppressWriting="true" Comment="Specifies the display of intersection polylines." />
+
+    <Variable Name="INTERSECTIONCOLOR" Code="70" Type="Color" Field="IntersectionPolylineColor" DefaultValue="ByEntity()" ReadConverter="Color(%v)" WriteConverter="int16(%v)" MinVersion="R2004" Comment="Specifies the entity color of intersection polylines." />
+    <Variable Name="DIMASSOC" Code="280" Type="DimensionAssociativity" Field="DimensionObjectAssociativity" DefaultValue="DimensionAssociativityNonAssociativeObjects" ReadConverter="DimensionAssociativity(%v)" WriteConverter="int16(%v)" MinVersion="R2004" Comment="Controls the associativity of dimension objects." />
+    <Variable Name="PROJECTNAME" Code="1" Type="string" Field="ProjectName" DefaultValue='""' MinVersion="R2004" Comment="Assigns a project name to the current drawing.  Used when an external reference or image is not found on its original path.  The project name points to a section in the registry that can contain one or more search paths for each project name defined.  Project names and their search directories are created from the Files tab of the Options dialog box." />
+    <Variable Name="CAMERADISPLAY" Code="290" Type="bool" Field="UseCameraDisplay" DefaultValue="false" MinVersion="R2007" Comment="Turns the display of camera objects on or off." />
+    <Variable Name="LENSLENGTH" Code="40" Type="float64" Field="LensLength" DefaultValue="50.0" MinVersion="R2007" Comment="Stores the length of the lens in millimeters used in perspective viewing." />
+    <Variable Name="CAMERAHEIGHT" Code="40" Type="float64" Field="CameraHeight" DefaultValue="0.0" MinVersion="R2007" Comment="Specifies the default height for new camera objects." />
+    <Variable Name="STEPSPERSEC" Code="40" Type="float64" Field="StepsPerSecondInWalkOrFlyMode" DefaultValue="2.0" MinVersion="R2007" Comment="Specifies the number of steps taken per second when you are in walk or fly mode." />
+    <Variable Name="STEPSIZE" Code="40" Type="float64" Field="StepSizeInWalkOrFlyMode" DefaultValue="6.0" MinVersion="R2007" Comment="Specifies the size of each step when in walk or fly mode, in drawing units." />
+    <Variable Name="3DDWFPREC" Code="40" Type="Dwf3DPrecision" Field="Dwf3DPrecision" DefaultValue="Dwf3DPrecisionDeviation0_5" ReadConverter="Dwf3DPrecision(int16(%v))" WriteConverter="float64(int16(%v))" MinVersion="R2007" Comment="Controls the precision of 3D DWF or 3D DWFx publishing." />
+    <Variable Name="PSOLWIDTH" Code="40" Type="float64" Field="LastPolySolidWidth" DefaultValue="0.25" MinVersion="R2007" Comment="Controls the default width for a swept solid object created with the POLYSOLID command." />
+    <Variable Name="PSOLHEIGHT" Code="40" Type="float64" Field="LastPolySolidHeight" DefaultValue="4.0" MinVersion="R2007" Comment="Controls the default height for a swept solid object created with the POLYSOLID command." />
+    <Variable Name="LOFTANG1" Code="40" Type="float64" Field="LoftOperationFirstDraftAngle" DefaultValue="math.Pi / 2.0" MinVersion="R2007" Comment="Sets the draft angle through the first cross section in a loft operation." />
+    <Variable Name="LOFTANG2" Code="40" Type="float64" Field="LoftOperationSecondDraftAngle" DefaultValue="math.Pi / 2.0" MinVersion="R2007" Comment="Sets the draft angle through the second cross section in a loft operation." />
+    <Variable Name="LOFTMAG1" Code="40" Type="float64" Field="LoftOperationFirstMagnitude" DefaultValue="0.0" MinVersion="R2007" Comment="Sets the magnitude of the draft angle through the first cross section in a loft operation." />
+    <Variable Name="LOFTMAG2" Code="40" Type="float64" Field="LoftOperationSecondMagnitude" DefaultValue="0.0" MinVersion="R2007" Comment="Sets the magnitude of the draft angle through the second cross section in a loft operation." />
+    <Variable Name="LOFTPARAM" Code="70" Type="int" Field="LoftFlags" DefaultValue="7" ReadConverter="int(%v)" WriteConverter="int16(%v)" MinVersion="R2007" Comment="Controls the shape of lofted solids and surfaces.">
+        <Flag Name="NoTwist" Mask="1" Comment="No twist (minimizes the twist between cross sections)." />
+        <Flag Name="AlignDirection" Mask="2" Comment="Align direction (aligns the start to end direction of each cross section curve)." />
+        <Flag Name="Simplify" Mask="4" Comment="Simplify (produces simple solids and surfaces, such as a cylinder or plane, instead of spline solids and surfaces)." />
+        <Flag Name="Close" Mask="8" Comment="Close (closes the surface or solid between the first and the last cross sections)." />
+    </Variable>
+    <Variable Name="LOFTNORMALS" Code="280" Type="LoftedObjectNormalMode" Field="LoftedObjectNormalMode" DefaultValue="LoftedObjectNormalModeSmoothFit" ReadConverter="LoftedObjectNormalMode(%v)" WriteConverter="int16(%v)" MinVersion="R2007" Comment="Controls the normals of a lofted object where it passes through cross sections." />
+    <Variable Name="LATITUDE" Code="40" Type="float64" Field="Latitude" DefaultValue="37.7950" MinVersion="R2007" Comment="The latitude of the geographic location assigned to the drawing." />
+    <Variable Name="LONGITUDE" Code="40" Type="float64" Field="Longitude" DefaultValue="-122.3940" MinVersion="R2007" Comment="The longitude of the geographic location assigned to the drawing." />
+    <Variable Name="NORTHDIRECTION" Code="40" Type="float64" Field="AngleBetweenYAxisAndNorth" DefaultValue="0.0" MinVersion="R2007" Comment="Specifies the angle between the Y axis of WCS and the grid north." />
+    <Variable Name="TIMEZONE" Code="70" Type="TimeZone" Field="TimeZone" DefaultValue="TimeZonePacificTime_US_Canada_SanFrancisco_Vancouver" ReadConverter="TimeZone(%v)" WriteConverter="int16(%v)" MinVersion="R2007" Comment="Sets the time zone for the sun in the drawing." />
+    <Variable Name="LIGHTGLYPHDISPLAY" Code="280" Type="bool" Field="UseLightGlyphDisplay" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2007" Comment="Turns on and off the display of light glyphs." />
+    <Variable Name="TILEMODELIGHTSYNCH" Code="280" Type="bool" Field="UseTileModeLightSync" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2007" Comment="Unknown." />
+    <Variable Name="CMATERIAL" Code="347" Type="Handle" Field="CurrentMaterialHandle" DefaultValue="0" ReadConverter="handleFromString(%v)" WriteConverter="stringFromHandle(%v)" DontWriteDefault="true" MinVersion="R2007" Comment="Sets the material of new objects." />
+    <Variable Name="SOLIDHIST" Code="280" Type="bool" Field="NewSolidsContainHistory" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2007" Comment="Controls whether new composite solids retain a history of their original components." />
+    <Variable Name="SHOWHIST" Code="280" Type="SolidHistoryMode" Field="SolidHistoryMode" DefaultValue="SolidHistoryModeDoesNotOverride" ReadConverter="SolidHistoryMode(%v)" WriteConverter="int16(%v)" MinVersion="R2007" Comment="Controls the Show History property for solids in a drawing." />
+    <Variable Name="DWFFRAME" Code="280" Type="UnderlayFrameMode" Field="UnderlayFrameMode" DefaultValue="UnderlayFrameModeDisplayNoPlot" ReadConverter="UnderlayFrameMode(%v)" WriteConverter="int16(%v)" MinVersion="R2007" Comment="Determines whether DWF or DWFx underlay frames are visible or plotted in the current drawing." />
+    <Variable Name="DGNFRAME" Code="280" Type="UnderlayFrameMode" Field="UnderlayFrameMode" DefaultValue="UnderlayFrameModeNone" ReadConverter="UnderlayFrameMode(%v)" WriteConverter="int16(%v)" MinVersion="R2007" Comment="Determines whether DGN underlay frames are visible or plotted in the current drawing." />
+    <Variable Name="REALWORLDSCALE" Code="290" Type="bool" Field="UseRealWorldScale" DefaultValue="true" MinVersion="R2007" Comment="Drawing is scaled to the real world." />
+    <Variable Name="INTERFERECOLOR" Code="62" Type="Color" Field="InterferenceObjectColor" DefaultValue="Color(1)" ReadConverter="Color(%v)" WriteConverter="int16(%v)" MinVersion="R2007" Comment="Represents the ACI color index of the &quot;interference objects&quot; created during the interfere command." />
+    <Variable Name="INTERFEREOBJVS" Code="345" Type="Handle" Field="InterferenceObjectVisualStylePointer" DefaultValue="0" ReadConverter="handleFromString(%v)" WriteConverter="stringFromHandle(%v)" DontWriteDefault="true" MinVersion="R2007" Comment="Hard-pointer ID to the visual stype for interference objects." />
+    <Variable Name="INTERFEREVPVS" Code="346" Type="Handle" Field="InterferenceViewPortVisualStylePointer" DefaultValue="0" ReadConverter="handleFromString(%v)" WriteConverter="stringFromHandle(%v)" DontWriteDefault="true" MinVersion="R2007" Comment="Hard-pointer ID to the visual styoe for the viewport during interference checking." />
+    <Variable Name="CSHADOW" Code="280" Type="ShadowMode" Field="ShadowMode" DefaultValue="ShadowModeCastsAndReceivesShadows" ReadConverter="ShadowMode(%v)" WriteConverter="int16(%v)" MinVersion="R2007" Comment="Shadow mode for a 3D object." />
+    <Variable Name="SHADOWPLANELOCATION" Code="40" Type="float64" Field="ShadowPlaneZOffset" DefaultValue="0.0" MinVersion="R2007" Comment="Location of the ground shadow plane.  This is a Z axis ordinate." />
+
+    <!-- Misc. R10 variables -->
+    <Variable Name="AXISMODE" Code="70" Type="bool" Field="AxisOn" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MaxVersion="R10" Comment="Axis on." />
+    <Variable Name="AXISUNIT" Code="-2" Type="Vector" Field="AxisTickSpacing" DefaultValue="*NewZeroVector()" MaxVersion="R10" Comment="Axis X and Y tick spacing." />
+
+    <!-- The following variables are in the header in R10 and lower but in the VPORT table in R11 and later -->
+    <Variable Name="FASTZOOM" Code="70" Type="bool" Field="FastZoom" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MaxVersion="R10" Comment="Fast zoom enabled." />
+    <Variable Name="GRIDMODE" Code="70" Type="bool" Field="GridOn" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MaxVersion="R10" Comment="Grid mode on." />
+    <Variable Name="GRIDUNIT" Code="-2" Type="Vector" Field="GridSpacing" DefaultValue="Vector{1.0, 1.0, 0.0}" MaxVersion="R10" Comment="Grid X and Y spacing." />
+    <Variable Name="SNAPANG" Code="50" Type="float64" Field="SnapRotationAngle" DefaultValue="0.0" MaxVersion="R10" Comment="Snap grid rotation angle." />
+    <Variable Name="SNAPBASE" Code="-2" Type="Point" Field="SnapBasePoint" DefaultValue="*NewOrigin()" MaxVersion="R10" Comment="Snap/grid/base point (in UCS)." />
+    <Variable Name="SNAPISOPAIR" Code="70" Type="SnapIsometricPlane" Field="SnapIsometricPlane" DefaultValue="SnapIsometricPlaneLeft" ReadConverter="SnapIsometricPlane(%v)" WriteConverter="int16(%v)" MaxVersion="R10" Comment="Isometric plane." />
+    <Variable Name="SNAPMODE" Code="70" Type="bool" Field="SnapOn" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MaxVersion="R10" Comment="Snap mode on." />
+    <Variable Name="SNAPSTYLE" Code="70" Type="SnapStyle" Field="SnapStyle" DefaultValue="SnapStyleStandard" ReadConverter="SnapStyle(%v)" WriteConverter="int16(%v)" MaxVersion="R10" Comment="Snap style." />
+    <Variable Name="SNAPUNIT" Code="-2" Type="Vector" Field="SnapSpacing" DefaultValue="Vector{1.0, 1.0, 0.0}" MaxVersion="R10" Comment="Snap grid X and Y spacing." />
+    <Variable Name="VIEWCTR" Code="-2" Type="Point" Field="ViewCenter" DefaultValue="*NewOrigin()" MaxVersion="R10" Comment="XY center of current view on screen." />
+    <Variable Name="VIEWDIR" Code="-3" Type="Vector" Field="ViewDirection" DefaultValue="*NewZAxis()" MaxVersion="R10" Comment="Viewing direction (direction from target in WCS)." />
+    <Variable Name="VIEWSIZE" Code="40" Type="float64" Field="ViewHeight" DefaultValue="1.0" MaxVersion="R10" Comment="Height of view." />
 </Header>

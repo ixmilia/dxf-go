@@ -1,0 +1,326 @@
+<Enums>
+  <Enum Name="AngleFormat">
+    <Value Name="DecimalDegrees" Value="iota" />
+    <Value Name="DegreesMinutesSeconds" />
+    <Value Name="Gradians" />
+    <Value Name="Radians" />
+    <Value Name="SurveyorUnits" />
+  </Enum>
+  <Enum Name="AngleDirection">
+    <Value Name="CounterClockwise" Value="iota" />
+    <Value Name="Clockwise" />
+  </Enum>
+  <Enum Name="AttributeVisibility">
+    <Value Name="None" Value="iota" />
+    <Value Name="Normal" />
+    <Value Name="All" />
+  </Enum>
+  <Enum Name="CoordinateDisplay">
+    <Value Name="Static" Value="iota" />
+    <Value Name="ContinuousUpdate" />
+    <Value Name="DistanceAngleFormat" />
+  </Enum>
+  <Enum Name="DimensionArcSymbolDisplayMode">
+    <Value Name="SymbolBeforeText" Value="iota" />
+    <Value Name="SymbolAboveText" />
+    <Value Name="Suppress" />
+  </Enum>
+  <Enum Name="DimensionAssociativity">
+    <Value Name="NoAssociationExploded" Value="iota" />
+    <Value Name="NonAssociativeObjects" />
+    <Value Name="AssociativeObjects" />
+  </Enum>
+  <Enum Name="DimensionFit">
+    <Value Name="TextAndArrowsOutsideLines" Value="iota" />
+    <Value Name="MoveArrowsFirst" />
+    <Value Name="MoveTextFirst" />
+    <Value Name="MoveEitherForBestFit" />
+  </Enum>
+  <Enum Name="DimensionFractionFormat">
+    <Value Name="HorizontalStacking" Value="iota" />
+    <Value Name="DiagonalStacking" />
+    <Value Name="NotStacked" />
+  </Enum>
+  <Enum Name="DimensionTextBackgroundColorMode">
+    <Value Name="None" Value="iota" />
+    <Value Name="UseDrawingBackground" />
+    <Value Name="Custom" />
+  </Enum>
+  <Enum Name="DimensionTextJustification">
+    <Value Name="AboveLineCenter" Value="iota" />
+    <Value Name="AboveLineNextToFirstExtension" />
+    <Value Name="AboveLineNextToSecondExtension" />
+    <Value Name="AboveLineCenteredOnFirstExtension" />
+    <Value Name="AboveLineCenteredOnSecondExtension" />
+  </Enum>
+  <Enum Name="DimensionTextMovementRule">
+    <Value Name="MoveLineWithText" Value="iota" />
+    <Value Name="AddLeaderWhenTextIsMoved" />
+    <Value Name="MoveTextFreely" />
+  </Enum>
+  <Enum Name="DragMode">
+    <Value Name="Off" Value="iota" />
+    <Value Name="On" />
+    <Value Name="Auto" />
+  </Enum>
+  <Enum Name="DrawingUnits">
+    <Value Name="English" Value="iota" />
+    <Value Name="Metric" />
+  </Enum>
+  <Enum Name="Dwf3DPrecision">
+    <Value Name="_" Value="iota" />
+    <Value Name="Deviation1" />
+    <Value Name="Deviation0_5" />
+    <Value Name="Deviation0_2" />
+    <Value Name="Deviation0_1" />
+    <Value Name="Deviation0_01" />
+    <Value Name="Deviation0_001" />
+  </Enum>
+  <Enum Name="EndCapSetting">
+    <Value Name="None" Value="iota" />
+    <Value Name="Round" />
+    <Value Name="Angle" />
+    <Value Name="Square" />
+  </Enum>
+  <Enum Name="JoinStyle">
+    <Value Name="None" Value="iota" />
+    <Value Name="Round" />
+    <Value Name="Angle" />
+    <Value Name="Flat" />
+  </Enum>
+  <Enum Name="Justification">
+    <Value Name="Top" Value="iota" />
+    <Value Name="Middle" />
+    <Value Name="Bottom" />
+  </Enum>
+  <Enum Name="LayerAndSpatialIndexSaveMode">
+    <Value Name="None" Value="iota" />
+    <Value Name="LayerIndex" />
+    <Value Name="SpatialIndex" />
+    <Value Name="LayerAndSpatialIndex" />
+  </Enum>
+  <Enum Name="LineTypeStyle">
+    <Value Name="Off" Value="iota" />
+    <Value Name="Solid" />
+    <Value Name="Dashed" />
+    <Value Name="Dotted" />
+    <Value Name="ShortDash" />
+    <Value Name="MediumDash" />
+    <Value Name="LongDash" />
+    <Value Name="DoubleShortDash" />
+    <Value Name="DoubleMediumDash" />
+    <Value Name="DoubleLongDash" />
+    <Value Name="MediumLongDash" />
+    <Value Name="SparseDot" />
+  </Enum>
+  <Enum Name="LoftedObjectNormalMode">
+    <Value Name="Ruled" Value="iota" />
+    <Value Name="SmoothFit" />
+    <Value Name="StartCrossSection" />
+    <Value Name="EndCrossSection" />
+    <Value Name="StartAndEndCrossSections" />
+    <Value Name="AllCrossSections" />
+    <Value Name="UseDraftAngleAndMagnitude" />
+  </Enum>
+  <Enum Name="NonAngularUnits">
+    <Value Name="Scientific" Value="iota" />
+    <Value Name="Decimal" />
+    <Value Name="Engineering" />
+    <Value Name="Architectural" />
+    <Value Name="Fractional" />
+    <Value Name="WindowsDesktop" />
+  </Enum>
+  <Enum Name="OrthographicViewType">
+    <Value Name="None" Value="iota" />
+    <Value Name="Top" />
+    <Value Name="Bottom" />
+    <Value Name="Front" />
+    <Value Name="Back" />
+    <Value Name="Left" />
+    <Value Name="Right" />
+  </Enum>
+  <Enum Name="PickStyle">
+    <Value Name="None" Value="iota" />
+    <Value Name="Group" />
+    <Value Name="AssociativeHatch" />
+    <Value Name="GroupAndAssociativeHatch" />
+  </Enum>
+  <Enum Name="PolylineCurvedAndSmoothSurfaceType">
+    <Value Name="None" Value="iota" />
+    <Value Name="QuadraticBSpline" />
+    <Value Name="CubicBSpline" />
+    <Value Name="Bezier" />
+  </Enum>
+  <Enum Name="PolySketchMode">
+    <Value Name="SketchLines" Value="iota" />
+    <Value Name="SketchPolyLines" />
+  </Enum>
+  <Enum Name="PlotStyle">
+    <Value Name="ByLayer" Value="iota" />
+    <Value Name="ByBlock" />
+    <Value Name="ByDictionaryDefault" />
+    <Value Name="ByObjectId" />
+  </Enum>
+  <Enum Name="ShadeEdgeMode">
+    <Value Name="FacesShadedEdgeNotHighlighted" Value="iota" />
+    <Value Name="FacesShadedEdgesHighlightedInBlack" />
+    <Value Name="FacesNotFilledEdgesInEntityColor" />
+    <Value Name="FacesInEntityColorEdgesInBlack" />
+  </Enum>
+  <Enum Name="ShadowMode">
+    <Value Name="CastsAndReceivesShadows" Value="iota" />
+    <Value Name="CastsShadows" />
+    <Value Name="ReceivesShadows" />
+    <Value Name="IgnoresShadows" />
+  </Enum>
+  <Enum Name="SnapIsometricPlane">
+    <Value Name="Left" Value="iota" />
+    <Value Name="Top" />
+    <Value Name="Right" />
+  </Enum>
+  <Enum Name="SnapStyle">
+    <Value Name="Standard" Value="iota" />
+    <Value Name="Isometric" />
+  </Enum>
+  <Enum Name="SolidHistoryMode">
+    <Value Name="None" Value="iota" />
+    <Value Name="DoesNotOverride" />
+    <Value Name="Override" />
+  </Enum>
+  <Enum Name="TextDirection">
+    <Value Name="LeftToRight" Value="iota" />
+    <Value Name="RightToLeft" />
+  </Enum>
+  <Enum Name="TimeZone">
+  <Value Name="InternationalDateLineWest" Value="-12000" />
+    <Value Name="MidwayIsland_Samoa" Value="-11000" />
+    <Value Name="Hawaii" Value="-10000" />
+    <Value Name="Alaska" Value="-9000" />
+    <Value Name="PacificTime_US_Canada_SanFrancisco_Vancouver" Value="-8000" />
+    <Value Name="Arizona" Value="-7000" />
+    <Value Name="Chihuahua_LaPaz_Mazatlan" Value="-7000" />
+    <Value Name="MountainTime_US_Canada" Value="-7000" />
+    <Value Name="Mazatlan" Value="-7002" />
+    <Value Name="CentralAmerica" Value="-6000" />
+    <Value Name="CentralTime_US_Canada" Value="-6001" />
+    <Value Name="Guadalajara_MexicoCity_Monterrey" Value="-6002" />
+    <Value Name="Saskatchewan" Value="-6003" />
+    <Value Name="EasternTime_US_Canada_" Value="-5000" />
+    <Value Name="Indiana_East_" Value="-5001" />
+    <Value Name="Bogota_Lima_Quito" Value="-5002" />
+    <Value Name="AtlanticTime_Canada_" Value="-4000" />
+    <Value Name="Caracas_LaPaz" Value="-4001" />
+    <Value Name="Santiago" Value="-4002" />
+    <Value Name="Newfoundland" Value="-3300" />
+    <Value Name="Brasilia" Value="-3000" />
+    <Value Name="BuenosAires_Georgetown" Value="-3001" />
+    <Value Name="Greenland" Value="-3002" />
+    <Value Name="MidAtlantic" Value="-2000" />
+    <Value Name="Azores" Value="-1000" />
+    <Value Name="CapeVerdeIs" Value="-1001" />
+    <Value Name="UniversalCoordinatedTime" Value="0" />
+    <Value Name="GreenwichMeanTime" Value="1" />
+    <Value Name="Casablanca_Monrovia" Value="2" />
+    <Value Name="Amsterdam_Berlin_Bern_Rome_Stockholm" Value="1000" />
+    <Value Name="Brussels_Madrid_Copenhagen_Paris" Value="1001" />
+    <Value Name="Belgrade_Bratislava_Budapest_Ljubljana_Prague" Value="1002" />
+    <Value Name="Sarajevo_Skopje_Warsaw_Zagreb" Value="1003" />
+    <Value Name="WestCentralAfrica" Value="1004" />
+    <Value Name="Athens_Beirut_Istanbul_Minsk" Value="2000" />
+    <Value Name="Bucharest" Value="2001" />
+    <Value Name="Cairo" Value="2002" />
+    <Value Name="Harare_Pretoria" Value="2003" />
+    <Value Name="Helsinki_Kyiv_Sofia_Talinn_Vilnius" Value="2004" />
+    <Value Name="Jerusalem" Value="2005" />
+    <Value Name="Moscow_StPetersburg_Volograd" Value="3000" />
+    <Value Name="Kuwait_Riyadh" Value="3001" />
+    <Value Name="Baghdad" Value="3002" />
+    <Value Name="Nairobi" Value="3003" />
+    <Value Name="Tehran" Value="3300" />
+    <Value Name="AbuDhabi_Muscat" Value="4000" />
+    <Value Name="Baku_Tbilisi_Yerevan" Value="4001" />
+    <Value Name="Kabul" Value="4300" />
+    <Value Name="Ekaterinburg" Value="5000" />
+    <Value Name="Islamabad_Karachi_Tashkent" Value="5001" />
+    <Value Name="Chennai_Kolkata_Mumbai_NewDelhi" Value="5300" />
+    <Value Name="Kathmandu" Value="5450" />
+    <Value Name="Almaty_Novosibirsk" Value="6000" />
+    <Value Name="Astana_Dhaka" Value="6001" />
+    <Value Name="SriJayawardenepura" Value="6002" />
+    <Value Name="Rangoon" Value="6300" />
+    <Value Name="Bangkok_Hanoi_Jakarta" Value="7000" />
+    <Value Name="Krasnoyarsk" Value="7001" />
+    <Value Name="Beijing_Chongqing_HongKong_Urumqi" Value="8000" />
+    <Value Name="KualaLumpur_Singapore" Value="8001" />
+    <Value Name="Taipei" Value="8002" />
+    <Value Name="Irkutsk_UlaanBataar" Value="8003" />
+    <Value Name="Perth" Value="8004" />
+    <Value Name="Osaka_Sapporo_Tokyo" Value="9000" />
+    <Value Name="Seoul" Value="9001" />
+    <Value Name="Yakutsk" Value="9002" />
+    <Value Name="Adelaide" Value="9300" />
+    <Value Name="Darwin" Value="9301" />
+    <Value Name="Canberra_Melbourne_Sydney" Value="10000" />
+    <Value Name="Guam_PortMoresby" Value="10001" />
+    <Value Name="Brisbane" Value="10002" />
+    <Value Name="Hobart" Value="10003" />
+    <Value Name="Vladivostok" Value="10004" />
+    <Value Name="Magadan_SolomonIs_NewCaledonia" Value="11000" />
+    <Value Name="Auckland_Wellington" Value="12000" />
+    <Value Name="Fiji_Kamchatka_MarshallIs" Value="12001" />
+    <Value Name="Nukualofa_Tonga" Value="13000" />
+  </Enum>
+  <Enum Name="UnderlayFrameMode">
+    <Value Name="None" Value="iota" />
+    <Value Name="DisplayAndPlot" />
+    <Value Name="DisplayNoPlot" />
+  </Enum>
+  <Enum Name="UnitFormat">
+    <Value Name="_" Value="iota" />
+    <Value Name="Scientific" Value="iota" />
+    <Value Name="Decimal" />
+    <Value Name="Engineering" />
+    <Value Name="ArchitecturalStacked" />
+    <Value Name="FractionalStacked" />
+    <Value Name="Architectural" />
+    <Value Name="Fractional" />
+  </Enum>
+  <Enum Name="Units">
+    <Value Name="Unitless" Value="iota" />
+    <Value Name="Inches" />
+    <Value Name="Feet" />
+    <Value Name="Miles" />
+    <Value Name="Millimeters" />
+    <Value Name="Centimeters" />
+    <Value Name="Meters" />
+    <Value Name="Kilometers" />
+    <Value Name="Microinches" />
+    <Value Name="Mils" />
+    <Value Name="Yards" />
+    <Value Name="Angstroms" />
+    <Value Name="Nanometers" />
+    <Value Name="Microns" />
+    <Value Name="Decimeters" />
+    <Value Name="Decameters" />
+    <Value Name="Hectometers" />
+    <Value Name="Gigameters" />
+    <Value Name="AstronomicalUnits" />
+    <Value Name="LightYears" />
+    <Value Name="Parsecs" />
+    <Value Name="USSurveyFeet" />
+    <Value Name="USSurveyInch" />
+    <Value Name="USSurveyYard" />
+    <Value Name="USSurveyMile" />
+  </Enum>
+  <Enum Name="UnitZeroSuppression">
+    <Value Name="SuppressZeroFeetAndZeroInches" Value="iota" />
+    <Value Name="IncludeZeroFeetAndZeroInches" />
+    <Value Name="IncludeZeroFeetAndSuppressZeroInches" />
+    <Value Name="IncludeZeroInchesAndSuppressZeroFeet" />
+  </Enum>
+  <Enum Name="XrefClippingBoundaryVisibility">
+    <Value Name="NotDisplayedNotPlotted" Value="iota" />
+    <Value Name="DisplayedAndPlotted" />
+    <Value Name="DisplayedNotPlotted" />
+  </Enum>
+</Enums>

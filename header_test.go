@@ -96,6 +96,41 @@ func TestWritePoint(t *testing.T) {
 	), fileStringFromHeader(header))
 }
 
+func TestReadEnumValue(t *testing.T) {
+	header := parseHeader(t, join(
+		"  9", "$DRAGMODE",
+		" 70", "     2",
+	))
+	assertEqShort(t, int16(2), int16(header.DragMode))
+}
+
+func TestWriteEnumValue(t *testing.T) {
+	header := *NewHeader()
+	header.DragMode = DragModeAuto
+	assertContains(t, join(
+		"  9", "$DRAGMODE",
+		" 70", "     2",
+	), fileStringFromHeader(header))
+}
+
+func TestReadHandleValue(t *testing.T) {
+	header := parseHeader(t, join(
+		"  9", "$DRAGVS",
+		"349", "FF",
+	))
+	assertEqUInt(t, uint32(255), uint32(header.SolidVisualStylePointer))
+}
+
+func TestWriteHandleValue(t *testing.T) {
+	header := *NewHeader()
+	header.Version = R2007 // min version R2007
+	header.SolidVisualStylePointer = Handle(255)
+	assertContains(t, join(
+		"  9", "$DRAGVS",
+		"349", "FF",
+	), fileStringFromHeader(header))
+}
+
 func parseHeader(t *testing.T, content string) Header {
 	drawing := parse(t, join(
 		"  0", "SECTION",
