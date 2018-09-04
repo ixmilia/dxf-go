@@ -9,16 +9,19 @@ import (
 	"strings"
 )
 
+// The Drawing struct represents a complete DXF drawing.
 type Drawing struct {
 	Header Header
 }
 
+// NewDrawing returns a new, fully initialized drawing.
 func NewDrawing() *Drawing {
 	return &Drawing{
 		Header: *NewHeader(),
 	}
 }
 
+// SaveFile writes the current drawing to the specified path.
 func (d Drawing) SaveFile(path string) error {
 	f, err := os.Create(path)
 	if err != nil {
@@ -46,6 +49,7 @@ func (d Drawing) String() string {
 	return buf.String()
 }
 
+// ReadFile reads a DXF drawing from the specified path.
 func ReadFile(path string) (Drawing, error) {
 	var drawing Drawing
 	buf, err := ioutil.ReadFile(path)
@@ -67,9 +71,8 @@ func readFromReader(reader CodePairReader) (Drawing, error) {
 	if err != nil {
 		if err == io.EOF {
 			return drawing, nil
-		} else {
-			return drawing, err
 		}
+		return drawing, err
 	}
 
 	if !nextPair.isStartSection() {
@@ -116,6 +119,7 @@ func readFromReader(reader CodePairReader) (Drawing, error) {
 	return drawing, nil
 }
 
+// ParseDrawing returns a drawing as parsed from a `string`.
 func ParseDrawing(content string) (Drawing, error) {
 	stringReader := strings.NewReader(content)
 	reader := NewAsciiCodePairReader(stringReader)
