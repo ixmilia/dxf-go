@@ -67,7 +67,7 @@ func readFromReader(reader codePairReader) (Drawing, error) {
 	nextPair, err := reader.readCodePair()
 
 	// parse sections
-	for err == nil && !nextPair.isEof() {
+	for err == nil && !nextPair.isEOF() {
 		if !nextPair.isStartSection() {
 			return drawing, errors.New("expected 0/SECTION code pair")
 		}
@@ -111,7 +111,7 @@ func readFromReader(reader codePairReader) (Drawing, error) {
 		// don't care at this point, the file could be done
 		return drawing, nil
 	}
-	if !nextPair.isEof() {
+	if !nextPair.isEOF() {
 		return drawing, errors.New("expected 0/EOF")
 	}
 
