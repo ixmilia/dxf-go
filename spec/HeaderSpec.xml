@@ -1,5 +1,5 @@
 <Header>
-    <Variable Name="ACADVER" Code="1" Type="AcadVersion" Field="Version" DefaultValue="R12" ReadConverter="parseAcadVersion(%v)" WriteConverter="%v.ToHeaderVersion()" Comment="The AutoCAD drawing database version number." />
+    <Variable Name="ACADVER" Code="1" Type="AcadVersion" Field="Version" DefaultValue="R12" ReadConverter="parseAcadVersion(%v)" WriteConverter="%v.String()" Comment="The AutoCAD drawing database version number." />
     <Variable Name="ACADMAINTVER" Code="70" Type="int16" Field="MaintenanceVersion" DefaultValue="0" MinVersion="R14" Comment="Maintenance version number (should be ignored)." />
     <Variable Name="DWGCODEPAGE" Code="3" Type="string" Field="DrawingCodePage" DefaultValue='"ANSI_1252"' MinVersion="R13" Comment="Drawing code page; set to the system code page when a new drawing is created, but not otherwise maintained by AutoCAD." />
     <Variable Name="LASTSAVEDBY" Code="1" Type="string" Field="LastSavedBy" DefaultValue='""' MinVersion="R2004" Comment="Name of the last user to modify the file." />
