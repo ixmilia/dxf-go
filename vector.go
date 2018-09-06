@@ -4,12 +4,14 @@ import (
 	"fmt"
 )
 
+// The Vector struct represents a vector in 3D space.
 type Vector struct {
 	X float64
 	Y float64
 	Z float64
 }
 
+// NewXAxis creates a unit vector along the X axis.
 func NewXAxis() *Vector {
 	return &Vector{
 		X: 1.0,
@@ -18,6 +20,7 @@ func NewXAxis() *Vector {
 	}
 }
 
+// NewYAxis creates a unit vector along the Y axis.
 func NewYAxis() *Vector {
 	return &Vector{
 		X: 0.0,
@@ -26,6 +29,7 @@ func NewYAxis() *Vector {
 	}
 }
 
+// NewZAxis creates a unit vector along the Z axis.
 func NewZAxis() *Vector {
 	return &Vector{
 		X: 0.0,
@@ -34,6 +38,7 @@ func NewZAxis() *Vector {
 	}
 }
 
+// NewZeroVector creates a vector representing zero distance across any axis.
 func NewZeroVector() *Vector {
 	return &Vector{
 		X: 0.0,

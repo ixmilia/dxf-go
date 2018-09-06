@@ -4,12 +4,14 @@ import (
 	"fmt"
 )
 
+// The Point struct represents a 3D coordinate.
 type Point struct {
 	X float64
 	Y float64
 	Z float64
 }
 
+// NewOrigin creates a new Point representing the (0, 0, 0) location.
 func NewOrigin() *Point {
 	return &Point{
 		X: 0.0,
