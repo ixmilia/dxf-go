@@ -1,6 +1,6 @@
 package dxf
 
-func CodeTypeName(code int) string {
+func codeTypeName(code int) string {
 	if between(code, 0, 9) {
 		return "String"
 	} else if between(code, 10, 39) {

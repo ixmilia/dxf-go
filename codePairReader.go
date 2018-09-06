@@ -7,22 +7,22 @@ import (
 	"strings"
 )
 
-type CodePairReader interface {
+type codePairReader interface {
 	readCodePair() (CodePair, error)
 }
 
 // ASCII
-type AsciiCodePairReader struct {
+type asciiCodePairReader struct {
 	scanner bufio.Scanner
 }
 
-func NewAsciiCodePairReader(reader io.Reader) *AsciiCodePairReader {
-	return &AsciiCodePairReader{
+func newASCIICodePairReader(reader io.Reader) *asciiCodePairReader {
+	return &asciiCodePairReader{
 		scanner: *bufio.NewScanner(reader),
 	}
 }
 
-func (a *AsciiCodePairReader) readLine() (line string, err error) {
+func (a *asciiCodePairReader) readLine() (line string, err error) {
 	if !a.scanner.Scan() {
 		err = a.scanner.Err()
 		return
@@ -31,7 +31,7 @@ func (a *AsciiCodePairReader) readLine() (line string, err error) {
 	return
 }
 
-func (a *AsciiCodePairReader) readCode() (int, error) {
+func (a *asciiCodePairReader) readCode() (int, error) {
 	line, err := a.readLine()
 	if err != nil {
 		return 0, err
@@ -45,7 +45,7 @@ func (a *AsciiCodePairReader) readCode() (int, error) {
 	return code, nil
 }
 
-func (a *AsciiCodePairReader) readCodePair() (CodePair, error) {
+func (a *asciiCodePairReader) readCodePair() (CodePair, error) {
 	var codePair CodePair
 	code, err := a.readCode()
 	if err != nil {
@@ -57,7 +57,7 @@ func (a *AsciiCodePairReader) readCodePair() (CodePair, error) {
 		return codePair, err
 	}
 
-	switch CodeTypeName(code) {
+	switch codeTypeName(code) {
 	case "Bool":
 		value, err := strconv.ParseInt(strings.TrimSpace(stringValue), 10, 16)
 		if err != nil {

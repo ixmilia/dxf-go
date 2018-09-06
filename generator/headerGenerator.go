@@ -113,7 +113,7 @@ func generateHeader() {
 	}
 
 	// writeHeader()
-	builder.WriteString("func (h Header) writeHeader(writer CodePairWriter) error {\n")
+	builder.WriteString("func (h Header) writeHeader(writer codePairWriter) error {\n")
 	builder.WriteString("	pairs := make([]CodePair, 0)\n")
 	builder.WriteString("	pairs = append(pairs, NewStringCodePair(0, \"SECTION\"))\n")
 	builder.WriteString("	pairs = append(pairs, NewStringCodePair(2, \"HEADER\"))\n")
@@ -152,8 +152,8 @@ func generateHeader() {
 				builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, NewDoubleCodePair(%d, h.%s.%c))\n", indention, code, variable.FieldName, component))
 			}
 		} else {
-			codeTypeName := CodeTypeName(variable.Code)
-			builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indention, codeTypeName, variable.Code, value))
+			typeName := codeTypeName(variable.Code)
+			builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indention, typeName, variable.Code, value))
 		}
 
 		if len(predicates) > 0 {
@@ -173,7 +173,7 @@ func generateHeader() {
 	builder.WriteString("\n")
 
 	// readHeader()
-	builder.WriteString("func readHeader(nextPair CodePair, reader CodePairReader) (Header, CodePair, error) {\n")
+	builder.WriteString("func readHeader(nextPair CodePair, reader codePairReader) (Header, CodePair, error) {\n")
 	builder.WriteString("	header := *NewHeader()\n")
 	builder.WriteString("	var err error\n")
 	builder.WriteString("	var variableName string\n")
@@ -204,7 +204,7 @@ func generateHeader() {
 				builder.WriteString(fmt.Sprintf("				if nextPair.Code != %d {\n", variable.Code))
 				builder.WriteString(fmt.Sprintf("					return header, nextPair, errors.New(\"expected code %d\")\n", variable.Code))
 				builder.WriteString("				}\n")
-				readValue := fmt.Sprintf("nextPair.Value.(%sCodePairValue).Value", CodeTypeName(variable.Code))
+				readValue := fmt.Sprintf("nextPair.Value.(%sCodePairValue).Value", codeTypeName(variable.Code))
 				if len(variable.ReadConverter) > 0 {
 					readValue = strings.Replace(variable.ReadConverter, "%v", readValue, -1)
 				}

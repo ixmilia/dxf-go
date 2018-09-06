@@ -27,11 +27,11 @@ func (d Drawing) SaveFile(path string) error {
 		return err
 	}
 
-	writer := NewAsciiCodePairWriter(f)
+	writer := newASCIICodePairWriter(f)
 	return d.saveToWriter(writer)
 }
 
-func (d Drawing) saveToWriter(writer CodePairWriter) error {
+func (d Drawing) saveToWriter(writer codePairWriter) error {
 	err := d.Header.writeHeader(writer)
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ func (d Drawing) saveToWriter(writer CodePairWriter) error {
 
 func (d Drawing) String() string {
 	buf := new(bytes.Buffer)
-	writer := NewAsciiCodePairWriter(buf)
+	writer := newASCIICodePairWriter(buf)
 	d.saveToWriter(writer)
 	return buf.String()
 }
@@ -56,11 +56,11 @@ func ReadFile(path string) (Drawing, error) {
 		return drawing, err
 	}
 
-	reader := NewAsciiCodePairReader(bytes.NewReader(buf))
+	reader := newASCIICodePairReader(bytes.NewReader(buf))
 	return readFromReader(reader)
 }
 
-func readFromReader(reader CodePairReader) (Drawing, error) {
+func readFromReader(reader codePairReader) (Drawing, error) {
 	drawing := *NewDrawing()
 
 	// read sections
@@ -121,6 +121,6 @@ func readFromReader(reader CodePairReader) (Drawing, error) {
 // ParseDrawing returns a drawing as parsed from a `string`.
 func ParseDrawing(content string) (Drawing, error) {
 	stringReader := strings.NewReader(content)
-	reader := NewAsciiCodePairReader(stringReader)
+	reader := newASCIICodePairReader(stringReader)
 	return readFromReader(reader)
 }
