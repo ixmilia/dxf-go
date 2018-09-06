@@ -3,7 +3,6 @@ package dxf
 import (
 	"bytes"
 	"errors"
-	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -65,49 +64,49 @@ func readFromReader(reader CodePairReader) (Drawing, error) {
 	drawing := *NewDrawing()
 
 	// read sections
-
-	// find 0/SECTION
 	nextPair, err := reader.readCodePair()
-	if err != nil {
-		if err == io.EOF {
-			return drawing, nil
+
+	// parse sections
+	for err == nil && !nextPair.isEof() {
+		if !nextPair.isStartSection() {
+			return drawing, errors.New("expected 0/SECTION code pair")
 		}
-		return drawing, err
-	}
 
-	if !nextPair.isStartSection() {
-		return drawing, errors.New("expected 0/SECTION code pair")
-	}
-
-	// find 2/<section-type>
-	nextPair, err = reader.readCodePair()
-	if err != nil {
-		return drawing, err
-	}
-	if nextPair.Code != 2 {
-		return drawing, errors.New("expected 2/<section-type>")
-	}
-
-	// parse section
-	sectionType := nextPair.Value.(StringCodePairValue).Value
-	nextPair, err = reader.readCodePair()
-	for err == nil && !nextPair.isEndSection() {
-		switch sectionType {
-		case "HEADER":
-			drawing.Header, nextPair, err = readHeader(nextPair, reader)
+		// find 2/<section-type>
+		nextPair, err = reader.readCodePair()
+		if err != nil {
+			return drawing, err
 		}
-	}
+		if nextPair.Code != 2 {
+			return drawing, errors.New("expected 2/<section-type>")
+		}
 
-	// find 0/ENDSEC
-	if err != nil {
-		return drawing, err
-	}
-	if !nextPair.isEndSection() {
-		return drawing, errors.New("expected 0/ENDSEC")
+		sectionType := nextPair.Value.(StringCodePairValue).Value
+		nextPair, err = reader.readCodePair()
+		for err == nil && !nextPair.isEndSection() {
+			switch sectionType {
+			case "HEADER":
+				drawing.Header, nextPair, err = readHeader(nextPair, reader)
+			default:
+				// swallow unsupported section
+				for err == nil && !nextPair.isEndSection() {
+					nextPair, err = reader.readCodePair()
+				}
+			}
+		}
+
+		// find 0/ENDSEC
+		if err != nil {
+			return drawing, err
+		}
+		if !nextPair.isEndSection() {
+			return drawing, errors.New("expected 0/ENDSEC")
+		}
+
+		nextPair, err = reader.readCodePair()
 	}
 
 	// find possible 0/EOF
-	nextPair, err = reader.readCodePair()
 	if err != nil {
 		// don't care at this point, the file could be done
 		return drawing, nil
