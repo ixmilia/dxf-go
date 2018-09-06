@@ -8,19 +8,19 @@ import (
 	"strings"
 )
 
-type XMLEnums struct {
+type xmlEnums struct {
 	XMLName xml.Name  `xml:"Enums"`
-	Enums   []XMLEnum `xml:"Enum"`
+	Enums   []xmlEnum `xml:"Enum"`
 }
 
-type XMLEnum struct {
+type xmlEnum struct {
 	XMLName  xml.Name       `xml:"Enum"`
 	Name     string         `xml:"Name,attr"`
 	BaseType string         `xml:"BaseType,attr"`
-	Values   []XMLEnumValue `xml:"Value"`
+	Values   []xmlEnumValue `xml:"Value"`
 }
 
-type XMLEnumValue struct {
+type xmlEnumValue struct {
 	XMLName xml.Name `xml:"Value"`
 	Name    string   `xml:"Name,attr"`
 	Value   string   `xml:"Value,attr"`
@@ -33,7 +33,7 @@ func generateEnums() {
 
 	defer file.Close()
 
-	enums, err := ReadEnums(file)
+	enums, err := readEnums(file)
 	check(err)
 
 	var builder strings.Builder
@@ -86,8 +86,8 @@ func generateEnums() {
 	writeFile("enums.generated.go", builder)
 }
 
-func ReadEnums(reader io.Reader) ([]XMLEnum, error) {
-	var enums XMLEnums
+func readEnums(reader io.Reader) ([]xmlEnum, error) {
+	var enums xmlEnums
 	if err := xml.NewDecoder(reader).Decode(&enums); err != nil {
 		return nil, err
 	}

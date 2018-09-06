@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-type XMLHeader struct {
+type xmlHeader struct {
 	XMLName   xml.Name            `xml:"Header"`
-	Variables []XMLHeaderVariable `xml:"Variable"`
+	Variables []xmlHeaderVariable `xml:"Variable"`
 }
 
-type XMLHeaderVariable struct {
+type xmlHeaderVariable struct {
 	XMLName          xml.Name                `xml:"Variable"`
 	Name             string                  `xml:"Name,attr"`
 	Code             int                     `xml:"Code,attr"`
@@ -27,10 +27,10 @@ type XMLHeaderVariable struct {
 	SuppressWriting  bool                    `xml:"SuppressWriting,attr"`
 	DontWriteDefault bool                    `xml:"DontWriteDefault,attr"`
 	Comment          string                  `xml:"Comment,attr"`
-	Flags            []XMLHeaderVariableFlag `xml:"Flag"`
+	Flags            []xmlHeaderVariableFlag `xml:"Flag"`
 }
 
-type XMLHeaderVariableFlag struct {
+type xmlHeaderVariableFlag struct {
 	XMLName xml.Name `xml:"Flag"`
 	Name    string   `xml:"Name,attr"`
 	Mask    int      `xml:"Mask,attr"`
@@ -44,7 +44,7 @@ func generateHeader() {
 
 	defer file.Close()
 
-	variables, err := ReadHeader(file)
+	variables, err := readHeader(file)
 	check(err)
 
 	var builder strings.Builder
@@ -240,8 +240,8 @@ func generateComment(mainComment, minVersion, maxVersion string) string {
 	return comment
 }
 
-func ReadHeader(reader io.Reader) ([]XMLHeaderVariable, error) {
-	var header XMLHeader
+func readHeader(reader io.Reader) ([]xmlHeaderVariable, error) {
+	var header xmlHeader
 	if err := xml.NewDecoder(reader).Decode(&header); err != nil {
 		return nil, err
 	}
