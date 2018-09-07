@@ -3,6 +3,7 @@ package dxf
 import (
 	"bytes"
 	"errors"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -29,8 +30,38 @@ func (d *Drawing) SaveFile(path string) error {
 		return err
 	}
 
-	writer := newASCIICodePairWriter(f)
-	return d.saveToWriter(writer)
+	return d.SaveToWriter(f)
+}
+
+// SaveToWriter writes the current drawing to the specified io.Writer.
+func (d *Drawing) SaveToWriter(writer io.Writer) error {
+	codePairWriter := newASCIICodePairWriter(writer)
+	return d.saveToCodePairWriter(codePairWriter)
+}
+
+func (d *Drawing) String() string {
+	buf := new(bytes.Buffer)
+	err := d.SaveToWriter(buf)
+	if err != nil {
+		return err.Error()
+	}
+
+	return buf.String()
+}
+
+func (d *Drawing) saveToCodePairWriter(writer codePairWriter) error {
+	err := d.Header.writeHeader(writer)
+	if err != nil {
+		return err
+	}
+
+	err = d.writeEntities(writer)
+	if err != nil {
+		return err
+	}
+
+	err = writer.writeCodePair(NewStringCodePair(0, "EOF"))
+	return err
 }
 
 func (d *Drawing) writeEntities(writer codePairWriter) error {
@@ -52,32 +83,6 @@ func (d *Drawing) writeEntities(writer codePairWriter) error {
 	}
 
 	return nil
-}
-
-func (d *Drawing) saveToWriter(writer codePairWriter) error {
-	err := d.Header.writeHeader(writer)
-	if err != nil {
-		return err
-	}
-
-	err = d.writeEntities(writer)
-	if err != nil {
-		return err
-	}
-
-	err = writer.writeCodePair(NewStringCodePair(0, "EOF"))
-	return err
-}
-
-func (d *Drawing) String() string {
-	buf := new(bytes.Buffer)
-	writer := newASCIICodePairWriter(buf)
-	err := d.saveToWriter(writer)
-	if err != nil {
-		return err.Error()
-	}
-
-	return buf.String()
 }
 
 // ReadFile reads a DXF drawing from the specified path.
