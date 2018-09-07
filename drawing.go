@@ -93,11 +93,22 @@ func ReadFile(path string) (Drawing, error) {
 		return drawing, err
 	}
 
-	reader := newASCIICodePairReader(bytes.NewReader(buf))
-	return readFromReader(reader)
+	return ReadFromReader(bytes.NewReader(buf))
 }
 
-func readFromReader(reader codePairReader) (Drawing, error) {
+// ReadFromReader reads a DXF drawing from the specified io.Reader.
+func ReadFromReader(reader io.Reader) (Drawing, error) {
+	codePairReader := newASCIICodePairReader(reader)
+	return readFromCodePairReader(codePairReader)
+}
+
+// ParseDrawing returns a drawing as parsed from a `string`.
+func ParseDrawing(content string) (Drawing, error) {
+	stringReader := strings.NewReader(content)
+	return ReadFromReader(stringReader)
+}
+
+func readFromCodePairReader(reader codePairReader) (Drawing, error) {
 	drawing := *NewDrawing()
 
 	// read sections
@@ -176,11 +187,4 @@ func (d *Drawing) readEntities(nextPair CodePair, reader codePairReader) (CodePa
 	}
 
 	return nextPair, nil
-}
-
-// ParseDrawing returns a drawing as parsed from a `string`.
-func ParseDrawing(content string) (Drawing, error) {
-	stringReader := strings.NewReader(content)
-	reader := newASCIICodePairReader(stringReader)
-	return readFromReader(reader)
 }
