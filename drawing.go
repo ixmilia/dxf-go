@@ -23,7 +23,7 @@ func NewDrawing() *Drawing {
 }
 
 // SaveFile writes the current drawing to the specified path.
-func (d Drawing) SaveFile(path string) error {
+func (d *Drawing) SaveFile(path string) error {
 	f, err := os.Create(path)
 	if err != nil {
 		return err
@@ -33,8 +33,34 @@ func (d Drawing) SaveFile(path string) error {
 	return d.saveToWriter(writer)
 }
 
-func (d Drawing) saveToWriter(writer codePairWriter) error {
+func (d *Drawing) writeEntities(writer codePairWriter) error {
+	pairs := make([]CodePair, 0)
+	pairs = append(pairs, NewStringCodePair(0, "SECTION"))
+	pairs = append(pairs, NewStringCodePair(2, "ENTITIES"))
+	for _, entity := range d.Entities {
+		for _, pair := range entity.codePairs() {
+			pairs = append(pairs, pair)
+		}
+	}
+
+	pairs = append(pairs, NewStringCodePair(0, "ENDSEC"))
+	for _, pair := range pairs {
+		err := writer.writeCodePair(pair)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (d *Drawing) saveToWriter(writer codePairWriter) error {
 	err := d.Header.writeHeader(writer)
+	if err != nil {
+		return err
+	}
+
+	err = d.writeEntities(writer)
 	if err != nil {
 		return err
 	}
@@ -43,7 +69,7 @@ func (d Drawing) saveToWriter(writer codePairWriter) error {
 	return err
 }
 
-func (d Drawing) String() string {
+func (d *Drawing) String() string {
 	buf := new(bytes.Buffer)
 	writer := newASCIICodePairWriter(buf)
 	d.saveToWriter(writer)

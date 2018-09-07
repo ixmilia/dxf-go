@@ -69,7 +69,8 @@ func generateEntities() {
 
 	// base interface
 	builder.WriteString("type Entity interface {\n")
-	builder.WriteString("	typeString() string\n")
+	builder.WriteString("	typeString() (typeString string)\n")
+	builder.WriteString("	codePairs() (pairs []CodePair)\n")
 	builder.WriteString("	tryApplyCodePair(codePair CodePair)\n")
 	for _, field := range baseEntity.Fields {
 		builder.WriteString(fmt.Sprintf("	%s() %s\n", field.Name, field.Type))       // getter
@@ -170,7 +171,38 @@ func generateEntities() {
 		builder.WriteString("}\n")
 		builder.WriteString("\n")
 
-		// TODO: writer
+		// writer
+		builder.WriteString(fmt.Sprintf("func (this *%s) codePairs() (pairs []CodePair) {\n", entity.Name))
+		builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewStringCodePair(0, \"%s\"))\n", strings.Split(entity.TypeString, ",")[0]))
+		builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewStringCodePair(100, \"%s\"))\n", entity.SubclassMarker))
+		for _, field := range baseEntity.Fields {
+			value := fmt.Sprintf("this.%s()", field.Name)
+			if len(field.WriteConverter) > 0 {
+				value = strings.Replace(field.WriteConverter, "%v", value, -1)
+			}
+			builder.WriteString(fmt.Sprintf("	pairs = append(pairs, New%sCodePair(%d, %s))\n", codeTypeName(field.Code), field.Code, value))
+		}
+		for _, field := range entity.Fields {
+			if len(field.CodeOverrides) > 0 {
+				codeOverrides := strings.Split(field.CodeOverrides, ",")
+				for i, codeString := range codeOverrides {
+					code, err := strconv.Atoi(strings.TrimSpace(codeString))
+					check(err)
+					component := 'X' + i
+					builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewDoubleCodePair(%d, this.%s.%c))\n", code, field.Name, component))
+				}
+			} else {
+				value := fmt.Sprintf("this.%s", field.Name)
+				if len(field.WriteConverter) > 0 {
+					value = strings.Replace(field.WriteConverter, "%v", value, -1)
+				}
+				builder.WriteString(fmt.Sprintf("	pairs = append(pairs, New%sCodePair(%d, %s))\n", codeTypeName(field.Code), field.Code, value))
+			}
+		}
+		builder.WriteString("\n")
+		builder.WriteString("	return pairs\n")
+		builder.WriteString("}\n")
+		builder.WriteString("\n")
 	}
 
 	// entity creator
@@ -194,7 +226,6 @@ func generateEntities() {
 	builder.WriteString("\n")
 	builder.WriteString("	return entity, ok\n")
 	builder.WriteString("}\n")
-	builder.WriteString("\n")
 
 	writeFile("entities.generated.go", builder)
 }

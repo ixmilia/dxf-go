@@ -51,6 +51,26 @@ func TestParseUnsupportedEntity(t *testing.T) {
 	assertEqString(t, "LINE", drawing.Entities[1].typeString())
 }
 
+func TestWriteSimpleLine(t *testing.T) {
+	line := NewLine()
+	line.P1 = Point{1.0, 2.0, 3.0}
+	line.P2 = Point{4.0, 5.0, 6.0}
+	drawing := *NewDrawing()
+	drawing.Entities = append(drawing.Entities, line)
+	actual := drawing.String()
+	assertContains(t, join(
+		"  0", "LINE",
+	), actual)
+	assertContains(t, join(
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+		" 11", "4.0",
+		" 21", "5.0",
+		" 31", "6.0",
+	), actual)
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
 	drawing := parse(t, join(
 		"  0", "SECTION",
