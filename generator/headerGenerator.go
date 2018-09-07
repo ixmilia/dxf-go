@@ -200,9 +200,17 @@ func generateHeader() {
 				}
 				builder.WriteString("				}\n")
 			} else {
-				// validate code
-				builder.WriteString(fmt.Sprintf("				if nextPair.Code != %d {\n", variable.Code))
-				builder.WriteString(fmt.Sprintf("					return header, nextPair, errors.New(\"expected code %d\")\n", variable.Code))
+				// validate all possible codes; there are some duplicates
+				allowableCodes := make([]string, 0)
+				predicates := make([]string, 0)
+				for _, v := range variables {
+					if v.Name == variable.Name {
+						allowableCodes = append(allowableCodes, fmt.Sprintf("%d", v.Code))
+						predicates = append(predicates, fmt.Sprintf("nextPair.Code != %d", v.Code))
+					}
+				}
+				builder.WriteString(fmt.Sprintf("				if %s {\n", strings.Join(predicates, " && ")))
+				builder.WriteString(fmt.Sprintf("					return header, nextPair, errors.New(\"expected code %s\")\n", strings.Join(allowableCodes, ", ")))
 				builder.WriteString("				}\n")
 				readValue := fmt.Sprintf("nextPair.Value.(%sCodePairValue).Value", codeTypeName(variable.Code))
 				if len(variable.ReadConverter) > 0 {
