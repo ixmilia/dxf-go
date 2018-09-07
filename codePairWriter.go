@@ -33,8 +33,24 @@ func formatFloat64(val float64) string {
 	return display
 }
 
+func (a asciiCodePairWriter) writeBoolean(val bool) error {
+	short := 1
+	if !val {
+		short = 0
+	}
+	return a.writeShort(int16(short))
+}
+
 func (a asciiCodePairWriter) writeDouble(val float64) error {
 	return a.writeString(formatFloat64(val))
+}
+
+func (a asciiCodePairWriter) writeInt(val int) error {
+	return a.writeString(fmt.Sprintf("%9d", val))
+}
+
+func (a asciiCodePairWriter) writeLong(val int64) error {
+	return a.writeString(fmt.Sprintf("%d", val))
 }
 
 func (a asciiCodePairWriter) writeShort(val int16) error {
@@ -54,13 +70,19 @@ func (a asciiCodePairWriter) writeCodePair(codePair CodePair) error {
 	}
 
 	switch t := codePair.Value.(type) {
+	case BoolCodePairValue:
+		return a.writeBoolean(t.Value)
 	case DoubleCodePairValue:
 		return a.writeDouble(t.Value)
+	case IntCodePairValue:
+		return a.writeInt(t.Value)
+	case LongCodePairValue:
+		return a.writeLong(t.Value)
 	case ShortCodePairValue:
 		return a.writeShort(t.Value)
 	case StringCodePairValue:
 		return a.writeString(t.Value)
+	default:
+		return fmt.Errorf("unsupported code pair value type %T", t)
 	}
-
-	return nil
 }

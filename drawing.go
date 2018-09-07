@@ -72,7 +72,11 @@ func (d *Drawing) saveToWriter(writer codePairWriter) error {
 func (d *Drawing) String() string {
 	buf := new(bytes.Buffer)
 	writer := newASCIICodePairWriter(buf)
-	d.saveToWriter(writer)
+	err := d.saveToWriter(writer)
+	if err != nil {
+		return err.Error()
+	}
+
 	return buf.String()
 }
 
@@ -154,10 +158,10 @@ func (d *Drawing) readEntities(nextPair CodePair, reader codePairReader) (CodePa
 	var ok bool
 	for err == nil && !nextPair.isEndSection() {
 		entity, nextPair, ok, err = readEntity(nextPair, reader)
-		if ok {
-			d.Entities = append(d.Entities, entity)
-		} else if err != nil {
+		if err != nil {
 			return nextPair, err
+		} else if ok {
+			d.Entities = append(d.Entities, entity)
 		}
 		// otherwise an unsupported entity was swallowed
 	}
