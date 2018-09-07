@@ -27,7 +27,7 @@
   LINE
 
   -->
-  <Entity Name="Line" SubclassMarker="AcDbLine" TypeString="LINE">
+  <Entity Name="Line" SubclassMarker="AcDbLine" TypeString="LINE,3DLINE">
     <Field Name="Thickness" Code="39" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
     <Field Name="P1" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
     <Field Name="P2" Code="11" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="11,21,31" />

@@ -128,7 +128,7 @@ func generateEntities() {
 		}
 
 		builder.WriteString(fmt.Sprintf("func (this *%s) typeString() string {\n", entity.Name))
-		builder.WriteString(fmt.Sprintf("	return \"%s\"\n", entity.TypeString))
+		builder.WriteString(fmt.Sprintf("	return \"%s\"\n", strings.Split(entity.TypeString, ",")[0]))
 		builder.WriteString("}\n")
 		builder.WriteString("\n")
 
@@ -181,8 +181,11 @@ func generateEntities() {
 		if entity.Name == "Entity" {
 			continue
 		}
-		// TODO: multiple type strings
-		builder.WriteString(fmt.Sprintf("	case \"%s\":\n", entity.TypeString))
+		typeStrings := strings.Split(entity.TypeString, ",")
+		for i := 0; i < len(typeStrings); i++ {
+			typeStrings[i] = "\"" + typeStrings[i] + "\""
+		}
+		builder.WriteString(fmt.Sprintf("	case %s:\n", strings.Join(typeStrings, ", ")))
 		builder.WriteString(fmt.Sprintf("		entity = New%s()\n", entity.Name))
 	}
 	builder.WriteString("	default:\n")

@@ -21,6 +21,21 @@ func TestParseSimpleLine(t *testing.T) {
 	assert(t, expectedP2 == line.P2, fmt.Sprintf("Expected: %s\nActual: %s", expectedP2.String(), line.P2.String()))
 }
 
+func TestParseAlternateTypeString(t *testing.T) {
+	line := parseEntity(t, "3DLINE", join(
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+		" 11", "4.0",
+		" 21", "5.0",
+		" 31", "6.0",
+	)).(*Line)
+	expectedP1 := Point{1.0, 2.0, 3.0}
+	expectedP2 := Point{4.0, 5.0, 6.0}
+	assert(t, expectedP1 == line.P1, fmt.Sprintf("Expected: %s\nActual: %s", expectedP1.String(), line.P1.String()))
+	assert(t, expectedP2 == line.P2, fmt.Sprintf("Expected: %s\nActual: %s", expectedP2.String(), line.P2.String()))
+}
+
 func TestParseUnsupportedEntity(t *testing.T) {
 	drawing := parse(t, join(
 		"  0", "SECTION",
