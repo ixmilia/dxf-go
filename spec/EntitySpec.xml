@@ -1,0 +1,36 @@
+<Entities>
+  <!--
+
+  ENTITY - the parts common to all entities.
+
+  -->
+  <Entity Name="Entity">
+    <Field Name="IsInPaperSpace" Code="67" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" DisableWritingDefault="true" MinVersion="R12" />
+    <Field Name="Layer" Code="8" Type="string" DefaultValue='"0"' WriteConverter='defaultIfEmpty(%v, "0")' />
+    <Field Name="LineTypeName" Code="6" Type="string" DefaultValue='"BYLAYER"' DisableWritingDefault="true" />
+    <Field Name="Elevation" Code="38" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" MaxVersion="R12" />
+    <Field Name="MaterialHandle" Code="347" Type="string" DefaultValue='"BYLAYER"' DisableWritingDefault="true" MinVersion="R2007" />
+    <Field Name="Color" Code="62" Type="Color" DefaultValue="ByLayer()" ReadConverter="Color(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true" />
+    <Field Name="LineWeight" Code="370" Type="LineWeight" DefaultValue="NewLineWeightStandard()" ReadConverter="LineWeight(%v)" WriteConverter="int16(%v)" MinVersion="R2000" />
+    <Field Name="LineTypeScale" Code="48" Type="float64" DefaultValue="1.0" DisableWritingDefault="true" MinVersion="R13" />
+    <Field Name="IsVisible" Code="60" Type="bool" DefaultValue="true" ReadConverter="!boolFromShort(%v)" WriteConverter="shortFromBool(!%v)" DisableWritingDefault="true" MinVersion="R13" />
+    <Field Name="ImageByteCount" Code="92" Type="int" DefaultValue="0" DisableWritingDefault="true" MinVersion="R2000" />
+    <Field Name="PreviewImageData" Code="310" Type="string" DefaultValue='""' AllowMultiples="true" MinVersion="R2000" />
+    <Field Name="Color24Bit" Code="420" Type="int" DefaultValue="0" DisableWritingDefault="true" MinVersion="R2004" />
+    <Field Name="ColorName" Code="430" Type="string" DefaultValue='""' MinVersion="R2004" />
+    <Field Name="Transparency" Code="440" Type="int" DefaultValue="0" MinVersion="R2004" />
+    <!-- <Pointer Name="PlotStyle" Code="390" Type="IDxfItem" MinVersion="R2007" /> -->
+    <Field Name="ShadowMode" Code="284" Type="ShadowMode" DefaultValue="ShadowModeCastsAndReceivesShadows" ReadConverter="ShadowMode(%v)" WriteConverter="int16(%v)" MinVersion="R2007" />
+  </Entity>
+  <!--
+
+  LINE
+
+  -->
+  <Entity Name="Line" SubclassMarker="AcDbLine" TypeString="LINE">
+    <Field Name="Thickness" Code="39" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="P1" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="P2" Code="11" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="11,21,31" />
+    <Field Name="ExtrusionDirection" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
+  </Entity>
+</Entities>

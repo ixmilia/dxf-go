@@ -8,6 +8,7 @@ import (
 func main() {
 	generateEnums()
 	generateHeader()
+	generateEntities()
 }
 
 func check(e error) {
