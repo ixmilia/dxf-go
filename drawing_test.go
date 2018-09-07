@@ -49,10 +49,9 @@ func TestRoundTripAllDrawingVersions(t *testing.T) {
 		R2000,
 		R2004,
 		R2007,
-		// TODO: issues with some code pairs alternating between short and bool
-		//R2010,
-		//R2013,
-		//R2018,
+		R2010,
+		R2013,
+		R2018,
 	}
 	for _, version := range versions {
 		t.Logf("Testing version roundtrip %s", version.String())

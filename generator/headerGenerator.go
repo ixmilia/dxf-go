@@ -201,22 +201,31 @@ func generateHeader() {
 				builder.WriteString("				}\n")
 			} else {
 				// validate all possible codes; there are some duplicates
-				allowableCodes := make([]string, 0)
-				predicates := make([]string, 0)
+				duplicateVariables := make([]xmlHeaderVariable, 0)
 				for _, v := range variables {
 					if v.Name == variable.Name {
-						allowableCodes = append(allowableCodes, fmt.Sprintf("%d", v.Code))
-						predicates = append(predicates, fmt.Sprintf("nextPair.Code != %d", v.Code))
+						duplicateVariables = append(duplicateVariables, v)
 					}
 				}
-				builder.WriteString(fmt.Sprintf("				if %s {\n", strings.Join(predicates, " && ")))
-				builder.WriteString(fmt.Sprintf("					return header, nextPair, errors.New(\"expected code %s\")\n", strings.Join(allowableCodes, ", ")))
-				builder.WriteString("				}\n")
-				readValue := fmt.Sprintf("nextPair.Value.(%sCodePairValue).Value", codeTypeName(variable.Code))
-				if len(variable.ReadConverter) > 0 {
-					readValue = strings.Replace(variable.ReadConverter, "%v", readValue, -1)
+
+				if len(duplicateVariables) > 1 {
+					builder.WriteString("				switch nextPair.Code {\n")
+					allowedCodes := make([]string, 0)
+					for _, v := range duplicateVariables {
+						allowedCodes = append(allowedCodes, fmt.Sprintf("%d", v.Code))
+						builder.WriteString(fmt.Sprintf("				case %d:\n", v.Code))
+						builder.WriteString(fmt.Sprintf("					header.%s = %s\n", v.FieldName, generateReadFunction(v)))
+					}
+					builder.WriteString("				default:\n")
+					builder.WriteString(fmt.Sprintf("					return header, nextPair, errors.New(\"expected codes %s\")\n", strings.Join(allowedCodes, ", ")))
+					builder.WriteString("				}\n")
+				} else {
+					builder.WriteString(fmt.Sprintf("				if nextPair.Code != %d {\n", variable.Code))
+					builder.WriteString(fmt.Sprintf("					return header, nextPair, errors.New(\"expected code %d\")\n", variable.Code))
+					builder.WriteString("				}\n")
+					builder.WriteString(fmt.Sprintf("				header.%s = %s\n", variable.FieldName, generateReadFunction(variable)))
 				}
-				builder.WriteString(fmt.Sprintf("				header.%s = %s\n", variable.FieldName, readValue))
+
 			}
 		}
 	}
@@ -246,6 +255,15 @@ func generateComment(mainComment, minVersion, maxVersion string) string {
 		comment += fmt.Sprintf("  Maximum AutoCAD version %s.", maxVersion)
 	}
 	return comment
+}
+
+func generateReadFunction(variable xmlHeaderVariable) string {
+	readValue := fmt.Sprintf("nextPair.Value.(%sCodePairValue).Value", codeTypeName(variable.Code))
+	if len(variable.ReadConverter) > 0 {
+		readValue = strings.Replace(variable.ReadConverter, "%v", readValue, -1)
+	}
+
+	return readValue
 }
 
 func readHeader(reader io.Reader) ([]xmlHeaderVariable, error) {
