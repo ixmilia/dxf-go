@@ -21,7 +21,7 @@ func newASCIICodePairWriter(writer io.Writer) codePairWriter {
 	}
 }
 
-func (a asciiCodePairWriter) writeDouble(val float64) error {
+func formatFloat64(val float64) string {
 	// trim trailing zeros
 	display := strings.TrimRight(fmt.Sprintf("%.12f", val), "0")
 
@@ -30,7 +30,11 @@ func (a asciiCodePairWriter) writeDouble(val float64) error {
 		display += "0"
 	}
 
-	return a.writeString(display)
+	return display
+}
+
+func (a asciiCodePairWriter) writeDouble(val float64) error {
+	return a.writeString(formatFloat64(val))
 }
 
 func (a asciiCodePairWriter) writeShort(val int16) error {

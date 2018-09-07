@@ -21,5 +21,5 @@ func NewOrigin() *Point {
 }
 
 func (p *Point) String() string {
-	return fmt.Sprintf("(%f, %f, %f)", p.X, p.Y, p.Z)
+	return fmt.Sprintf("(%s, %s, %s)", formatFloat64(p.X), formatFloat64(p.Y), formatFloat64(p.Z))
 }
