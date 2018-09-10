@@ -1,0 +1,63 @@
+variables:
+  PackageName: github.com/IxMilia/dxf-go
+
+phases:
+- phase: Windows
+  queue: Hosted VS2017
+  steps:
+  - task: Go@0
+    displayName: Version
+    inputs:
+      command: custom
+      customCommand: version
+  - task: Go@0
+    displayName: Get
+    inputs:
+      command: get
+      arguments: -v -t -d $(PackageName)
+  - task: Go@0
+    displayName: Generate
+    inputs:
+      command: custom
+      customCommand: generate
+      arguments: -v $(PackageName)
+  - task: Go@0
+    displayName: Build
+    inputs:
+      command: build
+      arguments: -v $(PackageName)
+  - task: Go@0
+    displayName: Test
+    inputs:
+      command: test
+      arguments: -v $(PackageName)
+
+- phase: Linux
+  queue: Hosted Linux Preview
+  steps:
+  - task: Go@0
+    displayName: Version
+    inputs:
+      command: custom
+      customCommand: version
+  - task: Go@0
+    displayName: Get
+    inputs:
+      command: get
+      arguments: -v -t -d $(PackageName)
+  - task: Go@0
+    displayName: Generate
+    inputs:
+      command: custom
+      customCommand: generate
+      arguments: -v $(PackageName)
+  - task: Go@0
+    displayName: Build
+    inputs:
+      command: build
+      arguments: -v $(PackageName)
+  - task: Go@0
+    displayName: Test
+    inputs:
+      command: test
+      arguments: -v $(PackageName)
