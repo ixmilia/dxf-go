@@ -85,7 +85,7 @@ func generateEntities() {
 	// base interface
 	builder.WriteString("type Entity interface {\n")
 	builder.WriteString("	typeString() (typeString string)\n")
-	builder.WriteString("	codePairs() (pairs []CodePair)\n")
+	builder.WriteString("	codePairs(version AcadVersion) (pairs []CodePair)\n")
 	builder.WriteString("	tryApplyCodePair(codePair CodePair)\n")
 	for _, field := range baseEntity.Fields {
 		builder.WriteString(fmt.Sprintf("	%s() %s\n", field.Name, field.Type))       // getter
@@ -187,7 +187,7 @@ func generateEntities() {
 		builder.WriteString("\n")
 
 		// writer
-		builder.WriteString(fmt.Sprintf("func (this *%s) codePairs() (pairs []CodePair) {\n", entity.Name))
+		builder.WriteString(fmt.Sprintf("func (this *%s) codePairs(version AcadVersion) (pairs []CodePair) {\n", entity.Name))
 		builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewStringCodePair(0, \"%s\"))\n", strings.Split(entity.TypeString, ",")[0]))
 		for _, directive := range baseEntity.WriteOrder.Directives {
 			writeDirective(&builder, baseEntity, directive, true)
@@ -208,11 +208,7 @@ func generateEntities() {
 						builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewDoubleCodePair(%d, this.%s.%c))\n", code, field.Name, component))
 					}
 				} else {
-					value := fmt.Sprintf("this.%s", field.Name)
-					if len(field.WriteConverter) > 0 {
-						value = strings.Replace(field.WriteConverter, "%v", value, -1)
-					}
-					builder.WriteString(fmt.Sprintf("	pairs = append(pairs, New%sCodePair(%d, %s))\n", codeTypeName(field.Code), field.Code, value))
+					writeField(&builder, entity, field, false)
 				}
 			}
 		}
@@ -253,20 +249,52 @@ func writeDirective(builder *strings.Builder, entity xmlEntity, directive xmlWri
 		// TODO:
 	case "WriteField":
 		field := entity.getNamedField(directive.Field)
-		suffix := ""
-		if asFunction {
-			suffix = "()"
-		}
-		value := fmt.Sprintf("this.%s%s", field.Name, suffix)
-		if len(field.WriteConverter) > 0 {
-			value = strings.Replace(field.WriteConverter, "%v", value, -1)
-		}
-		builder.WriteString(fmt.Sprintf("	pairs = append(pairs, New%sCodePair(%d, %s))\n", codeTypeName(field.Code), field.Code, value))
+		writeField(builder, entity, field, asFunction)
 	case "WriteSpecificValue":
 		builder.WriteString(fmt.Sprintf("	pairs = append(pairs, New%sCodePair(%d, %s))\n", codeTypeName(directive.Code), directive.Code, directive.Value))
 	default:
 		panic(fmt.Sprintf("Unsupported write directive '%s' specified for entity %s", directive.XMLName.Local, entity.Name))
 	}
+}
+
+func writeField(builder *strings.Builder, entity xmlEntity, field xmlField, asFunction bool) {
+	predicates := fieldPredicates(field, asFunction)
+	indention := ""
+	if len(predicates) > 0 {
+		indention = "	"
+		builder.WriteString(fmt.Sprintf("	if %s {\n", strings.Join(predicates, " && ")))
+	}
+
+	suffix := ""
+	if asFunction {
+		suffix = "()"
+	}
+	value := fmt.Sprintf("this.%s%s", field.Name, suffix)
+	if len(field.WriteConverter) > 0 {
+		value = strings.Replace(field.WriteConverter, "%v", value, -1)
+	}
+	builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indention, codeTypeName(field.Code), field.Code, value))
+	if len(predicates) > 0 {
+		builder.WriteString("	}\n")
+	}
+}
+
+func fieldPredicates(field xmlField, asFunction bool) (predicates []string) {
+	if len(field.MinVersion) > 0 {
+		predicates = append(predicates, fmt.Sprintf("version >= %s", field.MinVersion))
+	}
+	if len(field.MaxVersion) > 0 {
+		predicates = append(predicates, fmt.Sprintf("version <= %s", field.MaxVersion))
+	}
+	if field.DisableWritingDefault {
+		suffix := ""
+		if asFunction {
+			suffix = "()"
+		}
+		predicates = append(predicates, fmt.Sprintf("this.%s%s != %s", field.Name, suffix, field.DefaultValue))
+	}
+
+	return
 }
 
 func (entity xmlEntity) getNamedField(name string) xmlField {

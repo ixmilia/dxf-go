@@ -55,7 +55,7 @@ func (d *Drawing) saveToCodePairWriter(writer codePairWriter) error {
 		return err
 	}
 
-	err = d.writeEntities(writer)
+	err = d.writeEntities(writer, d.Header.Version)
 	if err != nil {
 		return err
 	}
@@ -64,12 +64,12 @@ func (d *Drawing) saveToCodePairWriter(writer codePairWriter) error {
 	return err
 }
 
-func (d *Drawing) writeEntities(writer codePairWriter) error {
+func (d *Drawing) writeEntities(writer codePairWriter, version AcadVersion) error {
 	pairs := make([]CodePair, 0)
 	pairs = append(pairs, NewStringCodePair(0, "SECTION"))
 	pairs = append(pairs, NewStringCodePair(2, "ENTITIES"))
 	for _, entity := range d.Entities {
-		for _, pair := range entity.codePairs() {
+		for _, pair := range entity.codePairs(version) {
 			pairs = append(pairs, pair)
 		}
 	}

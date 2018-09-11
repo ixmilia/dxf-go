@@ -71,6 +71,20 @@ func TestWriteSimpleLine(t *testing.T) {
 	), actual)
 }
 
+func TestConditionalEntityFieldWriting(t *testing.T) {
+	line := NewLine()
+	line.SetIsInPaperSpace(false)
+	drawing := *NewDrawing()
+	drawing.Header.Version = R14
+	drawing.Entities = append(drawing.Entities, line)
+	actual := drawing.String()
+	assertNotContains(t, join(
+		"  0", "LINE",
+		"100", "AcDbEntity",
+		" 67", // [NO-VALUE] this is only written when Version >= R12 and it's not the default (false)
+	), actual)
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
 	drawing := parse(t, join(
 		"  0", "SECTION",
