@@ -3,6 +3,8 @@ dxf-go
 
 A go package for reading and writing DXF CAD files.
 
+[![Build Status](https://dev.azure.com/ixmilia/public/_apis/build/status/dxf-go?branchName=master)](https://dev.azure.com/ixmilia/public/_build/latest?definitionId=28)
+
 ## Usage
 
 Acquisition:
@@ -20,6 +22,7 @@ import dxf "github.com/IxMilia/dxf-go"
 
 drawing, err := dxf.ReadFile("path/to/file.dxf")
 // if err != nil
+
 for _, entity := range drawing.Entities {
     switch ent := entity.(type) {
     case *dxf.Line:
