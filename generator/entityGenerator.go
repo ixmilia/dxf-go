@@ -15,11 +15,12 @@ type xmlEntities struct {
 }
 
 type xmlEntity struct {
-	XMLName        xml.Name   `xml:"Entity"`
-	Name           string     `xml:"Name,attr"`
-	SubclassMarker string     `xml:"SubclassMarker,attr"`
-	TypeString     string     `xml:"TypeString,attr"`
-	Fields         []xmlField `xml:"Field"`
+	XMLName        xml.Name                `xml:"Entity"`
+	Name           string                  `xml:"Name,attr"`
+	SubclassMarker string                  `xml:"SubclassMarker,attr"`
+	TypeString     string                  `xml:"TypeString,attr"`
+	Fields         []xmlField              `xml:"Field"`
+	WriteOrder     xmlWriteOrderCollection `xml:"WriteOrder"`
 }
 
 type xmlField struct {
@@ -35,6 +36,20 @@ type xmlField struct {
 	MinVersion            string   `xml:"MinVersion,attr"`
 	MaxVersion            string   `xml:"MaxVersion,attr"`
 	Comment               string   `xml:"Comment,attr"`
+}
+
+type xmlWriteOrderCollection struct {
+	XMLName    xml.Name                 `xml:"WriteOrder"`
+	Directives []xmlWriteOrderDirective `xml:",any"`
+}
+
+type xmlWriteOrderDirective struct {
+	XMLName        xml.Name
+	Field          string `xml:"Field,attr"`
+	Code           int    `xml:"Code,attr"`
+	Value          string `xml:"Value,attr"`
+	WriteCondition string `xml:"WriteCondition,attr"`
+	WriteConverter string `xml:"WriteConverter,attr"`
 }
 
 func generateEntities() {
@@ -174,29 +189,31 @@ func generateEntities() {
 		// writer
 		builder.WriteString(fmt.Sprintf("func (this *%s) codePairs() (pairs []CodePair) {\n", entity.Name))
 		builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewStringCodePair(0, \"%s\"))\n", strings.Split(entity.TypeString, ",")[0]))
-		builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewStringCodePair(100, \"%s\"))\n", entity.SubclassMarker))
-		for _, field := range baseEntity.Fields {
-			value := fmt.Sprintf("this.%s()", field.Name)
-			if len(field.WriteConverter) > 0 {
-				value = strings.Replace(field.WriteConverter, "%v", value, -1)
-			}
-			builder.WriteString(fmt.Sprintf("	pairs = append(pairs, New%sCodePair(%d, %s))\n", codeTypeName(field.Code), field.Code, value))
+		for _, directive := range baseEntity.WriteOrder.Directives {
+			writeDirective(&builder, baseEntity, directive, true)
 		}
-		for _, field := range entity.Fields {
-			if len(field.CodeOverrides) > 0 {
-				codeOverrides := strings.Split(field.CodeOverrides, ",")
-				for i, codeString := range codeOverrides {
-					code, err := strconv.Atoi(strings.TrimSpace(codeString))
-					check(err)
-					component := 'X' + i
-					builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewDoubleCodePair(%d, this.%s.%c))\n", code, field.Name, component))
+		builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewStringCodePair(100, \"%s\"))\n", entity.SubclassMarker))
+		if len(entity.WriteOrder.Directives) > 0 {
+			for _, directive := range entity.WriteOrder.Directives {
+				writeDirective(&builder, entity, directive, false)
+			}
+		} else {
+			for _, field := range entity.Fields {
+				if len(field.CodeOverrides) > 0 {
+					codeOverrides := strings.Split(field.CodeOverrides, ",")
+					for i, codeString := range codeOverrides {
+						code, err := strconv.Atoi(strings.TrimSpace(codeString))
+						check(err)
+						component := 'X' + i
+						builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewDoubleCodePair(%d, this.%s.%c))\n", code, field.Name, component))
+					}
+				} else {
+					value := fmt.Sprintf("this.%s", field.Name)
+					if len(field.WriteConverter) > 0 {
+						value = strings.Replace(field.WriteConverter, "%v", value, -1)
+					}
+					builder.WriteString(fmt.Sprintf("	pairs = append(pairs, New%sCodePair(%d, %s))\n", codeTypeName(field.Code), field.Code, value))
 				}
-			} else {
-				value := fmt.Sprintf("this.%s", field.Name)
-				if len(field.WriteConverter) > 0 {
-					value = strings.Replace(field.WriteConverter, "%v", value, -1)
-				}
-				builder.WriteString(fmt.Sprintf("	pairs = append(pairs, New%sCodePair(%d, %s))\n", codeTypeName(field.Code), field.Code, value))
 			}
 		}
 		builder.WriteString("\n")
@@ -228,6 +245,38 @@ func generateEntities() {
 	builder.WriteString("}\n")
 
 	writeFile("entities.generated.go", builder)
+}
+
+func writeDirective(builder *strings.Builder, entity xmlEntity, directive xmlWriteOrderDirective, asFunction bool) {
+	switch directive.XMLName.Local {
+	case "WriteExtensionData":
+		// TODO:
+	case "WriteField":
+		field := entity.getNamedField(directive.Field)
+		suffix := ""
+		if asFunction {
+			suffix = "()"
+		}
+		value := fmt.Sprintf("this.%s%s", field.Name, suffix)
+		if len(field.WriteConverter) > 0 {
+			value = strings.Replace(field.WriteConverter, "%v", value, -1)
+		}
+		builder.WriteString(fmt.Sprintf("	pairs = append(pairs, New%sCodePair(%d, %s))\n", codeTypeName(field.Code), field.Code, value))
+	case "WriteSpecificValue":
+		builder.WriteString(fmt.Sprintf("	pairs = append(pairs, New%sCodePair(%d, %s))\n", codeTypeName(directive.Code), directive.Code, directive.Value))
+	default:
+		panic(fmt.Sprintf("Unsupported write directive '%s' specified for entity %s", directive.XMLName.Local, entity.Name))
+	}
+}
+
+func (entity xmlEntity) getNamedField(name string) xmlField {
+	for _, field := range entity.Fields {
+		if field.Name == name {
+			return field
+		}
+	}
+
+	panic(fmt.Sprintf("Unable to find field %s.%s", entity.Name, name))
 }
 
 func readEntities(reader io.Reader) ([]xmlEntity, error) {

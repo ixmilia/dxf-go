@@ -21,6 +21,28 @@
     <Field Name="Transparency" Code="440" Type="int" DefaultValue="0" MinVersion="R2004" />
     <!-- <Pointer Name="PlotStyle" Code="390" Type="IDxfItem" MinVersion="R2007" /> -->
     <Field Name="ShadowMode" Code="284" Type="ShadowMode" DefaultValue="ShadowModeCastsAndReceivesShadows" ReadConverter="ShadowMode(%v)" WriteConverter="int16(%v)" MinVersion="R2007" />
+    <WriteOrder>
+      <!-- TODO: 5/handle -->
+      <WriteExtensionData />
+      <!-- TODO: 330/owner-handle -->
+      <WriteSpecificValue Code="100" Value='"AcDbEntity"' />
+      <WriteField Field="IsInPaperSpace" />
+      <WriteField Field="Layer" />
+      <WriteField Field="LineTypeName" />
+      <WriteField Field="Elevation" />
+      <WriteField Field="MaterialHandle" />
+      <WriteField Field="Color" />
+      <WriteField Field="LineWeight" />
+      <WriteField Field="LineTypeScale" />
+      <WriteField Field="IsVisible" />
+      <WriteField Field="ImageByteCount" />
+      <WriteField Field="PreviewImageData" />
+      <WriteField Field="Color24Bit" />
+      <WriteField Field="ColorName" />
+      <WriteField Field="Transparency" />
+      <!-- <WriteField Field="PlotStyle" /> -->
+      <WriteField Field="ShadowMode" />
+    </WriteOrder>
   </Entity>
   <!--
 
