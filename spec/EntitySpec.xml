@@ -63,6 +63,25 @@
   </Entity>
   <!--
 
+  3DSOLID
+
+  -->
+  <Entity Name="Solid" SubclassMarker="AcDbModelerGeometry" TypeString="3DSOLID" MinVersion="R13">
+    <Field Name="FormatVersionNumber" Code="70" Type="int16" DefaultValue="1" />
+    <Field Name="CustomData" Code="1" Type="string" DefaultValue='""' AllowMultiples="true" />
+    <Field Name="CustomData2" Code="3" Type="string" DefaultValue='""' AllowMultiples="true" />
+    <!-- <Pointer Name="HistoryObject" Code="350" Type="IDxfItem" MinVersion="R2007" /> -->
+    <WriteOrder>
+      <WriteSpecificValue Code="100" Value='"AcDbModelerGeometry"' />
+      <WriteField Field="FormatVersionNumber" />
+      <WriteField Field="CustomData" />
+      <WriteField Field="CustomData2" />
+      <WriteSpecificValue Code="100" Value='"AcDb3dSolid"' MinVersion="R2007" />
+      <!-- <WriteField Property="HistoryObject" /> -->
+    </WriteOrder>
+  </Entity>
+  <!--
+
   LINE
 
   -->

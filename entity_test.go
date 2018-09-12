@@ -117,6 +117,24 @@ func TestWriteEntityFieldFlag(t *testing.T) {
 	), actual)
 }
 
+func TestWriteVersionSpecificEntities(t *testing.T) {
+	solid := NewSolid()
+	drawing := *NewDrawing()
+	drawing.Entities = append(drawing.Entities, solid)
+
+	// ensure it's present when appropriate
+	drawing.Header.Version = R13
+	assertContains(t, join(
+		"  0", "3DSOLID",
+	), drawing.String())
+
+	// and not otherwise
+	drawing.Header.Version = R12
+	assertNotContains(t, join(
+		"  0", "3DSOLID",
+	), drawing.String())
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
 	drawing := parse(t, join(
 		"  0", "SECTION",

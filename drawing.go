@@ -69,8 +69,10 @@ func (d *Drawing) writeEntities(writer codePairWriter, version AcadVersion) erro
 	pairs = append(pairs, NewStringCodePair(0, "SECTION"))
 	pairs = append(pairs, NewStringCodePair(2, "ENTITIES"))
 	for _, entity := range d.Entities {
-		for _, pair := range entity.codePairs(version) {
-			pairs = append(pairs, pair)
+		if version >= entity.minVersion() && version <= entity.maxVersion() {
+			for _, pair := range entity.codePairs(version) {
+				pairs = append(pairs, pair)
+			}
 		}
 	}
 

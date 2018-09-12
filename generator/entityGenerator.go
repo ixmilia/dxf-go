@@ -19,6 +19,8 @@ type xmlEntity struct {
 	Name           string                  `xml:"Name,attr"`
 	SubclassMarker string                  `xml:"SubclassMarker,attr"`
 	TypeString     string                  `xml:"TypeString,attr"`
+	MinVersion     string                  `xml:"MinVersion,attr"`
+	MaxVersion     string                  `xml:"MaxVersion,attr"`
 	Fields         []xmlField              `xml:"Field"`
 	WriteOrder     xmlWriteOrderCollection `xml:"WriteOrder"`
 }
@@ -92,6 +94,8 @@ func generateEntities() {
 	// base interface
 	builder.WriteString("type Entity interface {\n")
 	builder.WriteString("	typeString() (typeString string)\n")
+	builder.WriteString("	minVersion() (version AcadVersion)\n")
+	builder.WriteString("	maxVersion() (version AcadVersion)\n")
 	builder.WriteString("	codePairs(version AcadVersion) (pairs []CodePair)\n")
 	builder.WriteString("	tryApplyCodePair(codePair CodePair)\n")
 	for _, field := range baseEntity.Fields {
@@ -179,6 +183,26 @@ func generateEntities() {
 		// typeString()
 		builder.WriteString(fmt.Sprintf("func (this *%s) typeString() string {\n", entity.Name))
 		builder.WriteString(fmt.Sprintf("	return \"%s\"\n", strings.Split(entity.TypeString, ",")[0]))
+		builder.WriteString("}\n")
+		builder.WriteString("\n")
+
+		// minVersion()
+		minVersion := entity.MinVersion
+		if len(minVersion) == 0 {
+			minVersion = "Version1_0" // TODO: pull this from acadVersion.go?
+		}
+		builder.WriteString(fmt.Sprintf("func (this *%s) minVersion() (version AcadVersion) {\n", entity.Name))
+		builder.WriteString(fmt.Sprintf("	return %s\n", minVersion))
+		builder.WriteString("}\n")
+		builder.WriteString("\n")
+
+		// maxVersion()
+		maxVersion := entity.MaxVersion
+		if len(maxVersion) == 0 {
+			maxVersion = "R2018" // TODO: pull this from acadVersion.go?
+		}
+		builder.WriteString(fmt.Sprintf("func (this *%s) maxVersion() (version AcadVersion) {\n", entity.Name))
+		builder.WriteString(fmt.Sprintf("	return %s\n", maxVersion))
 		builder.WriteString("}\n")
 		builder.WriteString("\n")
 
