@@ -55,9 +55,7 @@ func TestWriteSimpleLine(t *testing.T) {
 	line := NewLine()
 	line.P1 = Point{1.0, 2.0, 3.0}
 	line.P2 = Point{4.0, 5.0, 6.0}
-	drawing := *NewDrawing()
-	drawing.Entities = append(drawing.Entities, line)
-	actual := drawing.String()
+	actual := entityString(line, R12)
 	assertContains(t, join(
 		"  0", "LINE",
 	), actual)
@@ -74,14 +72,48 @@ func TestWriteSimpleLine(t *testing.T) {
 func TestConditionalEntityFieldWriting(t *testing.T) {
 	line := NewLine()
 	line.SetIsInPaperSpace(false)
-	drawing := *NewDrawing()
-	drawing.Header.Version = R14
-	drawing.Entities = append(drawing.Entities, line)
-	actual := drawing.String()
+	actual := entityString(line, R14)
 	assertNotContains(t, join(
 		"  0", "LINE",
 		"100", "AcDbEntity",
 		" 67", // [NO-VALUE] this is only written when Version >= R12 and it's not the default (false)
+	), actual)
+}
+
+func TestReadEntityFieldFlag(t *testing.T) {
+	face := parseEntity(t, "3DFACE", join(
+		" 70", "     5",
+	)).(*Face)
+	assert(t, face.FirstEdgeInvisible(), "expected first edge to be invisible")
+	assert(t, !face.SecondEdgeInvisible(), "expected first edge to be visible")
+	assert(t, face.ThirdEdgeInvisible(), "expected first edge to be invisible")
+	assert(t, !face.FourthEdgeInvisible(), "expected first edge to be visible")
+}
+
+func TestWriteEntityFieldFlag(t *testing.T) {
+	face := NewFace()
+	face.SetFirstEdgeInvisible(true)
+	face.SetSecondEdgeInvisible(false)
+	face.SetThirdEdgeInvisible(true)
+	face.SetFourthEdgeInvisible(false)
+	actual := entityString(face, R12)
+	assertContains(t, join(
+		// these parts just ensure we're checking the correct entity
+		"100", "AcDbFace",
+		" 10", "0.0",
+		" 20", "0.0",
+		" 30", "0.0",
+		" 11", "0.0",
+		" 21", "0.0",
+		" 31", "0.0",
+		" 12", "0.0",
+		" 22", "0.0",
+		" 32", "0.0",
+		" 13", "0.0",
+		" 23", "0.0",
+		" 33", "0.0",
+		// this is the real check
+		" 70", "     5",
 	), actual)
 }
 
@@ -96,4 +128,11 @@ func parseEntity(t *testing.T, entityType string, body string) Entity {
 	))
 	assertEqInt(t, 1, len(drawing.Entities))
 	return drawing.Entities[0]
+}
+
+func entityString(entity Entity, version AcadVersion) string {
+	drawing := *NewDrawing()
+	drawing.Header.Version = version
+	drawing.Entities = append(drawing.Entities, entity)
+	return drawing.String()
 }

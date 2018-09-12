@@ -24,18 +24,25 @@ type xmlEntity struct {
 }
 
 type xmlField struct {
-	XMLName               xml.Name `xml:"Field"`
-	Name                  string   `xml:"Name,attr"`
-	Code                  int      `xml:"Code,attr"`
-	CodeOverrides         string   `xml:"CodeOverrides,attr"`
-	Type                  string   `xml:"Type,attr"`
-	DefaultValue          string   `xml:"DefaultValue,attr"`
-	ReadConverter         string   `xml:"ReadConverter,attr"`
-	WriteConverter        string   `xml:"WriteConverter,attr"`
-	DisableWritingDefault bool     `xml:"DisableWritingDefault,attr"`
-	MinVersion            string   `xml:"MinVersion,attr"`
-	MaxVersion            string   `xml:"MaxVersion,attr"`
-	Comment               string   `xml:"Comment,attr"`
+	XMLName               xml.Name  `xml:"Field"`
+	Name                  string    `xml:"Name,attr"`
+	Code                  int       `xml:"Code,attr"`
+	CodeOverrides         string    `xml:"CodeOverrides,attr"`
+	Type                  string    `xml:"Type,attr"`
+	DefaultValue          string    `xml:"DefaultValue,attr"`
+	ReadConverter         string    `xml:"ReadConverter,attr"`
+	WriteConverter        string    `xml:"WriteConverter,attr"`
+	DisableWritingDefault bool      `xml:"DisableWritingDefault,attr"`
+	MinVersion            string    `xml:"MinVersion,attr"`
+	MaxVersion            string    `xml:"MaxVersion,attr"`
+	Comment               string    `xml:"Comment,attr"`
+	Flags                 []xmlFlag `xml:"Flag"`
+}
+
+type xmlFlag struct {
+	XMLName xml.Name `xml:"Flag"`
+	Name    string   `xml:"Name,attr"`
+	Mask    int      `xml:"Mask,attr"`
 }
 
 type xmlWriteOrderCollection struct {
@@ -94,6 +101,7 @@ func generateEntities() {
 	builder.WriteString("}\n")
 	builder.WriteString("\n")
 
+	// for each entity
 	for _, entity := range entities {
 		if entity.Name == "Entity" {
 			continue
@@ -127,7 +135,7 @@ func generateEntities() {
 		builder.WriteString("}\n")
 		builder.WriteString("\n")
 
-		// getter/setter
+		// base entity getter/setter
 		for _, field := range baseEntity.Fields {
 			// getter
 			builder.WriteString(fmt.Sprintf("func (this *%s) %s() %s {\n", entity.Name, field.Name, field.Type))
@@ -143,6 +151,32 @@ func generateEntities() {
 			builder.WriteString("\n")
 		}
 
+		// flags
+		for _, field := range entity.Fields {
+			for _, flag := range field.Flags {
+				comment := generateComment(fmt.Sprintf("%s status flag.", flag.Name), field.MinVersion, field.MaxVersion)
+
+				// getter
+				builder.WriteString(fmt.Sprintf("// %s\n", comment))
+				builder.WriteString(fmt.Sprintf("func (this *%s) %s() bool {\n", entity.Name, flag.Name))
+				builder.WriteString(fmt.Sprintf("	return this.%s & %d != 0\n", field.Name, flag.Mask))
+				builder.WriteString("}\n")
+				builder.WriteString("\n")
+
+				// setter
+				builder.WriteString(fmt.Sprintf("// %s\n", comment))
+				builder.WriteString(fmt.Sprintf("func (this *%s) Set%s(val bool) {\n", entity.Name, flag.Name))
+				builder.WriteString("	if val {\n")
+				builder.WriteString(fmt.Sprintf("		this.%s = this.%s | %d\n", field.Name, field.Name, flag.Mask))
+				builder.WriteString("	} else {\n")
+				builder.WriteString(fmt.Sprintf("		this.%s = this.%s & ^%d\n", field.Name, field.Name, flag.Mask))
+				builder.WriteString("	}\n")
+				builder.WriteString("}\n")
+				builder.WriteString("\n")
+			}
+		}
+
+		// typeString()
 		builder.WriteString(fmt.Sprintf("func (this *%s) typeString() string {\n", entity.Name))
 		builder.WriteString(fmt.Sprintf("	return \"%s\"\n", strings.Split(entity.TypeString, ",")[0]))
 		builder.WriteString("}\n")
@@ -199,17 +233,7 @@ func generateEntities() {
 			}
 		} else {
 			for _, field := range entity.Fields {
-				if len(field.CodeOverrides) > 0 {
-					codeOverrides := strings.Split(field.CodeOverrides, ",")
-					for i, codeString := range codeOverrides {
-						code, err := strconv.Atoi(strings.TrimSpace(codeString))
-						check(err)
-						component := 'X' + i
-						builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewDoubleCodePair(%d, this.%s.%c))\n", code, field.Name, component))
-					}
-				} else {
-					writeField(&builder, entity, field, false)
-				}
+				writeField(&builder, entity, field, false)
 			}
 		}
 		builder.WriteString("\n")
@@ -269,11 +293,22 @@ func writeField(builder *strings.Builder, entity xmlEntity, field xmlField, asFu
 	if asFunction {
 		suffix = "()"
 	}
-	value := fmt.Sprintf("this.%s%s", field.Name, suffix)
-	if len(field.WriteConverter) > 0 {
-		value = strings.Replace(field.WriteConverter, "%v", value, -1)
+
+	if len(field.CodeOverrides) > 0 {
+		codeOverrides := strings.Split(field.CodeOverrides, ",")
+		for i, codeString := range codeOverrides {
+			code, err := strconv.Atoi(strings.TrimSpace(codeString))
+			check(err)
+			component := 'X' + i
+			builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, NewDoubleCodePair(%d, this.%s.%c))\n", indention, code, field.Name, component))
+		}
+	} else {
+		value := fmt.Sprintf("this.%s%s", field.Name, suffix)
+		if len(field.WriteConverter) > 0 {
+			value = strings.Replace(field.WriteConverter, "%v", value, -1)
+		}
+		builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indention, codeTypeName(field.Code), field.Code, value))
 	}
-	builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indention, codeTypeName(field.Code), field.Code, value))
 	if len(predicates) > 0 {
 		builder.WriteString("	}\n")
 	}

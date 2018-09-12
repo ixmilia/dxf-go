@@ -46,6 +46,23 @@
   </Entity>
   <!--
 
+  3DFACE
+
+  -->
+  <Entity Name="Face" SubclassMarker="AcDbFace" TypeString="3DFACE">
+    <Field Name="FirstCorner" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="SecondCorner" Code="11" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="11,21,31" />
+    <Field Name="ThirdCorner" Code="12" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="12,22,32" />
+    <Field Name="FourthCorner" Code="13" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="13,23,33" />
+    <Field Name="EdgeFlags" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true">
+      <Flag Name="FirstEdgeInvisible" Mask="1" />
+      <Flag Name="SecondEdgeInvisible" Mask="2" />
+      <Flag Name="ThirdEdgeInvisible" Mask="4" />
+      <Flag Name="FourthEdgeInvisible" Mask="8" />
+    </Field>
+  </Entity>
+  <!--
+
   LINE
 
   -->
