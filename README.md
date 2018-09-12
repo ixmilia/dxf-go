@@ -10,7 +10,7 @@ A go package for reading and writing DXF CAD files.
 Acquisition:
 
 ``` bash
-go get github.com/IxMilia/dxf-go
+go get -d -t github.com/IxMilia/dxf-go
 go generate github.com/IxMilia/dxf-go
 ```
 
