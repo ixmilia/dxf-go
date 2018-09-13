@@ -60,6 +60,8 @@ type xmlWriteOrderDirective struct {
 	Value          string `xml:"Value,attr"`
 	WriteCondition string `xml:"WriteCondition,attr"`
 	WriteConverter string `xml:"WriteConverter,attr"`
+	MinVersion     string `xml:"MinVersion,attr"`
+	MaxVersion     string `xml:"MaxVersion,attr"`
 }
 
 func generateEntities() {
@@ -350,10 +352,33 @@ func writeDirective(builder *strings.Builder, entity xmlEntity, directive xmlWri
 		field := entity.getNamedField(directive.Field)
 		writeField(builder, entity, field, asFunction)
 	case "WriteSpecificValue":
-		builder.WriteString(fmt.Sprintf("	pairs = append(pairs, New%sCodePair(%d, %s))\n", codeTypeName(directive.Code), directive.Code, directive.Value))
+		predicates := directivePredicates(directive)
+		indention := ""
+		if len(predicates) > 0 {
+			builder.WriteString(fmt.Sprintf("	if %s {\n", strings.Join(predicates, " && ")))
+			indention = "	"
+		}
+		builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indention, codeTypeName(directive.Code), directive.Code, directive.Value))
+		if len(predicates) > 0 {
+			builder.WriteString("	}\n")
+		}
 	default:
 		panic(fmt.Sprintf("Unsupported write directive '%s' specified for entity %s", directive.XMLName.Local, entity.Name))
 	}
+}
+
+func directivePredicates(directive xmlWriteOrderDirective) []string {
+	predicates := []string{}
+	if len(directive.MinVersion) > 0 {
+		predicates = append(predicates, fmt.Sprintf("version >= %s", directive.MinVersion))
+	}
+	if len(directive.MaxVersion) > 0 {
+		predicates = append(predicates, fmt.Sprintf("version <= %s", directive.MaxVersion))
+	}
+	if len(directive.WriteCondition) > 0 {
+		predicates = append(predicates, directive.WriteCondition)
+	}
+	return predicates
 }
 
 func writeField(builder *strings.Builder, entity xmlEntity, field xmlField, asFunction bool) {

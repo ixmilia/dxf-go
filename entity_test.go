@@ -180,6 +180,21 @@ func TestWriteMultipleSpecificEntityData(t *testing.T) {
 	), actual)
 }
 
+func TestWriteConditionsOnWriteOrderDirectives(t *testing.T) {
+	solid := NewSolid()
+	solid.AddCustomData("custom data")
+
+	actual := entityString(solid, R2007)
+	assertContains(t, join(
+		"100", "AcDb3dSolid",
+	), actual)
+
+	actual = entityString(solid, R13)
+	assertNotContains(t, join(
+		"100", "AcDb3dSolid",
+	), actual)
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
 	drawing := parse(t, join(
 		"  0", "SECTION",
