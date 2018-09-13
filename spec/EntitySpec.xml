@@ -15,7 +15,7 @@
     <Field Name="LineTypeScale" Code="48" Type="float64" DefaultValue="1.0" DisableWritingDefault="true" MinVersion="R13" />
     <Field Name="IsVisible" Code="60" Type="bool" DefaultValue="true" ReadConverter="!boolFromShort(%v)" WriteConverter="shortFromBool(!%v)" DisableWritingDefault="true" MinVersion="R13" />
     <Field Name="ImageByteCount" Code="92" Type="int" DefaultValue="0" DisableWritingDefault="true" MinVersion="R2000" />
-    <Field Name="PreviewImageData" Code="310" Type="string" DefaultValue='""' AllowMultiples="true" MinVersion="R2000" />
+    <Field Name="PreviewImageData" Code="310" Type="string" DefaultValue="[]string{}" AllowMultiples="true" MinVersion="R2000" />
     <Field Name="Color24Bit" Code="420" Type="int" DefaultValue="0" DisableWritingDefault="true" MinVersion="R2004" />
     <Field Name="ColorName" Code="430" Type="string" DefaultValue='""' MinVersion="R2004" />
     <Field Name="Transparency" Code="440" Type="int" DefaultValue="0" MinVersion="R2004" />
@@ -68,8 +68,8 @@
   -->
   <Entity Name="Solid" SubclassMarker="AcDbModelerGeometry" TypeString="3DSOLID" MinVersion="R13">
     <Field Name="FormatVersionNumber" Code="70" Type="int16" DefaultValue="1" />
-    <Field Name="CustomData" Code="1" Type="string" DefaultValue='""' AllowMultiples="true" />
-    <Field Name="CustomData2" Code="3" Type="string" DefaultValue='""' AllowMultiples="true" />
+    <Field Name="CustomData" Code="1" Type="string" DefaultValue="[]string{}" AllowMultiples="true" />
+    <Field Name="CustomData2" Code="3" Type="string" DefaultValue="[]string{}" AllowMultiples="true" />
     <!-- <Pointer Name="HistoryObject" Code="350" Type="IDxfItem" MinVersion="R2007" /> -->
     <WriteOrder>
       <WriteSpecificValue Code="100" Value='"AcDbModelerGeometry"' />

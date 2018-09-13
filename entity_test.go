@@ -135,6 +135,51 @@ func TestWriteVersionSpecificEntities(t *testing.T) {
 	), drawing.String())
 }
 
+func TestReadMultipleBaseEntityData(t *testing.T) {
+	line := parseEntity(t, "LINE", join(
+		"310", "line 1",
+		"310", "line 2",
+	)).(*Line)
+	assertEqInt(t, 2, len(line.PreviewImageData()))
+	assertEqString(t, "line 1", line.PreviewImageData()[0])
+	assertEqString(t, "line 2", line.PreviewImageData()[1])
+}
+
+func TestWriteMultipleBaseEntityData(t *testing.T) {
+	line := NewLine()
+	line.AddPreviewImageData("line 1")
+	line.AddPreviewImageData("line 2")
+	actual := entityString(line, R2000)
+	assertContains(t, join(
+		"310", "line 1",
+		"310", "line 2",
+		"100", "AcDbLine",
+	), actual)
+}
+
+func TestReadMultipleSpecificEntityData(t *testing.T) {
+	solid := parseEntity(t, "3DSOLID", join(
+		"  1", "line 1",
+		"  1", "line 2",
+	)).(*Solid)
+	assertEqInt(t, 2, len(solid.CustomData))
+	assertEqString(t, "line 1", solid.CustomData[0])
+	assertEqString(t, "line 2", solid.CustomData[1])
+}
+
+func TestWriteMultipleSpecificEntityData(t *testing.T) {
+	solid := NewSolid()
+	solid.AddCustomData("line 1")
+	solid.AddCustomData("line 2")
+	actual := entityString(solid, R13)
+	assertContains(t, join(
+		"100", "AcDbModelerGeometry",
+		" 70", "     1",
+		"  1", "line 1",
+		"  1", "line 2",
+	), actual)
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
 	drawing := parse(t, join(
 		"  0", "SECTION",

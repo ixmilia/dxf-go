@@ -35,6 +35,7 @@ type xmlField struct {
 	ReadConverter         string    `xml:"ReadConverter,attr"`
 	WriteConverter        string    `xml:"WriteConverter,attr"`
 	DisableWritingDefault bool      `xml:"DisableWritingDefault,attr"`
+	AllowMultiples        bool      `xml:"AllowMultiples,attr"`
 	MinVersion            string    `xml:"MinVersion,attr"`
 	MaxVersion            string    `xml:"MaxVersion,attr"`
 	Comment               string    `xml:"Comment,attr"`
@@ -99,8 +100,12 @@ func generateEntities() {
 	builder.WriteString("	codePairs(version AcadVersion) (pairs []CodePair)\n")
 	builder.WriteString("	tryApplyCodePair(codePair CodePair)\n")
 	for _, field := range baseEntity.Fields {
-		builder.WriteString(fmt.Sprintf("	%s() %s\n", field.Name, field.Type))       // getter
-		builder.WriteString(fmt.Sprintf("	Set%s(val %s)\n", field.Name, field.Type)) // setter
+		fieldType := field.Type
+		if field.AllowMultiples {
+			fieldType = "[]" + fieldType
+		}
+		builder.WriteString(fmt.Sprintf("	%s() %s\n", field.Name, fieldType))       // getter
+		builder.WriteString(fmt.Sprintf("	Set%s(val %s)\n", field.Name, fieldType)) // setter
 	}
 	builder.WriteString("}\n")
 	builder.WriteString("\n")
@@ -116,11 +121,18 @@ func generateEntities() {
 		// backing fields
 		for _, field := range baseEntity.Fields {
 			backingField := strings.ToLower(field.Name[0:1]) + field.Name[1:]
-			builder.WriteString(fmt.Sprintf("	%s %s\n", backingField, field.Type))
+			fieldType := field.Type
+			if field.AllowMultiples {
+				fieldType = "[]" + fieldType
+			}
+			builder.WriteString(fmt.Sprintf("	%s %s\n", backingField, fieldType))
 		}
 		for _, field := range entity.Fields {
-			// TODO: allow multiples
-			builder.WriteString(fmt.Sprintf("	%s %s\n", field.Name, field.Type))
+			fieldType := field.Type
+			if field.AllowMultiples {
+				fieldType = "[]" + fieldType
+			}
+			builder.WriteString(fmt.Sprintf("	%s %s\n", field.Name, fieldType))
 		}
 		builder.WriteString("}\n")
 		builder.WriteString("\n")
@@ -141,15 +153,20 @@ func generateEntities() {
 
 		// base entity getter/setter
 		for _, field := range baseEntity.Fields {
+			fieldType := field.Type
+			if field.AllowMultiples {
+				fieldType = "[]" + fieldType
+			}
+
 			// getter
-			builder.WriteString(fmt.Sprintf("func (this *%s) %s() %s {\n", entity.Name, field.Name, field.Type))
+			builder.WriteString(fmt.Sprintf("func (this *%s) %s() %s {\n", entity.Name, field.Name, fieldType))
 			backingField := strings.ToLower(field.Name[0:1]) + field.Name[1:]
 			builder.WriteString(fmt.Sprintf("	return this.%s\n", backingField))
 			builder.WriteString("}\n")
 			builder.WriteString("\n")
 
 			// setter
-			builder.WriteString(fmt.Sprintf("func (this *%s) Set%s(val %s) {\n", entity.Name, field.Name, field.Type))
+			builder.WriteString(fmt.Sprintf("func (this *%s) Set%s(val %s) {\n", entity.Name, field.Name, fieldType))
 			builder.WriteString(fmt.Sprintf("	this.%s = val\n", backingField))
 			builder.WriteString("}\n")
 			builder.WriteString("\n")
@@ -179,6 +196,9 @@ func generateEntities() {
 				builder.WriteString("\n")
 			}
 		}
+
+		collectionHelpers(&builder, baseEntity, entity.Name, true)
+		collectionHelpers(&builder, entity, entity.Name, false)
 
 		// typeString()
 		builder.WriteString(fmt.Sprintf("func (this *%s) typeString() string {\n", entity.Name))
@@ -216,7 +236,11 @@ func generateEntities() {
 			if len(field.ReadConverter) > 0 {
 				readValue = strings.Replace(field.ReadConverter, "%v", readValue, -1)
 			}
-			builder.WriteString(fmt.Sprintf("		this.Set%s(%s)\n", field.Name, readValue))
+			functionName := "Set"
+			if field.AllowMultiples {
+				functionName = "Add"
+			}
+			builder.WriteString(fmt.Sprintf("		this.%s%s(%s)\n", functionName, field.Name, readValue))
 		}
 		builder.WriteString("\n")
 		builder.WriteString("	// entity specific values\n")
@@ -236,6 +260,10 @@ func generateEntities() {
 				if len(field.ReadConverter) > 0 {
 					readValue = strings.Replace(field.ReadConverter, "%v", readValue, -1)
 				}
+				if field.AllowMultiples {
+					readValue = fmt.Sprintf("append(this.%s, %s)", field.Name, readValue)
+				}
+
 				builder.WriteString(fmt.Sprintf("		this.%s = %s\n", field.Name, readValue))
 			}
 
@@ -291,6 +319,29 @@ func generateEntities() {
 	writeFile("entities.generated.go", builder)
 }
 
+func collectionHelpers(builder *strings.Builder, entity xmlEntity, entityName string, camlCaseFieldName bool) {
+	for _, field := range entity.Fields {
+		if field.AllowMultiples {
+			fieldName := field.Name
+			if camlCaseFieldName {
+				fieldName = strings.ToLower(fieldName[0:1]) + fieldName[1:]
+			}
+
+			// add
+			builder.WriteString(fmt.Sprintf("func (this *%s) Add%s(val %s) {\n", entityName, field.Name, field.Type))
+			builder.WriteString(fmt.Sprintf("	this.%s = append(this.%s, val)\n", fieldName, fieldName))
+			builder.WriteString("}\n")
+			builder.WriteString("\n")
+
+			// clear
+			builder.WriteString(fmt.Sprintf("func (this *%s) Clear%s() {\n", entityName, field.Name))
+			builder.WriteString(fmt.Sprintf("	this.%s = []%s{}\n", fieldName, field.Type))
+			builder.WriteString("}\n")
+			builder.WriteString("\n")
+		}
+	}
+}
+
 func writeDirective(builder *strings.Builder, entity xmlEntity, directive xmlWriteOrderDirective, asFunction bool) {
 	switch directive.XMLName.Local {
 	case "WriteExtensionData":
@@ -327,11 +378,21 @@ func writeField(builder *strings.Builder, entity xmlEntity, field xmlField, asFu
 			builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, NewDoubleCodePair(%d, this.%s.%c))\n", indention, code, field.Name, component))
 		}
 	} else {
-		value := fmt.Sprintf("this.%s%s", field.Name, suffix)
-		if len(field.WriteConverter) > 0 {
-			value = strings.Replace(field.WriteConverter, "%v", value, -1)
+		if field.AllowMultiples {
+			builder.WriteString(fmt.Sprintf("%s	for _, val := range this.%s%s {\n", indention, field.Name, suffix))
+			value := "val"
+			if len(field.WriteConverter) > 0 {
+				value = strings.Replace(field.WriteConverter, "%v", value, -1)
+			}
+			builder.WriteString(fmt.Sprintf("%s		pairs = append(pairs, New%sCodePair(%d, %s))\n", indention, codeTypeName(field.Code), field.Code, value))
+			builder.WriteString(fmt.Sprintf("%s	}\n", indention))
+		} else {
+			value := fmt.Sprintf("this.%s%s", field.Name, suffix)
+			if len(field.WriteConverter) > 0 {
+				value = strings.Replace(field.WriteConverter, "%v", value, -1)
+			}
+			builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indention, codeTypeName(field.Code), field.Code, value))
 		}
-		builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indention, codeTypeName(field.Code), field.Code, value))
 	}
 	if len(predicates) > 0 {
 		builder.WriteString("	}\n")
