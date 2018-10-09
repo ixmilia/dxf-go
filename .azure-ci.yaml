@@ -1,9 +1,10 @@
 variables:
   PackageName: github.com/IxMilia/dxf-go
 
-phases:
-- phase: Windows
-  queue: Hosted VS2017
+jobs:
+- job: Windows
+  pool:
+    vmImage: vs2017-win2016
   steps:
   - task: Go@0
     displayName: Version
@@ -32,8 +33,9 @@ phases:
       command: test
       arguments: -v $(PackageName)
 
-- phase: Linux
-  queue: Hosted Linux Preview
+- job: Linux
+  pool:
+    vmImage: ubuntu-16.04
   steps:
   - task: Go@0
     displayName: Version
