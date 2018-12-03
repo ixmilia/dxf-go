@@ -147,8 +147,8 @@ func TestReadMultipleBaseEntityData(t *testing.T) {
 
 func TestWriteMultipleBaseEntityData(t *testing.T) {
 	line := NewLine()
-	line.AddPreviewImageData("line 1")
-	line.AddPreviewImageData("line 2")
+	line.SetPreviewImageData(append(line.PreviewImageData(), "line 1"))
+	line.SetPreviewImageData(append(line.PreviewImageData(), "line 2"))
 	actual := entityString(line, R2000)
 	assertContains(t, join(
 		"310", "line 1",

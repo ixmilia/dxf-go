@@ -112,6 +112,24 @@ func generateEntities() {
 	builder.WriteString("}\n")
 	builder.WriteString("\n")
 
+	// base reader
+	builder.WriteString("func tryApplyBaseCodePair(entity Entity, codePair CodePair) {\n")
+	builder.WriteString("	switch codePair.Code {\n")
+	for _, field := range baseEntity.Fields {
+		builder.WriteString(fmt.Sprintf("	case %d:\n", field.Code))
+		readValue := fmt.Sprintf("codePair.Value.(%sCodePairValue).Value", codeTypeName(field.Code))
+		if len(field.ReadConverter) > 0 {
+			readValue = strings.Replace(field.ReadConverter, "%v", readValue, -1)
+		}
+		if field.AllowMultiples {
+			readValue = fmt.Sprintf("append(entity.%s(), %s)", field.Name, readValue)
+		}
+		builder.WriteString(fmt.Sprintf("		entity.Set%s(%s)\n", field.Name, readValue))
+	}
+	builder.WriteString("	}\n")
+	builder.WriteString("}\n")
+	builder.WriteString("\n")
+
 	// for each entity
 	for _, entity := range entities {
 		if entity.Name == "Entity" {
@@ -199,8 +217,7 @@ func generateEntities() {
 			}
 		}
 
-		collectionHelpers(&builder, baseEntity, entity.Name, true)
-		collectionHelpers(&builder, entity, entity.Name, false)
+		collectionHelpers(&builder, entity, entity.Name)
 
 		// typeString()
 		builder.WriteString(fmt.Sprintf("func (this *%s) typeString() string {\n", entity.Name))
@@ -231,20 +248,6 @@ func generateEntities() {
 		// reader
 		builder.WriteString(fmt.Sprintf("func (this *%s) tryApplyCodePair(codePair CodePair) {\n", entity.Name))
 		builder.WriteString("	switch codePair.Code {\n")
-		builder.WriteString("	// base Entity values\n")
-		for _, field := range baseEntity.Fields {
-			builder.WriteString(fmt.Sprintf("	case %d:\n", field.Code))
-			readValue := fmt.Sprintf("codePair.Value.(%sCodePairValue).Value", codeTypeName(field.Code))
-			if len(field.ReadConverter) > 0 {
-				readValue = strings.Replace(field.ReadConverter, "%v", readValue, -1)
-			}
-			functionName := "Set"
-			if field.AllowMultiples {
-				functionName = "Add"
-			}
-			builder.WriteString(fmt.Sprintf("		this.%s%s(%s)\n", functionName, field.Name, readValue))
-		}
-		builder.WriteString("\n")
 		builder.WriteString("	// entity specific values\n")
 		for _, field := range entity.Fields {
 			if len(field.CodeOverrides) > 0 {
@@ -270,6 +273,8 @@ func generateEntities() {
 			}
 
 		}
+		builder.WriteString("	default:\n")
+		builder.WriteString("		tryApplyBaseCodePair(this, codePair)\n")
 		builder.WriteString("	}\n")
 		builder.WriteString("}\n")
 		builder.WriteString("\n")
@@ -321,23 +326,18 @@ func generateEntities() {
 	writeFile("entities.generated.go", builder)
 }
 
-func collectionHelpers(builder *strings.Builder, entity xmlEntity, entityName string, camlCaseFieldName bool) {
+func collectionHelpers(builder *strings.Builder, entity xmlEntity, entityName string) {
 	for _, field := range entity.Fields {
 		if field.AllowMultiples {
-			fieldName := field.Name
-			if camlCaseFieldName {
-				fieldName = strings.ToLower(fieldName[0:1]) + fieldName[1:]
-			}
-
 			// add
 			builder.WriteString(fmt.Sprintf("func (this *%s) Add%s(val %s) {\n", entityName, field.Name, field.Type))
-			builder.WriteString(fmt.Sprintf("	this.%s = append(this.%s, val)\n", fieldName, fieldName))
+			builder.WriteString(fmt.Sprintf("	this.%s = append(this.%s, val)\n", field.Name, field.Name))
 			builder.WriteString("}\n")
 			builder.WriteString("\n")
 
 			// clear
 			builder.WriteString(fmt.Sprintf("func (this *%s) Clear%s() {\n", entityName, field.Name))
-			builder.WriteString(fmt.Sprintf("	this.%s = []%s{}\n", fieldName, field.Type))
+			builder.WriteString(fmt.Sprintf("	this.%s = []%s{}\n", field.Name, field.Type))
 			builder.WriteString("}\n")
 			builder.WriteString("\n")
 		}
