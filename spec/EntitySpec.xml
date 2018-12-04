@@ -82,6 +82,45 @@
   </Entity>
   <!--
 
+  ACAD_PROXY_ENTITY
+
+  -->
+  <Entity Name="ProxyEntity" SubclassMarker="AcDbProxyEntity" TypeString="ACAD_PROXY_ENTITY" MinVersion="R14" GenerateReader="false" CustomBeforeWrite="true" CustomAfterRead="true" >
+    <Field Name="readingGraphicsData" Type="bool" DefaultValue="true" />
+    <Field Name="ProxyEntityClassId" Code="90" Type="int" DefaultValue="498" />
+    <Field Name="ApplicationEntityClassId" Code="91" Type="int" DefaultValue="500" />
+    <Field Name="GraphicsData" Type="[]byte" DefaultValue="[]byte{}" />
+    <Field Name="graphicsDataSize" Code="92" Type="int" DefaultValue="0" />
+    <Field Name="graphicsDataString" Code="310" Type="string" DefaultValue="[]string{}" AllowMultiples="true" />
+    <Field Name="EntityData" Type="[]byte" DefaultValue="[]byte{}" />
+    <Field Name="entityDataSize" Code="93" Type="int" DefaultValue="0" />
+    <Field Name="entityDataString" Code="310" Type="string" DefaultValue="[]string{}" AllowMultiples="true" />
+    <Field Name="ObjectID1" Code="330" Type="string" DefaultValue="[]string{}" AllowMultiples="true" />
+    <Field Name="ObjectID2" Code="340" Type="string" DefaultValue="[]string{}" AllowMultiples="true" />
+    <Field Name="ObjectID3" Code="350" Type="string" DefaultValue="[]string{}" AllowMultiples="true" />
+    <Field Name="ObjectID4" Code="360" Type="string" DefaultValue="[]string{}" AllowMultiples="true" />
+    <Field Name="Terminator" Code="94" Type="int" DefaultValue="0" />
+    <Field Name="objectDrawingFormat" Code="95" Type="uint" DefaultValue="0" ReadConverter="uint(%v)" WriteConverter="int(%v)" MinVersion="R2000" />
+    <Field Name="OriginalDataFormatIsDxf" Code="70" Type="bool" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2000" />
+    <WriteOrder>
+      <WriteSpecificValue Code="100" Value='"AcDbProxyEntity"' />
+      <WriteField Field="ProxyEntityClassId" />
+      <WriteField Field="ApplicationEntityClassId" />
+      <WriteSpecificValue Code="92" Value="len(this.GraphicsData)" />
+      <WriteField Field="graphicsDataString" />
+      <WriteSpecificValue Code="93" Value="len(this.EntityData)" />
+      <WriteField Field="entityDataString" />
+      <WriteField Field="ObjectID1" />
+      <WriteField Field="ObjectID2" />
+      <WriteField Field="ObjectID3" />
+      <WriteField Field="ObjectID4" />
+      <WriteField Field="Terminator" />
+      <WriteField Field="objectDrawingFormat" />
+      <WriteField Field="OriginalDataFormatIsDxf" />
+    </WriteOrder>
+  </Entity>
+  <!--
+
   LINE
 
   -->

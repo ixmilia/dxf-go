@@ -15,14 +15,17 @@ type xmlEntities struct {
 }
 
 type xmlEntity struct {
-	XMLName        xml.Name                `xml:"Entity"`
-	Name           string                  `xml:"Name,attr"`
-	SubclassMarker string                  `xml:"SubclassMarker,attr"`
-	TypeString     string                  `xml:"TypeString,attr"`
-	MinVersion     string                  `xml:"MinVersion,attr"`
-	MaxVersion     string                  `xml:"MaxVersion,attr"`
-	Fields         []xmlField              `xml:"Field"`
-	WriteOrder     xmlWriteOrderCollection `xml:"WriteOrder"`
+	XMLName           xml.Name                `xml:"Entity"`
+	Name              string                  `xml:"Name,attr"`
+	SubclassMarker    string                  `xml:"SubclassMarker,attr"`
+	TypeString        string                  `xml:"TypeString,attr"`
+	MinVersion        string                  `xml:"MinVersion,attr"`
+	MaxVersion        string                  `xml:"MaxVersion,attr"`
+	GenerateReader    bool                    `xml:"GenerateReader,attr"`
+	CustomAfterRead   bool                    `xml:"CustomAfterRead,attr"`
+	CustomBeforeWrite bool                    `xml:"CustomBeforeWrite,attr"`
+	Fields            []xmlField              `xml:"Field"`
+	WriteOrder        xmlWriteOrderCollection `xml:"WriteOrder"`
 }
 
 type xmlField struct {
@@ -101,6 +104,8 @@ func generateEntities() {
 	builder.WriteString("	maxVersion() (version AcadVersion)\n")
 	builder.WriteString("	codePairs(version AcadVersion) (pairs []CodePair)\n")
 	builder.WriteString("	tryApplyCodePair(codePair CodePair)\n")
+	builder.WriteString("	beforeWrite()\n")
+	builder.WriteString("	afterRead()\n")
 	for _, field := range baseEntity.Fields {
 		fieldType := field.Type
 		if field.AllowMultiples {
@@ -245,39 +250,55 @@ func generateEntities() {
 		builder.WriteString("}\n")
 		builder.WriteString("\n")
 
-		// reader
-		builder.WriteString(fmt.Sprintf("func (this *%s) tryApplyCodePair(codePair CodePair) {\n", entity.Name))
-		builder.WriteString("	switch codePair.Code {\n")
-		builder.WriteString("	// entity specific values\n")
-		for _, field := range entity.Fields {
-			if len(field.CodeOverrides) > 0 {
-				codeOverrides := strings.Split(field.CodeOverrides, ",")
-				for i, codeString := range codeOverrides {
-					code, err := strconv.Atoi(strings.TrimSpace(codeString))
-					check(err)
-					component := 'X' + i
-					builder.WriteString(fmt.Sprintf("	case %d:\n", code))
-					builder.WriteString(fmt.Sprintf("		this.%s.%c = codePair.Value.(DoubleCodePairValue).Value\n", field.Name, component))
-				}
-			} else {
-				builder.WriteString(fmt.Sprintf("	case %d:\n", field.Code))
-				readValue := fmt.Sprintf("codePair.Value.(%sCodePairValue).Value", codeTypeName(field.Code))
-				if len(field.ReadConverter) > 0 {
-					readValue = strings.Replace(field.ReadConverter, "%v", readValue, -1)
-				}
-				if field.AllowMultiples {
-					readValue = fmt.Sprintf("append(this.%s, %s)", field.Name, readValue)
-				}
-
-				builder.WriteString(fmt.Sprintf("		this.%s = %s\n", field.Name, readValue))
-			}
-
+		// beforeWrite()
+		if !entity.CustomBeforeWrite {
+			builder.WriteString(fmt.Sprintf("func (this *%s) beforeWrite() {\n", entity.Name))
+			builder.WriteString("}\n")
+			builder.WriteString("\n")
 		}
-		builder.WriteString("	default:\n")
-		builder.WriteString("		tryApplyBaseCodePair(this, codePair)\n")
-		builder.WriteString("	}\n")
-		builder.WriteString("}\n")
-		builder.WriteString("\n")
+
+		// afterRead()
+		if !entity.CustomAfterRead {
+			builder.WriteString(fmt.Sprintf("func (this *%s) afterRead() {\n", entity.Name))
+			builder.WriteString("}\n")
+			builder.WriteString("\n")
+		}
+
+		// reader
+		if entity.GenerateReader {
+			builder.WriteString(fmt.Sprintf("func (this *%s) tryApplyCodePair(codePair CodePair) {\n", entity.Name))
+			builder.WriteString("	switch codePair.Code {\n")
+			builder.WriteString("	// entity specific values\n")
+			for _, field := range entity.Fields {
+				if len(field.CodeOverrides) > 0 {
+					codeOverrides := strings.Split(field.CodeOverrides, ",")
+					for i, codeString := range codeOverrides {
+						code, err := strconv.Atoi(strings.TrimSpace(codeString))
+						check(err)
+						component := 'X' + i
+						builder.WriteString(fmt.Sprintf("	case %d:\n", code))
+						builder.WriteString(fmt.Sprintf("		this.%s.%c = codePair.Value.(DoubleCodePairValue).Value\n", field.Name, component))
+					}
+				} else {
+					builder.WriteString(fmt.Sprintf("	case %d:\n", field.Code))
+					readValue := fmt.Sprintf("codePair.Value.(%sCodePairValue).Value", codeTypeName(field.Code))
+					if len(field.ReadConverter) > 0 {
+						readValue = strings.Replace(field.ReadConverter, "%v", readValue, -1)
+					}
+					if field.AllowMultiples {
+						readValue = fmt.Sprintf("append(this.%s, %s)", field.Name, readValue)
+					}
+
+					builder.WriteString(fmt.Sprintf("		this.%s = %s\n", field.Name, readValue))
+				}
+
+			}
+			builder.WriteString("	default:\n")
+			builder.WriteString("		tryApplyBaseCodePair(this, codePair)\n")
+			builder.WriteString("	}\n")
+			builder.WriteString("}\n")
+			builder.WriteString("\n")
+		}
 
 		// writer
 		builder.WriteString(fmt.Sprintf("func (this *%s) codePairs(version AcadVersion) (pairs []CodePair) {\n", entity.Name))
@@ -285,12 +306,12 @@ func generateEntities() {
 		for _, directive := range baseEntity.WriteOrder.Directives {
 			writeDirective(&builder, baseEntity, directive, true)
 		}
-		builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewStringCodePair(100, \"%s\"))\n", entity.SubclassMarker))
 		if len(entity.WriteOrder.Directives) > 0 {
 			for _, directive := range entity.WriteOrder.Directives {
 				writeDirective(&builder, entity, directive, false)
 			}
 		} else {
+			builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewStringCodePair(100, \"%s\"))\n", entity.SubclassMarker))
 			for _, field := range entity.Fields {
 				writeField(&builder, entity, field, false)
 			}
@@ -450,6 +471,21 @@ func (entity xmlEntity) getNamedField(name string) xmlField {
 	}
 
 	panic(fmt.Sprintf("Unable to find field %s.%s", entity.Name, name))
+}
+
+func (entity *xmlEntity) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	type tempXMLEntity xmlEntity
+
+	// set non-standard defaults
+	item := tempXMLEntity{
+		GenerateReader: true,
+	}
+	err := d.DecodeElement(&item, &start)
+	if err != nil {
+		return err
+	}
+	*entity = (xmlEntity)(item)
+	return nil
 }
 
 func readEntities(reader io.Reader) ([]xmlEntity, error) {

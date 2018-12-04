@@ -44,6 +44,13 @@ func assertEqUInt(t *testing.T, expected, actual uint32) {
 	assert(t, expected == actual, fmt.Sprintf(expectedActualString("d"), expected, actual))
 }
 
+func assertEqByteArray(t *testing.T, expected, actual []byte) {
+	assert(t, len(expected) == len(actual), fmt.Sprintf(expectedActualString("d"), len(expected), len(actual)))
+	for i := range expected {
+		assert(t, expected[i] == actual[i], fmt.Sprintf("Difference at offset %d: "+expectedActualString("x"), i, expected[i], actual[i]))
+	}
+}
+
 func join(vals ...string) string {
 	return strings.Join(vals, "\r\n")
 }

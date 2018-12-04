@@ -195,6 +195,32 @@ func TestWriteConditionsOnWriteOrderDirectives(t *testing.T) {
 	), actual)
 }
 
+func TestReadEntityWithCustomReader(t *testing.T) {
+	proxy := parseEntity(t, "ACAD_PROXY_ENTITY", join(
+		" 92", "4",
+		"310", "1234",
+		"310", "ABCD",
+		" 93", "4",
+		"310", "5678",
+		"310", "DCBA",
+	)).(*ProxyEntity)
+	assertEqByteArray(t, []byte{0x12, 0x34, 0xAB, 0xCD}, proxy.GraphicsData)
+	assertEqByteArray(t, []byte{0x56, 0x78, 0xDC, 0xBA}, proxy.EntityData)
+}
+
+func TestWriteEntityWithBeforeWrite(t *testing.T) {
+	proxy := NewProxyEntity()
+	proxy.GraphicsData = []byte{0x12, 0x34, 0xAB, 0xCD}
+	proxy.EntityData = []byte{0x56, 0x78, 0xDC, 0xBA}
+	actual := entityString(proxy, R14)
+	assertContains(t, join(
+		" 92", "        4",
+		"310", "1234ABCD",
+		" 93", "        4",
+		"310", "5678DCBA",
+	), actual)
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
 	drawing := parse(t, join(
 		"  0", "SECTION",
