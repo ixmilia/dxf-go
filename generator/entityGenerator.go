@@ -145,19 +145,28 @@ func generateEntities() {
 		builder.WriteString(fmt.Sprintf("type %s struct {\n", entity.Name))
 		// backing fields
 		for _, field := range baseEntity.Fields {
+			comment := ""
+			if len(field.Comment) > 0 {
+				comment = fmt.Sprintf(" // %s", field.Comment)
+			}
 			backingField := strings.ToLower(field.Name[0:1]) + field.Name[1:]
 			fieldType := field.Type
 			if field.AllowMultiples {
 				fieldType = "[]" + fieldType
 			}
-			builder.WriteString(fmt.Sprintf("	%s %s\n", backingField, fieldType))
+
+			builder.WriteString(fmt.Sprintf("	%s %s%s\n", backingField, fieldType, comment))
 		}
 		for _, field := range entity.Fields {
+			comment := ""
+			if len(field.Comment) > 0 {
+				comment = fmt.Sprintf(" // %s", field.Comment)
+			}
 			fieldType := field.Type
 			if field.AllowMultiples {
 				fieldType = "[]" + fieldType
 			}
-			builder.WriteString(fmt.Sprintf("	%s %s\n", field.Name, fieldType))
+			builder.WriteString(fmt.Sprintf("	%s %s%s\n", field.Name, fieldType, comment))
 		}
 		builder.WriteString("}\n")
 		builder.WriteString("\n")
