@@ -144,6 +144,40 @@
   </Entity>
   <!--
 
+  ARCALIGNEDTEXT
+
+  -->
+  <Entity Name="ArcAlignedText" SubclassMarker="AcDbArcAlignedText" TypeString="ARCALIGNEDTEXT" MinVersion="R2000" MaxVersion="R2000">
+    <Field Name="Text" Code="1" Type="string" DefaultValue='""' />
+    <Field Name="FontName" Code="2" Type="string" DefaultValue='""' />
+    <Field Name="BigfontName" Code="3" Type="string" DefaultValue='""' />
+    <Field Name="TextStyleName" Code="7" Type="string" DefaultValue='""' />
+    <Field Name="CenterPoint" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="ArcRadius" Code="40" Type="float64" DefaultValue="0.0" />
+    <Field Name="WidthFactor" Code="41" Type="float64" DefaultValue="1.0" />
+    <Field Name="TextHeight" Code="42" Type="float64" DefaultValue="0.0" />
+    <Field Name="CharacterSpacing" Code="43" Type="float64" DefaultValue="0.0" />
+    <Field Name="OffsetFromArc" Code="44" Type="float64" DefaultValue="0.0" />
+    <Field Name="RightOffset" Code="45" Type="float64" DefaultValue="0.0" />
+    <Field Name="LeftOffset" Code="46" Type="float64" DefaultValue="0.0" />
+    <Field Name="StartAngle" Code="50" Type="float64" DefaultValue="0.0" />
+    <Field Name="EndAngle" Code="51" Type="float64" DefaultValue="0.0" />
+    <Field Name="IsCharacterOrderReversed" Code="70" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+    <Field Name="DirectionFlag" Code="71" Type="int16" DefaultValue="0" />
+    <Field Name="AlignmentFlag" Code="72" Type="int16" DefaultValue="0" />
+    <Field Name="SideFlag" Code="73" Type="int16" DefaultValue="0" />
+    <Field Name="IsBold" Code="74" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+    <Field Name="IsItalic" Code="75" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+    <Field Name="IsUnderline" Code="76" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+    <Field Name="CharacterSetValue" Code="77" Type="int16" DefaultValue="0" />
+    <Field Name="PitchAndFamilyValue" Code="78" Type="int16" DefaultValue="0" />
+    <Field Name="FontType" Code="79" Type="FontType" DefaultValue="FontTypeTTF" ReadConverter="FontType(%v)" WriteConverter="int16(%v)" />
+    <Field Name="ColorIndex" Code="90" Type="int" DefaultValue="0" />
+    <Field Name="ExtrusionDirection" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
+    <Field Name="WizardFlag" Code="280" Type="int16" DefaultValue="0" />
+  </Entity>
+  <!--
+
   CIRCLE
 
   -->

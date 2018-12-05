@@ -82,6 +82,10 @@
     <Value Name="Angle" />
     <Value Name="Square" />
   </Enum>
+  <Enum Name="FontType">
+    <Value Name="TTF" Value="iota" />
+    <Value Name="SHX" />
+  </Enum>
   <Enum Name="JoinStyle">
     <Value Name="None" Value="iota" />
     <Value Name="Round" />
