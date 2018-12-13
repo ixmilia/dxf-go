@@ -15,17 +15,15 @@ type xmlEntities struct {
 }
 
 type xmlEntity struct {
-	XMLName           xml.Name                `xml:"Entity"`
-	Name              string                  `xml:"Name,attr"`
-	SubclassMarker    string                  `xml:"SubclassMarker,attr"`
-	TypeString        string                  `xml:"TypeString,attr"`
-	MinVersion        string                  `xml:"MinVersion,attr"`
-	MaxVersion        string                  `xml:"MaxVersion,attr"`
-	GenerateReader    bool                    `xml:"GenerateReader,attr"`
-	CustomAfterRead   bool                    `xml:"CustomAfterRead,attr"`
-	CustomBeforeWrite bool                    `xml:"CustomBeforeWrite,attr"`
-	Fields            []xmlField              `xml:"Field"`
-	WriteOrder        xmlWriteOrderCollection `xml:"WriteOrder"`
+	XMLName        xml.Name                `xml:"Entity"`
+	Name           string                  `xml:"Name,attr"`
+	SubclassMarker string                  `xml:"SubclassMarker,attr"`
+	TypeString     string                  `xml:"TypeString,attr"`
+	MinVersion     string                  `xml:"MinVersion,attr"`
+	MaxVersion     string                  `xml:"MaxVersion,attr"`
+	GenerateReader bool                    `xml:"GenerateReader,attr"`
+	Fields         []xmlField              `xml:"Field"`
+	WriteOrder     xmlWriteOrderCollection `xml:"WriteOrder"`
 }
 
 type xmlField struct {
@@ -104,8 +102,6 @@ func generateEntities() {
 	builder.WriteString("	maxVersion() (version AcadVersion)\n")
 	builder.WriteString("	codePairs(version AcadVersion) (pairs []CodePair)\n")
 	builder.WriteString("	tryApplyCodePair(codePair CodePair)\n")
-	builder.WriteString("	beforeWrite()\n")
-	builder.WriteString("	afterRead()\n")
 	for _, field := range baseEntity.Fields {
 		fieldType := field.Type
 		if field.AllowMultiples {
@@ -258,20 +254,6 @@ func generateEntities() {
 		builder.WriteString(fmt.Sprintf("	return %s\n", maxVersion))
 		builder.WriteString("}\n")
 		builder.WriteString("\n")
-
-		// beforeWrite()
-		if !entity.CustomBeforeWrite {
-			builder.WriteString(fmt.Sprintf("func (this *%s) beforeWrite() {\n", entity.Name))
-			builder.WriteString("}\n")
-			builder.WriteString("\n")
-		}
-
-		// afterRead()
-		if !entity.CustomAfterRead {
-			builder.WriteString(fmt.Sprintf("func (this *%s) afterRead() {\n", entity.Name))
-			builder.WriteString("}\n")
-			builder.WriteString("\n")
-		}
 
 		// reader
 		if entity.GenerateReader {

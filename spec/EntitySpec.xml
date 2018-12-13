@@ -85,7 +85,7 @@
   ACAD_PROXY_ENTITY
 
   -->
-  <Entity Name="ProxyEntity" SubclassMarker="AcDbProxyEntity" TypeString="ACAD_PROXY_ENTITY" MinVersion="R14" GenerateReader="false" CustomBeforeWrite="true" CustomAfterRead="true" >
+  <Entity Name="ProxyEntity" SubclassMarker="AcDbProxyEntity" TypeString="ACAD_PROXY_ENTITY" MinVersion="R14" GenerateReader="false">
     <Field Name="readingGraphicsData" Type="bool" DefaultValue="true" />
     <Field Name="ProxyEntityClassId" Code="90" Type="int" DefaultValue="498" />
     <Field Name="ApplicationEntityClassId" Code="91" Type="int" DefaultValue="500" />

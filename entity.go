@@ -31,8 +31,27 @@ func readEntity(nextPair CodePair, reader codePairReader) (Entity, CodePair, boo
 		nextPair, err = reader.readCodePair()
 	}
 
-	entity.afterRead()
+	afterRead(&entity)
 	return entity, nextPair, true, err
+}
+
+func beforeWrite(entity *Entity) {
+	switch ent := (*entity).(type) {
+	case *ProxyEntity:
+		// gather graphics and entity data into strings
+		ent.graphicsDataSize = len(ent.GraphicsData)
+		ent.graphicsDataString = bytesToStrings(ent.GraphicsData)
+		ent.entityDataSize = len(ent.EntityData)
+		ent.entityDataString = bytesToStrings(ent.EntityData)
+	}
+}
+
+func afterRead(entity *Entity) {
+	switch ent := (*entity).(type) {
+	case *ProxyEntity:
+		ent.GraphicsData = stringsToBytes(ent.graphicsDataString)
+		ent.EntityData = stringsToBytes(ent.entityDataString)
+	}
 }
 
 func bytesToStrings(data []byte) []string {
@@ -49,21 +68,6 @@ func stringsToBytes(vals []string) []byte {
 //
 // entity specific methods
 //
-
-// ProxyEntity
-func (entity *ProxyEntity) beforeWrite() {
-	// gather graphics and entity data into strings
-	entity.graphicsDataSize = len(entity.GraphicsData)
-	entity.graphicsDataString = bytesToStrings(entity.GraphicsData)
-	entity.entityDataSize = len(entity.EntityData)
-	entity.entityDataString = bytesToStrings(entity.EntityData)
-}
-
-func (entity *ProxyEntity) afterRead() {
-	// collect graphics and entity data into byte arrays
-	entity.GraphicsData = stringsToBytes(entity.graphicsDataString)
-	entity.EntityData = stringsToBytes(entity.entityDataString)
-}
 
 func (entity *ProxyEntity) tryApplyCodePair(codePair CodePair) {
 	switch codePair.Code {
