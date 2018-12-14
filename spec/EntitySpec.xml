@@ -355,13 +355,19 @@
     <Field Name="Center" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
     <Field Name="Radius" Code="40" Type="float64" DefaultValue="0.0" />
     <Field Name="Normal" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
-    <WriteOrder>
-      <WriteSpecificValue Code="100" Value='"AcDbCircle"' />
-      <WriteField Field="Thickness" />
-      <WriteField Field="Center" />
-      <WriteField Field="Radius" />
-      <WriteField Field="Normal" />
-    </WriteOrder>
+  </Entity>
+  <!--
+
+  ELLIPSE
+
+  -->
+  <Entity Name="Ellipse" SubclassMarker="AcDbEllipse" TypeString="ELLIPSE">
+    <Field Name="Center" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="MajorAxis" Code="11" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="11,21,31" />
+    <Field Name="Normal" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
+    <Field Name="MinorAxisRatio" Code="40" Type="float64" DefaultValue="1.0" />
+    <Field Name="StartAngle" Code="41" Type="float64" DefaultValue="0.0" Comment="Ellipse start angle in radians." />
+    <Field Name="EndAngle" Code="42" Type="float64" DefaultValue="math.Pi * 2.0" Comment="Ellipse end angle in radians." />
   </Entity>
   <!--
 

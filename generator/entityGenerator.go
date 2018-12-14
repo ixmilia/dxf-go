@@ -80,6 +80,10 @@ func generateEntities() {
 	builder.WriteString("\n")
 	builder.WriteString("package dxf\n")
 	builder.WriteString("\n")
+	builder.WriteString("import (\n")
+	builder.WriteString("	\"math\"\n")
+	builder.WriteString(")\n")
+	builder.WriteString("\n")
 
 	var baseEntity xmlEntity
 	foundBaseEntity := false
@@ -259,7 +263,6 @@ func generateEntities() {
 		if entity.GenerateReader {
 			builder.WriteString(fmt.Sprintf("func (this *%s) tryApplyCodePair(codePair CodePair) {\n", entity.Name))
 			builder.WriteString("	switch codePair.Code {\n")
-			builder.WriteString("	// entity specific values\n")
 			for _, field := range entity.Fields {
 				if field.Code < 0 {
 					// specially handled, just needs to exist
