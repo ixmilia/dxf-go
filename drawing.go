@@ -113,7 +113,7 @@ func readFromCodePairReader(reader codePairReader) (Drawing, error) {
 		for err == nil && !nextPair.isEndSection() {
 			switch sectionType {
 			case "ENTITIES":
-				nextPair, err = drawing.readEntities(nextPair, reader)
+				drawing.Entities, nextPair, err = readEntities(nextPair, reader)
 			case "HEADER":
 				drawing.Header, nextPair, err = readHeader(nextPair, reader)
 			default:
@@ -145,38 +145,4 @@ func readFromCodePairReader(reader codePairReader) (Drawing, error) {
 	}
 
 	return drawing, nil
-}
-
-func (d *Drawing) readEntities(nextPair CodePair, reader codePairReader) (CodePair, error) {
-	var entity Entity
-	var err error
-	var ok bool
-	var entities []Entity
-	for err == nil && !nextPair.isEndSection() {
-		entity, nextPair, ok, err = readEntity(nextPair, reader)
-		if err != nil {
-			return nextPair, err
-		} else if ok {
-			entities = append(entities, entity)
-		}
-		// otherwise an unsupported entity was swallowed
-	}
-
-	d.Entities = collectEntities(entities)
-
-	if err != nil {
-		return nextPair, err
-	}
-
-	return nextPair, nil
-}
-
-func entityAt(entities []Entity, index int) (entity Entity, error error) {
-	if index >= 0 && index < len(entities) {
-		entity = entities[index]
-	} else {
-		error = errors.New("No more entities")
-	}
-
-	return
 }

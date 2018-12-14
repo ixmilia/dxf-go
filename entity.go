@@ -6,6 +6,29 @@ import (
 	"strings"
 )
 
+func readEntities(np CodePair, reader codePairReader) (entities []Entity, nextPair CodePair, error error) {
+	var entity Entity
+	var ok bool
+	nextPair = np
+	for error == nil && !nextPair.isEndSection() {
+		entity, nextPair, ok, error = readEntity(nextPair, reader)
+		if error != nil {
+			return
+		} else if ok {
+			entities = append(entities, entity)
+		}
+		// otherwise an unsupported entity was swallowed
+	}
+
+	if error != nil {
+		return
+	}
+
+	collected := collectEntities(entities)
+	entities = collected
+	return
+}
+
 func readEntity(nextPair CodePair, reader codePairReader) (Entity, CodePair, bool, error) {
 	var entity Entity
 	if nextPair.Code != 0 {
@@ -127,6 +150,16 @@ func collectEntities(entities []Entity) (result []Entity) {
 				}
 			}
 		}
+	}
+
+	return
+}
+
+func entityAt(entities []Entity, index int) (entity Entity, error error) {
+	if index >= 0 && index < len(entities) {
+		entity = entities[index]
+	} else {
+		error = errors.New("No more entities")
 	}
 
 	return
