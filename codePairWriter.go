@@ -86,3 +86,18 @@ func (a asciiCodePairWriter) writeCodePair(codePair CodePair) error {
 		return fmt.Errorf("unsupported code pair value type %T", t)
 	}
 }
+
+func writeSectionStart(writer codePairWriter, sectionName string) (error error) {
+	error = writer.writeCodePair(NewStringCodePair(0, "SECTION"))
+	if error != nil {
+		return
+	}
+
+	error = writer.writeCodePair(NewStringCodePair(2, sectionName))
+	return
+}
+
+func writeSectionEnd(writer codePairWriter) (error error) {
+	error = writer.writeCodePair(NewStringCodePair(0, "ENDSEC"))
+	return
+}

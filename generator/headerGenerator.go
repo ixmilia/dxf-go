@@ -112,11 +112,9 @@ func generateHeader() {
 		}
 	}
 
-	// writeHeader()
-	builder.WriteString("func (h Header) writeHeader(writer codePairWriter) error {\n")
+	// writeHeaderSection()
+	builder.WriteString("func (h Header) writeHeaderSection(writer codePairWriter) error {\n")
 	builder.WriteString("	pairs := make([]CodePair, 0)\n")
-	builder.WriteString("	pairs = append(pairs, NewStringCodePair(0, \"SECTION\"))\n")
-	builder.WriteString("	pairs = append(pairs, NewStringCodePair(2, \"HEADER\"))\n")
 	for _, variable := range variables {
 		if variable.SuppressWriting {
 			continue
@@ -161,12 +159,19 @@ func generateHeader() {
 		}
 	}
 	builder.WriteString("\n")
-	builder.WriteString("	pairs = append(pairs, NewStringCodePair(0, \"ENDSEC\"))\n")
+	builder.WriteString("	err := writeSectionStart(writer, \"HEADER\")\n")
+	builder.WriteString("	if err != nil {\n")
+	builder.WriteString("		return err\n")
+	builder.WriteString("	}\n")
 	builder.WriteString("	for _, pair := range pairs {\n")
-	builder.WriteString("		err := writer.writeCodePair(pair)\n")
+	builder.WriteString("		err = writer.writeCodePair(pair)\n")
 	builder.WriteString("		if err != nil {\n")
 	builder.WriteString("			return err\n")
 	builder.WriteString("		}\n")
+	builder.WriteString("	}\n")
+	builder.WriteString("	err = writeSectionEnd(writer)\n")
+	builder.WriteString("	if err != nil {\n")
+	builder.WriteString("		return err\n")
 	builder.WriteString("	}\n")
 	builder.WriteString("	return nil\n")
 	builder.WriteString("}\n")

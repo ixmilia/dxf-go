@@ -50,45 +50,18 @@ func (d *Drawing) String() string {
 }
 
 func (d *Drawing) saveToCodePairWriter(writer codePairWriter) error {
-	err := d.Header.writeHeader(writer)
+	err := d.Header.writeHeaderSection(writer)
 	if err != nil {
 		return err
 	}
 
-	err = d.writeEntities(writer, d.Header.Version)
+	err = writeEntitiesSection(d.Entities, writer, d.Header.Version)
 	if err != nil {
 		return err
 	}
 
 	err = writer.writeCodePair(NewStringCodePair(0, "EOF"))
 	return err
-}
-
-func (d *Drawing) writeEntities(writer codePairWriter, version AcadVersion) error {
-	pairs := make([]CodePair, 0)
-	pairs = append(pairs, NewStringCodePair(0, "SECTION"))
-	pairs = append(pairs, NewStringCodePair(2, "ENTITIES"))
-	for _, entity := range d.Entities {
-		if version >= entity.minVersion() && version <= entity.maxVersion() {
-			beforeWrite(&entity)
-			for _, pair := range entity.codePairs(version) {
-				pairs = append(pairs, pair)
-			}
-			for _, pair := range trailingCodePairs(&entity, version) {
-				pairs = append(pairs, pair)
-			}
-		}
-	}
-
-	pairs = append(pairs, NewStringCodePair(0, "ENDSEC"))
-	for _, pair := range pairs {
-		err := writer.writeCodePair(pair)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 // ReadFile reads a DXF drawing from the specified path.

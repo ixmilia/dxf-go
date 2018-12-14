@@ -35,6 +35,38 @@ func readEntity(nextPair CodePair, reader codePairReader) (Entity, CodePair, boo
 	return entity, nextPair, true, err
 }
 
+func writeEntitiesSection(entities []Entity, writer codePairWriter, version AcadVersion) error {
+	pairs := make([]CodePair, 0)
+	for _, entity := range entities {
+		if version >= entity.minVersion() && version <= entity.maxVersion() {
+			beforeWrite(&entity)
+			for _, pair := range entity.codePairs(version) {
+				pairs = append(pairs, pair)
+			}
+			for _, pair := range trailingCodePairs(&entity, version) {
+				pairs = append(pairs, pair)
+			}
+		}
+	}
+
+	err := writeSectionStart(writer, "ENTITIES")
+	if err != nil {
+		return err
+	}
+	for _, pair := range pairs {
+		err = writer.writeCodePair(pair)
+		if err != nil {
+			return err
+		}
+	}
+	err = writeSectionEnd(writer)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func beforeWrite(entity *Entity) {
 	switch ent := (*entity).(type) {
 	case *ProxyEntity:
