@@ -10,10 +10,26 @@
     <Value Name="CounterClockwise" Value="iota" />
     <Value Name="Clockwise" />
   </Enum>
+  <Enum Name="AttachmentPoint">
+    <Value Name="TopLeft" Value="1" />
+    <Value Name="TopCenter" Value="2" />
+    <Value Name="TopRight" Value="3" />
+    <Value Name="MiddleLeft" Value="4" />
+    <Value Name="MiddleCenter" Value="5" />
+    <Value Name="MiddleRight" Value="6" />
+    <Value Name="BottomLeft" Value="7" />
+    <Value Name="BottomCenter" Value="8" />
+    <Value Name="BottomRight" Value="9" />
+  </Enum>
   <Enum Name="AttributeVisibility">
     <Value Name="None" Value="iota" />
     <Value Name="Normal" />
     <Value Name="All" />
+  </Enum>
+  <Enum Name="BackgroundFillSetting">
+    <Value Name="Off" Value="iota" />
+    <Value Name="UseBackgroundFillColor" />
+    <Value Name="UseDrawingWindowColor" />
   </Enum>
   <Enum Name="CoordinateDisplay">
     <Value Name="Static" Value="iota" />
@@ -63,6 +79,11 @@
     <Value Name="On" />
     <Value Name="Auto" />
   </Enum>
+  <Enum Name="DrawingDirection">
+    <Value Name="LeftToRight" Value="1" />
+    <Value Name="TopToBottom" Value="3" />
+    <Value Name="ByStyle" Value="5" />
+  </Enum>
   <Enum Name="DrawingUnits">
     <Value Name="English" Value="iota" />
     <Value Name="Metric" />
@@ -85,6 +106,14 @@
   <Enum Name="FontType">
     <Value Name="TTF" Value="iota" />
     <Value Name="SHX" />
+  </Enum>
+  <Enum Name="HorizontalTextJustification">
+    <Value Name="Left" Value="iota" />
+    <Value Name="Center" />
+    <Value Name="Right" />
+    <Value Name="Aligned" />
+    <Value Name="Middle" />
+    <Value Name="Fit" />
   </Enum>
   <Enum Name="JoinStyle">
     <Value Name="None" Value="iota" />
@@ -125,6 +154,14 @@
     <Value Name="StartAndEndCrossSections" />
     <Value Name="AllCrossSections" />
     <Value Name="UseDraftAngleAndMagnitude" />
+  </Enum>
+  <Enum Name="MTextFlag">
+    <Value Name="MultilineAttribute" Value="2" />
+    <Value Name="ConstantMultilineAttributeDefinition" Value="4" />
+  </Enum>
+  <Enum Name="MTextLineSpacingStyle">
+    <Value Name="AtLeast" Value="1" />
+    <Value Name="Exact" Value="2" />
   </Enum>
   <Enum Name="NonAngularUnits">
     <Value Name="Scientific" Value="iota" />
@@ -321,6 +358,15 @@
     <Value Name="IncludeZeroFeetAndZeroInches" />
     <Value Name="IncludeZeroFeetAndSuppressZeroInches" />
     <Value Name="IncludeZeroInchesAndSuppressZeroFeet" />
+  </Enum>
+  <Enum Name="Version">
+    <Value Name="R2010" Value="iota" />
+  </Enum>
+  <Enum Name="VerticalTextJustification">
+    <Value Name="Baseline" Value="iota" />
+    <Value Name="Bottom" />
+    <Value Name="Middle" />
+    <Value Name="Top" />
   </Enum>
   <Enum Name="XrefClippingBoundaryVisibility">
     <Value Name="NotDisplayedNotPlotted" Value="iota" />

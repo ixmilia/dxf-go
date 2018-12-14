@@ -261,6 +261,10 @@ func generateEntities() {
 			builder.WriteString("	switch codePair.Code {\n")
 			builder.WriteString("	// entity specific values\n")
 			for _, field := range entity.Fields {
+				if field.Code < 0 {
+					// specially handled, just needs to exist
+					continue
+				}
 				if len(field.CodeOverrides) > 0 {
 					codeOverrides := strings.Split(field.CodeOverrides, ",")
 					for i, codeString := range codeOverrides {
@@ -394,6 +398,11 @@ func directivePredicates(directive xmlWriteOrderDirective) []string {
 }
 
 func writeField(builder *strings.Builder, entity xmlEntity, field xmlField, asFunction bool) {
+	if field.Code < 0 {
+		// specially handled, just needs to exist
+		return
+	}
+
 	predicates := fieldPredicates(field, asFunction)
 	indention := ""
 	if len(predicates) > 0 {

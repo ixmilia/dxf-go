@@ -74,6 +74,9 @@ func (d *Drawing) writeEntities(writer codePairWriter, version AcadVersion) erro
 			for _, pair := range entity.codePairs(version) {
 				pairs = append(pairs, pair)
 			}
+			for _, pair := range trailingCodePairs(&entity, version) {
+				pairs = append(pairs, pair)
+			}
 		}
 	}
 
@@ -175,19 +178,53 @@ func (d *Drawing) readEntities(nextPair CodePair, reader codePairReader) (CodePa
 	var entity Entity
 	var err error
 	var ok bool
+	var entities []Entity
 	for err == nil && !nextPair.isEndSection() {
 		entity, nextPair, ok, err = readEntity(nextPair, reader)
 		if err != nil {
 			return nextPair, err
 		} else if ok {
-			d.Entities = append(d.Entities, entity)
+			entities = append(entities, entity)
 		}
 		// otherwise an unsupported entity was swallowed
 	}
+
+	d.Entities = collectEntities(entities)
 
 	if err != nil {
 		return nextPair, err
 	}
 
 	return nextPair, nil
+}
+
+func collectEntities(entities []Entity) (result []Entity) {
+	for i := 0; i < len(entities); i++ {
+		entity := entities[i]
+		result = append(result, entity)
+		switch ent := entity.(type) {
+		case *AttributeDefinition:
+			// ATTDEF should be followed by a single MTEXT
+			next, err := entityAt(entities, i+1)
+			if err == nil {
+				mtext, ok := next.(*MText)
+				if ok {
+					ent.MText = *mtext
+					i++
+				}
+			}
+		}
+	}
+
+	return
+}
+
+func entityAt(entities []Entity, index int) (entity Entity, error error) {
+	if index >= 0 && index < len(entities) {
+		entity = entities[index]
+	} else {
+		error = errors.New("No more entities")
+	}
+
+	return
 }

@@ -221,6 +221,21 @@ func TestWriteEntityWithBeforeWrite(t *testing.T) {
 	), actual)
 }
 
+func TestReadCollectedEntities(t *testing.T) {
+	attdef := parseEntity(t, "ATTDEF", join(
+		"  0", "MTEXT",
+		"  1", "mtext-value",
+	)).(*AttributeDefinition)
+	assertEqString(t, "mtext-value", attdef.MText.Text)
+}
+
+func TestWriteEntityWithTrailingEntities(t *testing.T) {
+	attdef := NewAttributeDefinition()
+	actual := entityString(attdef, R14)
+	assertContains(t, "\r\n  0\r\nATTDEF\r\n", actual)
+	assertContains(t, "\r\n  0\r\nMTEXT\r\n", actual)
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
 	drawing := parse(t, join(
 		"  0", "SECTION",

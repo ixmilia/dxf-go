@@ -77,7 +77,7 @@
       <WriteField Field="CustomData" />
       <WriteField Field="CustomData2" />
       <WriteSpecificValue Code="100" Value='"AcDb3dSolid"' MinVersion="R2007" />
-      <!-- <WriteField Property="HistoryObject" /> -->
+      <!-- <WriteField Field="HistoryObject" /> -->
     </WriteOrder>
   </Entity>
   <!--
@@ -178,6 +178,87 @@
   </Entity>
   <!--
 
+  ATTDEF
+
+  -->
+  <Entity Name="AttributeDefinition" SubclassMarker="nil" TypeString="ATTDEF" GenerateReader="false">
+    <Field Name="Thickness" Code="39" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="Location" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="TextHeight" Code="40" Type="float64" DefaultValue="1.0" />
+    <Field Name="Value" Code="1" Type="string" DefaultValue='""' />
+    <Field Name="Rotation" Code="50" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="RelativeXScaleFactor" Code="41" Type="float64" DefaultValue="1.0" DisableWritingDefault="true" />
+    <Field Name="ObliqueAngle" Code="51" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="TextStyleName" Code="7" Type="string" DefaultValue='"STANDARD"' DisableWritingDefault="true" />
+    <Field Name="TextGenerationFlags" Code="71" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true">
+      <Flag Name="IsTextBackward" Mask="2" />
+      <Flag Name="IsTextUpsideDown" Mask="4" />
+    </Field>
+    <Field Name="HorizontalTextJustification" Code="72" Type="HorizontalTextJustification" DefaultValue="HorizontalTextJustificationLeft" ReadConverter="HorizontalTextJustification(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true" />
+    <Field Name="SecondAlignmentPoint" Code="11" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="11,21,31" />
+    <Field Name="Normal" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
+    <Field Name="Version" Code="280" Type="Version" DefaultValue="VersionR2010" ReadConverter="Version(%v)" WriteConverter="int16(%v)" MinVersion="R2010" />
+    <Field Name="Prompt" Code="3" Type="string" DefaultValue='""' />
+    <Field Name="TextTag" Code="2" Type="string" DefaultValue='""' />
+    <Field Name="Flags" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)">
+      <Flag Name="IsInvisible" Mask="1" />
+      <Flag Name="IsConstant" Mask="2" />
+      <Flag Name="IsInputVerificationRequired" Mask="4" />
+      <Flag Name="IsAttributePresent" Mask="8" />
+    </Field>
+    <Field Name="FieldLength" Code="73" Type="int16" DefaultValue="0" DisableWritingDefault="true" />
+    <Field Name="VerticalTextJustification" Code="74" Type="VerticalTextJustification" DefaultValue="VerticalTextJustificationBaseline" ReadConverter="VerticalTextJustification(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true" MinVersion="R12" />
+    <Field Name="IsLockedInBlock" Code="280" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2007" />
+    <Field Name="KeepDuplicateRecords" Code="280" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2007" />
+    <Field Name="MTextFlag" Code="70" Type="MTextFlag" DefaultValue="MTextFlagMultilineAttribute" ReadConverter="MTextFlag(%v)" WriteConverter="int16(%v)" MinVersion="R2007" />
+    <Field Name="IsReallyLocked" Code="70" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2007" />
+    <Field Name="secondaryAttributeHandlesCount" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" MinVersion="R2007" />
+    <Field Name="SecondaryAttributeHandles" Code="340" Type="string" DefaultValue="[]string{}" AllowMultiples="true" MinVersion="R2007" />
+    <Field Name="AlignmentPoint" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" MinVersion="R2007" />
+    <Field Name="AnnotationScale" Code="40" Type="float64" DefaultValue="1.0" MinVersion="R2007" />
+    <Field Name="XRecordTag" Code="2" Type="string" DefaultValue='""' MinVersion="R2007" />
+    <!-- entity has a trailing MText -->
+    <Field Name="MText" Code="-1" Type="MText" DefaultValue="*NewMText()" />
+    <!-- private tracking fields -->
+    <Field Name="lastSubclassMarker" Code="-1" Type="string" DefaultValue='""' />
+    <Field Name="isVersionSet" Code="-1" Type="bool" DefaultValue="false" />
+    <Field Name="xrecCode70Count" Code="-1" Type="int" DefaultValue="0" />
+    <WriteOrder>
+      <WriteSpecificValue Code="100" Value='"AcDbText"' MinVersion="R13" />
+      <WriteField Field="Thickness" />
+      <WriteField Field="Location" />
+      <WriteField Field="TextHeight" />
+      <WriteField Field="Value" />
+      <WriteSpecificValue Code="100" Value='"AcDbAttributeDefinition"' MinVersion="R13" />
+      <WriteField Field="Rotation" />
+      <WriteField Field="RelativeXScaleFactor" />
+      <WriteField Field="ObliqueAngle" />
+      <WriteField Field="TextStyleName" />
+      <WriteField Field="TextGenerationFlags" />
+      <WriteField Field="HorizontalTextJustification" />
+      <WriteField Field="SecondAlignmentPoint" />
+      <WriteField Field="Normal" />
+      <WriteSpecificValue Code="100" Value='"AcDbAttributeDefinition"' MinVersion="R13" />
+      <WriteField Field="Version" />
+      <WriteField Field="Prompt" />
+      <WriteField Field="TextTag" />
+      <WriteField Field="Flags" />
+      <WriteField Field="FieldLength" />
+      <WriteField Field="VerticalTextJustification" />
+      <WriteField Field="IsLockedInBlock" />
+      <WriteSpecificValue Code="100" Value='"AcDbXrecord"' MinVersion="R2007" />
+      <WriteField Field="KeepDuplicateRecords" />
+      <WriteField Field="MTextFlag" />
+      <WriteField Field="IsReallyLocked" />
+      <WriteSpecificValue Code="70" Value="int16(len(this.SecondaryAttributeHandles))" MinVersion="R2007" />
+      <WriteField Field="SecondaryAttributeHandles" />
+      <WriteField Field="AlignmentPoint" />
+      <WriteField Field="AnnotationScale" />
+      <WriteField Field="XRecordTag" />
+    </WriteOrder>
+  </Entity>
+  <!--
+
   CIRCLE
 
   -->
@@ -204,5 +285,75 @@
     <Field Name="P1" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
     <Field Name="P2" Code="11" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="11,21,31" />
     <Field Name="ExtrusionDirection" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
+  </Entity>
+  <!--
+
+  MTEXT
+
+  -->
+  <Entity Name="MText" SubclassMarker="AcDbMText" TypeString="MTEXT" MinVersion="R13" GenerateReader="false">
+    <Field Name="InsertionPoint" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="InitialTextHeight" Code="40" Type="float64" DefaultValue="1.0" />
+    <Field Name="ReferenceRectangleWidth" Code="41" Type="float64" DefaultValue="1.0" />
+    <Field Name="AttachmentPoint" Code="71" Type="AttachmentPoint" DefaultValue="AttachmentPointTopLeft" ReadConverter="AttachmentPoint(%v)" WriteConverter="int16(%v)" />
+    <Field Name="DrawingDirection" Code="72" Type="DrawingDirection" DefaultValue="DrawingDirectionLeftToRight" ReadConverter="DrawingDirection(%v)" WriteConverter="int16(%v)" />
+    <Field Name="ExtendedText" Code="3" Type="string" DefaultValue="[]string{}" AllowMultiples="true" />
+    <Field Name="Text" Code="1" Type="string" DefaultValue='""' />
+    <Field Name="TextStyleName" Code="7" Type="string" DefaultValue='"STANDARD"' DisableWritingDefault="true" />
+    <Field Name="ExtrusionDirection" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
+    <Field Name="XAxisDirection" Code="11" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="11,21,31" />
+    <Field Name="HorizontalWidth" Code="42" Type="float64" DefaultValue="1.0" />
+    <Field Name="VerticalHeight" Code="43" Type="float64" DefaultValue="1.0" />
+    <Field Name="RotationAngle" Code="50" Type="float64" DefaultValue="0.0" />
+    <Field Name="LineSpacingStyle" Code="73" Type="MTextLineSpacingStyle" DefaultValue="MTextLineSpacingStyleAtLeast" ReadConverter="MTextLineSpacingStyle(%v)" WriteConverter="int16(%v)" />
+    <Field Name="LineSpacingFactor" Code="44" Type="float64" DefaultValue="1.0" />
+    <Field Name="BackgroundFillSetting" Code="90" Type="BackgroundFillSetting" DefaultValue="BackgroundFillSettingOff" ReadConverter="BackgroundFillSetting(%v)" WriteConverter="int(%v)" />
+    <Field Name="BackgroundColorRGB" Code="420" Type="int" DefaultValue="0" />
+    <Field Name="BackgroundColorName" Code="430" Type="string" DefaultValue='""' />
+    <Field Name="FillBoxScale" Code="45" Type="float64" DefaultValue="1.0" DisableWritingDefault="true" />
+    <Field Name="BackgroundFillColor" Code="63" Type="Color" DefaultValue="ByLayer()" ReadConverter="Color(%v)" WriteConverter="int16(%v)" />
+    <Field Name="BackgroundFillColorTransparency" Code="441" Type="int" DefaultValue="0" />
+    <Field Name="ColumnType" Code="75" Type="int16" DefaultValue="0" />
+    <Field Name="columnCount" Code="76" Type="int16" DefaultValue="0" WriteConverter="int16(%v)" />
+    <Field Name="IsColumnFlowReversed" Code="78" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+    <Field Name="IsColumnAutoHeight" Code="79" Type="bool" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+    <Field Name="ColumnWidth" Code="48" Type="float64" DefaultValue="0.0" />
+    <Field Name="ColumnGutter" Code="49" Type="float64" DefaultValue="0.0" />
+    <Field Name="ColumnHeights" Code="50" Type="float64" DefaultValue="[]float64{}" AllowMultiples="true" />
+    <!-- private tracking fields -->
+    <Field Name="readingColumnData" Code="-1" Type="bool" DefaultValue="false" />
+    <Field Name="readColumnCount" Code="-1" Type="bool" DefaultValue="false" />
+    <WriteOrder>
+      <WriteSpecificValue Code="100" Value='"AcDbMText"' />
+      <WriteField Field="InsertionPoint" />
+      <WriteField Field="InitialTextHeight" />
+      <WriteField Field="ReferenceRectangleWidth" />
+      <WriteField Field="AttachmentPoint" />
+      <WriteField Field="DrawingDirection" />
+      <WriteField Field="ExtendedText" />
+      <WriteField Field="Text" />
+      <WriteField Field="TextStyleName" />
+      <WriteField Field="ExtrusionDirection" />
+      <WriteField Field="XAxisDirection" />
+      <WriteField Field="HorizontalWidth" />
+      <WriteField Field="VerticalHeight" />
+      <WriteField Field="RotationAngle" />
+      <WriteField Field="LineSpacingStyle" />
+      <WriteField Field="LineSpacingFactor" />
+      <WriteField Field="BackgroundFillSetting" />
+      <WriteField Field="BackgroundColorRGB" />
+      <WriteField Field="BackgroundColorName" />
+      <WriteField Field="FillBoxScale" />
+      <WriteField Field="BackgroundFillColor" />
+      <WriteField Field="BackgroundFillColorTransparency" />
+      <WriteField Field="ColumnType" />
+      <WriteField Field="columnCount" />
+      <WriteField Field="IsColumnFlowReversed" />
+      <WriteField Field="IsColumnAutoHeight" />
+      <WriteField Field="ColumnWidth" />
+      <WriteField Field="ColumnGutter" />
+      <WriteSpecificValue Code="50" Value="float64(len(this.ColumnHeights))" />
+      <WriteField Field="ColumnHeights" />
+    </WriteOrder>
   </Entity>
 </Entities>
