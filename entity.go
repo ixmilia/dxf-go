@@ -48,11 +48,16 @@ func beforeWrite(entity *Entity) {
 
 func trailingCodePairs(entity *Entity, version AcadVersion) (pairs []CodePair) {
 	switch ent := (*entity).(type) {
+	case *Attribute:
+		for _, pair := range ent.MText.codePairs(version) {
+			pairs = append(pairs, pair)
+		}
 	case *AttributeDefinition:
 		for _, pair := range ent.MText.codePairs(version) {
 			pairs = append(pairs, pair)
 		}
 	}
+
 	return
 }
 
@@ -62,6 +67,37 @@ func afterRead(entity *Entity) {
 		ent.GraphicsData = stringsToBytes(ent.graphicsDataString)
 		ent.EntityData = stringsToBytes(ent.entityDataString)
 	}
+}
+
+func collectEntities(entities []Entity) (result []Entity) {
+	for i := 0; i < len(entities); i++ {
+		entity := entities[i]
+		result = append(result, entity)
+		switch ent := entity.(type) {
+		case *Attribute:
+			// ATTRIB should be followed by a single MTEXT
+			next, err := entityAt(entities, i+1)
+			if err == nil {
+				mtext, ok := next.(*MText)
+				if ok {
+					ent.MText = *mtext
+					i++
+				}
+			}
+		case *AttributeDefinition:
+			// ATTDEF should be followed by a single MTEXT
+			next, err := entityAt(entities, i+1)
+			if err == nil {
+				mtext, ok := next.(*MText)
+				if ok {
+					ent.MText = *mtext
+					i++
+				}
+			}
+		}
+	}
+
+	return
 }
 
 func bytesToStrings(data []byte) []string {
@@ -78,6 +114,104 @@ func stringsToBytes(vals []string) []byte {
 //
 // entity specific methods
 //
+
+func (a *Attribute) tryApplyCodePair(codePair CodePair) {
+	switch codePair.Code {
+	case 100:
+		a.lastSubclassMarker = codePair.Value.(StringCodePairValue).Value
+	case 1:
+		a.Value = codePair.Value.(StringCodePairValue).Value
+	case 2:
+		if a.lastSubclassMarker == "AcDbXrecord" {
+			a.XRecordTag = codePair.Value.(StringCodePairValue).Value
+		} else {
+			a.AttributeTag = codePair.Value.(StringCodePairValue).Value
+		}
+	case 7:
+		a.TextStyleName = codePair.Value.(StringCodePairValue).Value
+	case 10:
+		if a.lastSubclassMarker == "AcDbXrecord" {
+			a.AlignmentPoint.X = codePair.Value.(DoubleCodePairValue).Value
+		} else {
+			a.Location.X = codePair.Value.(DoubleCodePairValue).Value
+		}
+	case 20:
+		if a.lastSubclassMarker == "AcDbXrecord" {
+			a.AlignmentPoint.Y = codePair.Value.(DoubleCodePairValue).Value
+		} else {
+			a.Location.Y = codePair.Value.(DoubleCodePairValue).Value
+		}
+	case 30:
+		if a.lastSubclassMarker == "AcDbXrecord" {
+			a.AlignmentPoint.Z = codePair.Value.(DoubleCodePairValue).Value
+		} else {
+			a.Location.Z = codePair.Value.(DoubleCodePairValue).Value
+		}
+	case 11:
+		a.SecondAlignmentPoint.X = codePair.Value.(DoubleCodePairValue).Value
+	case 21:
+		a.SecondAlignmentPoint.Y = codePair.Value.(DoubleCodePairValue).Value
+	case 31:
+		a.SecondAlignmentPoint.Z = codePair.Value.(DoubleCodePairValue).Value
+	case 39:
+		a.Thickness = codePair.Value.(DoubleCodePairValue).Value
+	case 40:
+		if a.lastSubclassMarker == "AcDbXrecord" {
+			a.AnnotationScale = codePair.Value.(DoubleCodePairValue).Value
+		} else {
+			a.TextHeight = codePair.Value.(DoubleCodePairValue).Value
+		}
+	case 41:
+		a.RelativeXScaleFactor = codePair.Value.(DoubleCodePairValue).Value
+	case 50:
+		a.Rotation = codePair.Value.(DoubleCodePairValue).Value
+	case 51:
+		a.ObliqueAngle = codePair.Value.(DoubleCodePairValue).Value
+	case 70:
+		if a.lastSubclassMarker == "AcDbXrecord" {
+			switch a.xrecCode70Count {
+			case 0:
+				a.MTextFlag = MTextFlag(codePair.Value.(ShortCodePairValue).Value)
+			case 1:
+				a.IsReallyLocked = boolFromShort(codePair.Value.(ShortCodePairValue).Value)
+			case 2:
+				a.secondaryAttributeCount = int(codePair.Value.(ShortCodePairValue).Value)
+			default:
+				// return error?
+			}
+			a.xrecCode70Count++
+		} else {
+			a.Flags = int(codePair.Value.(ShortCodePairValue).Value)
+		}
+	case 71:
+		a.TextGenerationFlags = int(codePair.Value.(ShortCodePairValue).Value)
+	case 72:
+		a.HorizontalTextJustification = HorizontalTextJustification(codePair.Value.(ShortCodePairValue).Value)
+	case 73:
+		a.FieldLength = codePair.Value.(ShortCodePairValue).Value
+	case 74:
+		a.VerticalTextJustification = VerticalTextJustification(codePair.Value.(ShortCodePairValue).Value)
+	case 210:
+		a.Normal.X = codePair.Value.(DoubleCodePairValue).Value
+	case 220:
+		a.Normal.Y = codePair.Value.(DoubleCodePairValue).Value
+	case 230:
+		a.Normal.Z = codePair.Value.(DoubleCodePairValue).Value
+	case 280:
+		if a.lastSubclassMarker == "AcDbXrecord" {
+			a.KeepDuplicateRecords = boolFromShort(codePair.Value.(ShortCodePairValue).Value)
+		} else if !a.isVersionSet {
+			a.Version = Version(codePair.Value.(ShortCodePairValue).Value)
+			a.isVersionSet = true
+		} else {
+			a.IsLockedInBlock = boolFromShort(codePair.Value.(ShortCodePairValue).Value)
+		}
+	case 340:
+		a.secondaryAttributeHandles = append(a.secondaryAttributeHandles, codePair.Value.(StringCodePairValue).Value)
+	default:
+		tryApplyBaseCodePair(a, codePair)
+	}
+}
 
 func (ad *AttributeDefinition) tryApplyCodePair(codePair CodePair) {
 	switch codePair.Code {

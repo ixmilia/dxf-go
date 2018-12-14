@@ -198,27 +198,6 @@ func (d *Drawing) readEntities(nextPair CodePair, reader codePairReader) (CodePa
 	return nextPair, nil
 }
 
-func collectEntities(entities []Entity) (result []Entity) {
-	for i := 0; i < len(entities); i++ {
-		entity := entities[i]
-		result = append(result, entity)
-		switch ent := entity.(type) {
-		case *AttributeDefinition:
-			// ATTDEF should be followed by a single MTEXT
-			next, err := entityAt(entities, i+1)
-			if err == nil {
-				mtext, ok := next.(*MText)
-				if ok {
-					ent.MText = *mtext
-					i++
-				}
-			}
-		}
-	}
-
-	return
-}
-
 func entityAt(entities []Entity, index int) (entity Entity, error error) {
 	if index >= 0 && index < len(entities) {
 		entity = entities[index]
