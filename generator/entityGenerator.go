@@ -75,13 +75,14 @@ type xmlWriteOrderCollection struct {
 
 type xmlWriteOrderDirective struct {
 	XMLName        xml.Name
-	Field          string `xml:"Field,attr"`
-	Code           int    `xml:"Code,attr"`
-	Value          string `xml:"Value,attr"`
-	WriteCondition string `xml:"WriteCondition,attr"`
-	WriteConverter string `xml:"WriteConverter,attr"`
-	MinVersion     string `xml:"MinVersion,attr"`
-	MaxVersion     string `xml:"MaxVersion,attr"`
+	Field          string                   `xml:"Field,attr"`
+	Code           int                      `xml:"Code,attr"`
+	Value          string                   `xml:"Value,attr"`
+	WriteCondition string                   `xml:"WriteCondition,attr"`
+	WriteConverter string                   `xml:"WriteConverter,attr"`
+	MinVersion     string                   `xml:"MinVersion,attr"`
+	MaxVersion     string                   `xml:"MaxVersion,attr"`
+	Directives     []xmlWriteOrderDirective `xml:",any"`
 }
 
 type getNamedField func(string) xmlField
@@ -148,11 +149,11 @@ func generateEntities() {
 		builder.WriteString(fmt.Sprintf("func codePairsFor%s(this %s, version AcadVersion) (pairs []CodePair) {\n", inf.Name, inf.Name))
 		if len(inf.WriteOrder.Directives) > 0 {
 			for _, directive := range inf.WriteOrder.Directives {
-				writeDirective(&builder, directive, inf.getNamedField, true)
+				writeDirective(&builder, directive, inf.getNamedField, true, "")
 			}
 		} else {
 			for _, field := range inf.Fields {
-				writeField(&builder, field, true)
+				writeField(&builder, field, true, "")
 			}
 		}
 		builder.WriteString("	return\n")
@@ -323,12 +324,12 @@ func generateEntities() {
 			}
 			if len(entity.WriteOrder.Directives) > 0 {
 				for _, directive := range entity.WriteOrder.Directives {
-					writeDirective(&builder, directive, entity.getNamedField, false)
+					writeDirective(&builder, directive, entity.getNamedField, false, "")
 				}
 			} else {
 				builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewStringCodePair(100, \"%s\"))\n", entity.SubclassMarker))
 				for _, field := range entity.Fields {
-					writeField(&builder, field, false)
+					writeField(&builder, field, false, "")
 				}
 			}
 			builder.WriteString("	return\n")
@@ -407,21 +408,26 @@ func collectionHelpers(builder *strings.Builder, entity xmlEntity, entityName st
 	}
 }
 
-func writeDirective(builder *strings.Builder, directive xmlWriteOrderDirective, getNamedField getNamedField, asFunction bool) {
+func writeDirective(builder *strings.Builder, directive xmlWriteOrderDirective, getNamedField getNamedField, asFunction bool, indent string) {
 	switch directive.XMLName.Local {
+	case "Foreach":
+		builder.WriteString(fmt.Sprintf("%s	for _, item := range this.%s {\n", indent, directive.Field))
+		for _, d := range directive.Directives {
+			writeDirective(builder, d, getNamedField, asFunction, indent+"\t")
+		}
+		builder.WriteString(indent + "	}\n")
 	case "WriteExtensionData":
 		// TODO:
 	case "WriteField":
 		field := getNamedField(directive.Field)
-		writeField(builder, field, asFunction)
+		writeField(builder, field, asFunction, indent)
 	case "WriteSpecificValue":
 		predicates := directivePredicates(directive)
-		indention := ""
 		if len(predicates) > 0 {
 			builder.WriteString(fmt.Sprintf("	if %s {\n", strings.Join(predicates, " && ")))
-			indention = "	"
+			indent += "\t"
 		}
-		builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indention, codeTypeName(directive.Code), directive.Code, directive.Value))
+		builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indent, codeTypeName(directive.Code), directive.Code, directive.Value))
 		if len(predicates) > 0 {
 			builder.WriteString("	}\n")
 		}
@@ -489,17 +495,16 @@ func readField(builder *strings.Builder, field xmlField, asInterface bool) {
 	}
 }
 
-func writeField(builder *strings.Builder, field xmlField, asInterface bool) {
+func writeField(builder *strings.Builder, field xmlField, asInterface bool, indent string) {
 	if field.Code < 0 {
 		// specially handled, just needs to exist
 		return
 	}
 
 	predicates := fieldPredicates(field, asInterface)
-	indention := ""
 	if len(predicates) > 0 {
-		indention = "	"
-		builder.WriteString(fmt.Sprintf("	if %s {\n", strings.Join(predicates, " && ")))
+		indent += "\t"
+		builder.WriteString(fmt.Sprintf("%sif %s {\n", indent, strings.Join(predicates, " && ")))
 	}
 
 	suffix := ""
@@ -513,27 +518,27 @@ func writeField(builder *strings.Builder, field xmlField, asInterface bool) {
 			code, err := strconv.Atoi(strings.TrimSpace(codeString))
 			check(err)
 			component := 'X' + i
-			builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, NewDoubleCodePair(%d, this.%s%s.%c))\n", indention, code, field.Name, suffix, component))
+			builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, NewDoubleCodePair(%d, this.%s%s.%c))\n", indent, code, field.Name, suffix, component))
 		}
 	} else {
 		if field.AllowMultiples {
-			builder.WriteString(fmt.Sprintf("%s	for _, val := range this.%s%s {\n", indention, field.Name, suffix))
+			builder.WriteString(fmt.Sprintf("%s	for _, val := range this.%s%s {\n", indent, field.Name, suffix))
 			value := "val"
 			if len(field.WriteConverter) > 0 {
 				value = strings.Replace(field.WriteConverter, "%v", value, -1)
 			}
-			builder.WriteString(fmt.Sprintf("%s		pairs = append(pairs, New%sCodePair(%d, %s))\n", indention, codeTypeName(field.Code), field.Code, value))
-			builder.WriteString(fmt.Sprintf("%s	}\n", indention))
+			builder.WriteString(fmt.Sprintf("%s		pairs = append(pairs, New%sCodePair(%d, %s))\n", indent, codeTypeName(field.Code), field.Code, value))
+			builder.WriteString(fmt.Sprintf("%s	}\n", indent))
 		} else {
 			value := fmt.Sprintf("this.%s%s", field.Name, suffix)
 			if len(field.WriteConverter) > 0 {
 				value = strings.Replace(field.WriteConverter, "%v", value, -1)
 			}
-			builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indention, codeTypeName(field.Code), field.Code, value))
+			builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indent, codeTypeName(field.Code), field.Code, value))
 		}
 	}
 	if len(predicates) > 0 {
-		builder.WriteString("	}\n")
+		builder.WriteString(indent + "}\n")
 	}
 }
 

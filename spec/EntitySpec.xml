@@ -478,6 +478,58 @@
   </Entity>
   <!--
 
+  IMAGE
+
+    -->
+  <Entity Name="Image" SubclassMarker="AcDbRasterImage" TypeString="IMAGE" MinVersion="R14">
+    <Field Name="ClassVersion" Code="90" Type="int" DefaultValue="0" />
+    <Field Name="Location" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" Comment="The location of the bottom-left corner of the image" />
+    <Field Name="UVector" Code="11" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="11,21,31" />
+    <Field Name="VVector" Code="12" Type="Vector" DefaultValue="*NewYAxis()" CodeOverrides="12,22,32" />
+    <Field Name="ImageSize" Code="13" Type="Vector" DefaultValue="*NewZeroVector()" CodeOverrides="13,23" Comment="Image size in pixels" />
+    <Field Name="imageDefinitionHandle" Code="340" Type="string" DefaultValue='""' DisableWritingDefault="true" />
+    <Field Name="DisplayOptionsFlags" Code="70" Type="int" DefaultValue="1" ReadConverter="int(%v)" WriteConverter="int16(%v)">
+      <Flag Name="ShowImage" Mask="1" />
+      <Flag Name="ShowImageWhenNotAligned" Mask="2" />
+      <Flag Name="UseClippingBoundary" Mask="4" />
+      <Flag Name="UseTransparency" Mask="8" />
+    </Field>
+    <Field Name="UseClipping" Code="280" Type="bool" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+    <Field Name="Brightness" Code="281" Type="int16" DefaultValue="50" />
+    <Field Name="Contrast" Code="282" Type="int16" DefaultValue="50" />
+    <Field Name="Fade" Code="283" Type="int16" DefaultValue="0" />
+    <Field Name="imageDefinitionReactorHandle" Code="360" Type="string" DefaultValue='""' DisableWritingDefault="true" />
+    <Field Name="ClippingType" Code="71" Type="ImageClippingBoundaryType" DefaultValue="ImageClippingBoundaryTypeRectangular" ReadConverter="ImageClippingBoundaryType(%v)" WriteConverter="int16(%v)" />
+    <Field Name="ClippingVertices" Code="-1" Type="Point" DefaultValue="[]Point{}" AllowMultiples="true" />
+    <Field Name="clippingVertexCount" Code="91" Type="int" DefaultValue="0" />
+    <Field Name="clippingVerticesX" Code="14" Type="float64" DefaultValue="[]float64{}" AllowMultiples="true" />
+    <Field Name="clippingVerticesY" Code="24" Type="float64" DefaultValue="[]float64{}" AllowMultiples="true" />
+    <Field Name="IsInsideClipping" Code="290" Type="bool" DefaultValue="false" MinVersion="R2010" />
+    <WriteOrder>
+      <WriteSpecificValue Code="100" Value='"AcDbRasterImage"' />
+      <WriteField Field="ClassVersion" />
+      <WriteField Field="Location" />
+      <WriteField Field="UVector" />
+      <WriteField Field="VVector" />
+      <WriteField Field="ImageSize" />
+      <WriteField Field="imageDefinitionHandle" />
+      <WriteField Field="DisplayOptionsFlags" />
+      <WriteField Field="UseClipping" />
+      <WriteField Field="Brightness" />
+      <WriteField Field="Contrast" />
+      <WriteField Field="Fade" />
+      <WriteField Field="imageDefinitionReactorHandle" />
+      <WriteField Field="ClippingType" />
+      <WriteSpecificValue Code="91" Value="len(this.ClippingVertices)" />
+      <Foreach Field="ClippingVertices">
+        <WriteSpecificValue Code="14" Value="item.X" />
+        <WriteSpecificValue Code="24" Value="item.Y" />
+      </Foreach>
+      <WriteField Field="IsInsideClipping" />
+    </WriteOrder>
+  </Entity>
+  <!--
+
   LINE
 
   -->

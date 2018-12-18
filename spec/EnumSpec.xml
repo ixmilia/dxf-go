@@ -129,6 +129,10 @@
     <Value Name="Middle" />
     <Value Name="Fit" />
   </Enum>
+  <Enum Name="ImageClippingBoundaryType">
+    <Value Name="Rectangular" Value="1" />
+    <Value Name="Polygonal" Value="2" />
+  </Enum>
   <Enum Name="JoinStyle">
     <Value Name="None" Value="iota" />
     <Value Name="Round" />

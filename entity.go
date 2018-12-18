@@ -125,6 +125,14 @@ func trailingCodePairs(entity *Entity, version AcadVersion) (pairs []CodePair) {
 
 func afterRead(entity *Entity) {
 	switch ent := (*entity).(type) {
+	case *Image:
+		minLength := len(ent.clippingVerticesX)
+		if len(ent.clippingVerticesY) < minLength {
+			minLength = len(ent.clippingVerticesY)
+		}
+		for i := 0; i < minLength; i++ {
+			ent.ClippingVertices = append(ent.ClippingVertices, Point{ent.clippingVerticesX[i], ent.clippingVerticesY[i], 0.0})
+		}
 	case *ProxyEntity:
 		ent.GraphicsData = stringsToBytes(ent.graphicsDataString)
 		ent.EntityData = stringsToBytes(ent.entityDataString)

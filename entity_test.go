@@ -275,6 +275,33 @@ func TestWriteDimension(t *testing.T) {
 	), actual)
 }
 
+func TestReadImage(t *testing.T) {
+	img := parseEntity(t, "IMAGE", join(
+		" 91", "2",
+		" 14", "1.0",
+		" 24", "2.0",
+		" 14", "3.0",
+		" 24", "4.0",
+	)).(*Image)
+	assertEqInt(t, 2, len(img.ClippingVertices))
+	assertEqPoint(t, Point{1.0, 2.0, 0.0}, img.ClippingVertices[0])
+	assertEqPoint(t, Point{3.0, 4.0, 0.0}, img.ClippingVertices[1])
+}
+
+func TestWriteImage(t *testing.T) {
+	img := NewImage()
+	img.ClippingVertices = append(img.ClippingVertices, Point{1.0, 2.0, 0.0})
+	img.ClippingVertices = append(img.ClippingVertices, Point{3.0, 4.0, 0.0})
+	actual := entityString(img, R14)
+	assertContains(t, join(
+		" 91", "        2",
+		" 14", "1.0",
+		" 24", "2.0",
+		" 14", "3.0",
+		" 24", "4.0",
+	), actual)
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
 	drawing := parse(t, join(
 		"  0", "SECTION",
