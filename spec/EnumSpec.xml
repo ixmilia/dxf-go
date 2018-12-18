@@ -74,6 +74,15 @@
     <Value Name="AddLeaderWhenTextIsMoved" />
     <Value Name="MoveTextFreely" />
   </Enum>
+  <Enum Name="DimensionType">
+    <Value Name="RotatedHorizontalOrVertical" Value="iota" />
+    <Value Name="Aligned" />
+    <Value Name="Angular" />
+    <Value Name="Diameter" />
+    <Value Name="Radius" />
+    <Value Name="AngularThreePoint" />
+    <Value Name="Ordinate" />
+  </Enum>
   <Enum Name="DragMode">
     <Value Name="Off" Value="iota" />
     <Value Name="On" />
@@ -232,8 +241,12 @@
     <Value Name="LeftToRight" Value="iota" />
     <Value Name="RightToLeft" />
   </Enum>
+  <Enum Name="TextLineSpacingStyle">
+    <Value Name="AtLeast" Value="1" />
+    <Value Name="Exact" Value="2" />
+  </Enum>
   <Enum Name="TimeZone">
-  <Value Name="InternationalDateLineWest" Value="-12000" />
+    <Value Name="InternationalDateLineWest" Value="-12000" />
     <Value Name="MidwayIsland_Samoa" Value="-11000" />
     <Value Name="Hawaii" Value="-10000" />
     <Value Name="Alaska" Value="-9000" />

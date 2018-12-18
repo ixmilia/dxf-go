@@ -1,7 +1,6 @@
 package dxf
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 )
@@ -15,10 +14,8 @@ func TestParseSimpleLine(t *testing.T) {
 		" 21", "5.0",
 		" 31", "6.0",
 	)).(*Line)
-	expectedP1 := Point{1.0, 2.0, 3.0}
-	expectedP2 := Point{4.0, 5.0, 6.0}
-	assert(t, expectedP1 == line.P1, fmt.Sprintf("Expected: %s\nActual: %s", expectedP1.String(), line.P1.String()))
-	assert(t, expectedP2 == line.P2, fmt.Sprintf("Expected: %s\nActual: %s", expectedP2.String(), line.P2.String()))
+	assertEqPoint(t, Point{1.0, 2.0, 3.0}, line.P1)
+	assertEqPoint(t, Point{4.0, 5.0, 6.0}, line.P2)
 }
 
 func TestParseAlternateTypeString(t *testing.T) {
@@ -30,10 +27,8 @@ func TestParseAlternateTypeString(t *testing.T) {
 		" 21", "5.0",
 		" 31", "6.0",
 	)).(*Line)
-	expectedP1 := Point{1.0, 2.0, 3.0}
-	expectedP2 := Point{4.0, 5.0, 6.0}
-	assert(t, expectedP1 == line.P1, fmt.Sprintf("Expected: %s\nActual: %s", expectedP1.String(), line.P1.String()))
-	assert(t, expectedP2 == line.P2, fmt.Sprintf("Expected: %s\nActual: %s", expectedP2.String(), line.P2.String()))
+	assertEqPoint(t, Point{1.0, 2.0, 3.0}, line.P1)
+	assertEqPoint(t, Point{4.0, 5.0, 6.0}, line.P2)
 }
 
 func TestParseUnsupportedEntity(t *testing.T) {
@@ -234,6 +229,50 @@ func TestWriteEntityWithTrailingEntities(t *testing.T) {
 	actual := entityString(attdef, R14)
 	assertContains(t, "\r\n  0\r\nATTDEF\r\n", actual)
 	assertContains(t, "\r\n  0\r\nMTEXT\r\n", actual)
+}
+
+func TestReadDimension(t *testing.T) {
+	dim := parseEntity(t, "DIMENSION", join(
+		"  1", "text",
+		" 10", "1.0",
+		" 20", "2.0",
+		" 70", "1", // aligned
+		"100", "AcDbAlignedDimension",
+		" 13", "3.0",
+		" 23", "4.0",
+		" 14", "5.0",
+		" 24", "6.0",
+	)).(*AlignedDimension)
+	assertEqString(t, "text", dim.Text())
+	assertEqPoint(t, Point{1.0, 2.0, 0.0}, dim.DefinitionPoint1())
+	assertEqPoint(t, Point{3.0, 4.0, 0.0}, dim.DefinitionPoint2)
+	assertEqPoint(t, Point{5.0, 6.0, 0.0}, dim.DefinitionPoint3)
+}
+
+func TestWriteDimension(t *testing.T) {
+	dim := NewAlignedDimension()
+	dim.SetDefinitionPoint1(Point{1.0, 2.0, 0.0})
+	dim.DefinitionPoint2 = Point{3.0, 4.0, 0.0}
+	dim.DefinitionPoint3 = Point{5.0, 6.0, 0.0}
+	actual := entityString(dim, R14)
+	assertContains(t, join(
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "0.0",
+		" 11", "0.0",
+		" 21", "0.0",
+		" 31", "0.0",
+		" 70", "     1",
+	), actual)
+	assertContains(t, join(
+		"100", "AcDbAlignedDimension",
+		" 13", "3.0",
+		" 23", "4.0",
+		" 33", "0.0",
+		" 14", "5.0",
+		" 24", "6.0",
+		" 34", "0.0",
+	), actual)
 }
 
 func parseEntity(t *testing.T, entityType string, body string) Entity {

@@ -34,6 +34,12 @@ func assertEqInt(t *testing.T, expected, actual int) {
 	}
 }
 
+func assertEqPoint(t *testing.T, expected, actual Point) {
+	if expected != actual {
+		t.Errorf("Expected: %s\nActual: %s", expected.String(), actual.String())
+	}
+}
+
 func assertEqString(t *testing.T, expected, actual string) {
 	if expected != actual {
 		t.Errorf("Expected: %s\nActual: %s", expected, actual)

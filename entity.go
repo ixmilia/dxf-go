@@ -29,33 +29,40 @@ func readEntities(np CodePair, reader codePairReader) (entities []Entity, nextPa
 	return
 }
 
-func readEntity(nextPair CodePair, reader codePairReader) (Entity, CodePair, bool, error) {
-	var entity Entity
+func readEntity(np CodePair, reader codePairReader) (entity Entity, nextPair CodePair, created bool, error error) {
+	nextPair = np
 	if nextPair.Code != 0 {
-		return entity, nextPair, false, errors.New("exepcted 0/<entity-type>")
+		created = false
+		error = errors.New("exepcted 0/<entity-type>")
+		return
 	}
 
-	var err error
 	entityType := nextPair.Value.(StringCodePairValue).Value
 	entity, ok := createEntity(entityType)
 	if !ok {
 		// swallow unsupported entity
-		nextPair, err = reader.readCodePair()
-		for err == nil && nextPair.Code != 0 {
-			nextPair, err = reader.readCodePair()
+		nextPair, error = reader.readCodePair()
+		for error == nil && nextPair.Code != 0 {
+			nextPair, error = reader.readCodePair()
 		}
 
-		return entity, nextPair, false, nil
+		created = false
+		return
 	}
 
-	nextPair, err = reader.readCodePair()
-	for err == nil && nextPair.Code != 0 {
+	created = true
+	nextPair, error = reader.readCodePair()
+	for error == nil && nextPair.Code != 0 {
 		entity.tryApplyCodePair(nextPair)
-		nextPair, err = reader.readCodePair()
+		nextPair, error = reader.readCodePair()
 	}
 
 	afterRead(&entity)
-	return entity, nextPair, true, err
+	switch dim := entity.(type) {
+	case *dimensionHelper:
+		entity, error = createAndPopulateDimension(dim)
+	}
+	return
 }
 
 func writeEntitiesSection(entities []Entity, writer codePairWriter, version AcadVersion) error {
@@ -174,6 +181,18 @@ func stringsToBytes(vals []string) []byte {
 	fullString := strings.Join(vals, "")
 	bytes, _ := hex.DecodeString(fullString) // it's ok if this fails
 	return bytes
+}
+
+//
+// temporary dimension helper
+//
+
+func (d *dimensionHelper) tryApplyCodePair(codePair CodePair) {
+	d.collectedPairs = append(d.collectedPairs, codePair)
+}
+
+func (d *dimensionHelper) codePairs(version AcadVersion) (pairs []CodePair) {
+	return
 }
 
 //

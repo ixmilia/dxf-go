@@ -363,6 +363,85 @@
   </Entity>
   <!--
 
+  DIMENSION
+
+  -->
+  <Interface Name="Dimension">
+    <Field Name="Version" Code="280" Type="Version" DefaultValue="VersionR2010" ReadConverter="Version(%v)" WriteConverter="int16(%v)" MinVersion="R2010" />
+    <Field Name="BlockName" Code="2" Type="string" DefaultValue='"*MODEL_SPACE"' />
+    <Field Name="DefinitionPoint1" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="TextMidPoint" Code="11" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="11,21,31" />
+    <Field Name="DimensionType" Code="70" Type="DimensionType" DefaultValue="DimensionTypeAligned" ReadConverter="DimensionType(%v)" WriteConverter="int16(%v)" />
+    <Field Name="AttachmentPoint" Code="71" Type="AttachmentPoint" DefaultValue="AttachmentPointTopLeft" ReadConverter="AttachmentPoint(%v)" WriteConverter="int16(%v)" MinVersion="R2000" />
+    <Field Name="TextLineSpacingStyle" Code="72" Type="TextLineSpacingStyle" DefaultValue="TextLineSpacingStyleAtLeast" ReadConverter="TextLineSpacingStyle(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true" MinVersion="R2000" />
+    <Field Name="TextLineSpacingFactor" Code="41" Type="float64" DefaultValue="1.0" DisableWritingDefault="true" MinVersion="R2000" />
+    <Field Name="ActualMeasurement" Code="42" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" ProtectedSet="true" MinVersion="R2000" />
+    <Field Name="Text" Code="1" Type="string" DefaultValue='"&lt;&gt;"' />
+    <Field Name="TextRotationAngle" Code="53" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="HorizontalDirectionAngle" Code="51" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="Normal" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
+    <Field Name="DimensionStyleName" Code="3" Type="string" DefaultValue='"STANDARD"' MinVersion="R12" />
+    <WriteOrder>
+      <WriteSpecificValue Code="100" Value='"AcDbDimension"' />
+      <WriteField Field="Version" />
+      <WriteField Field="BlockName" />
+      <WriteField Field="DefinitionPoint1" />
+      <WriteField Field="TextMidPoint" />
+      <WriteField Field="DimensionType" />
+      <WriteField Field="AttachmentPoint" />
+      <WriteField Field="TextLineSpacingStyle" />
+      <WriteField Field="TextLineSpacingFactor" />
+      <WriteField Field="ActualMeasurement" />
+      <WriteField Field="Text" />
+      <WriteField Field="TextRotationAngle" />
+      <WriteField Field="HorizontalDirectionAngle" />
+      <WriteField Field="Normal" />
+      <WriteField Field="DimensionStyleName" />
+    </WriteOrder>
+  </Interface>
+  <Entity Name="dimensionHelper" TypeString="DIMENSION" ImplementInterfaces="Entity,Dimension" GenerateReader="false" GenerateWriter="false">
+    <Field Name="collectedPairs" Type="CodePair" DefaultValue="[]CodePair{}" AllowMultiples="true" />
+  </Entity>
+  <Entity Name="AlignedDimension" SubclassMarker="AcDbAlignedDimension" TypeString="DIMENSION" Tag="Aligned" ImplementInterfaces="Entity,Dimension">
+    <Field Name="DefinitionPoint2" Code="13" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="13,23,33" />
+    <Field Name="DefinitionPoint3" Code="14" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="14,24,34" />
+  </Entity>
+  <Entity Name="RotatedDimension" SubclassMarker="AcDbAlignedDimension" TypeString="DIMENSION" Tag="RotatedHorizontalOrVertical" ImplementInterfaces="Entity,Dimension">
+    <Field Name="InsertionPoint" Code="12" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="12,22,32" />
+    <Field Name="DefinitionPoint2" Code="13" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="13,23,33" />
+    <Field Name="DefinitionPoint3" Code="14" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="14,24,34" />
+    <Field Name="RotationAngle" Code="50" Type="float64" DefaultValue="0.0" />
+    <Field Name="ExtensionLineAngle" Code="52" Type="float64" DefaultValue="0.0" />
+    <WriteOrder>
+      <WriteSpecificValue Code="100" Value='"AcDbAlignedDimension"' MinVersion="R13" />
+      <WriteField Field="InsertionPoint" />
+      <WriteField Field="DefinitionPoint2" />
+      <WriteField Field="DefinitionPoint3" />
+      <WriteField Field="RotationAngle" />
+      <WriteField Field="ExtensionLineAngle" />
+      <WriteSpecificValue Code="100" Value='"AcDbRotatedDimension"' MinVersion="R13" />
+    </WriteOrder>
+  </Entity>
+  <Entity Name="RadialDimension" SubclassMarker="AcDbRadialDimension" TypeString="DIMENSION" Tag="Radius" ImplementInterfaces="Entity,Dimension">
+    <Field Name="DefinitionPoint2" Code="15" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="15,25,35" />
+    <Field Name="LeaderLength" Code="40" Type="float64" DefaultValue="0.0" />
+  </Entity>
+  <Entity Name="DiameterDimension" SubclassMarker="AcDbDiametricDimension" TypeString="DIMENSION" Tag="Diameter" ImplementInterfaces="Entity,Dimension">
+    <Field Name="DefinitionPoint2" Code="15" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="15,25,35" />
+    <Field Name="LeaderLength" Code="40" Type="float64" DefaultValue="0.0" />
+  </Entity>
+  <Entity Name="AngularThreePointDimension" SubclassMarker="AcDb3PointAngularDimension" TypeString="DIMENSION" Tag="AngularThreePoint" ImplementInterfaces="Entity,Dimension">
+    <Field Name="DefinitionPoint2" Code="13" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="13,23,33" />
+    <Field Name="DefinitionPoint3" Code="14" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="14,24,34" />
+    <Field Name="DefinitionPoint4" Code="15" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="15,25,35" />
+    <Field Name="DefinitionPoint5" Code="16" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="16,26,36" />
+  </Entity>
+  <Entity Name="OrdinateDimension" SubclassMarker="AcDbOrdinateDimension" TypeString="DIMENSION" Tag="Ordinate" ImplementInterfaces="Entity,Dimension" MinVersion="R11">
+    <Field Name="DefinitionPoint2" Code="13" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="13,23,33" />
+    <Field Name="DefinitionPoint3" Code="14" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="14,24,34" />
+  </Entity>
+  <!--
+
   ELLIPSE
 
   -->
