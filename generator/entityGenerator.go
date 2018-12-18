@@ -9,21 +9,36 @@ import (
 	"strings"
 )
 
-type xmlEntities struct {
-	XMLName  xml.Name    `xml:"Entities"`
-	Entities []xmlEntity `xml:"Entity"`
+type xmlSpecification struct {
+	XMLName    xml.Name       `xml:"Specification"`
+	Entities   []xmlEntity    `xml:"Entity"`
+	Interfaces []xmlInterface `xml:"Interface"`
+}
+
+type xmlInterface struct {
+	XMLName    xml.Name                `xml:"Interface"`
+	Name       string                  `xml:"Name,attr"`
+	Methods    []xmlMethod             `xml:"Method"`
+	Fields     []xmlField              `xml:"Field"`
+	WriteOrder xmlWriteOrderCollection `xml:"WriteOrder"`
+}
+
+type xmlMethod struct {
+	XMLName   xml.Name `xml:"Method"`
+	Signature string   `xml:"Signature,attr"`
 }
 
 type xmlEntity struct {
-	XMLName        xml.Name                `xml:"Entity"`
-	Name           string                  `xml:"Name,attr"`
-	SubclassMarker string                  `xml:"SubclassMarker,attr"`
-	TypeString     string                  `xml:"TypeString,attr"`
-	MinVersion     string                  `xml:"MinVersion,attr"`
-	MaxVersion     string                  `xml:"MaxVersion,attr"`
-	GenerateReader bool                    `xml:"GenerateReader,attr"`
-	Fields         []xmlField              `xml:"Field"`
-	WriteOrder     xmlWriteOrderCollection `xml:"WriteOrder"`
+	XMLName             xml.Name                `xml:"Entity"`
+	Name                string                  `xml:"Name,attr"`
+	SubclassMarker      string                  `xml:"SubclassMarker,attr"`
+	TypeString          string                  `xml:"TypeString,attr"`
+	MinVersion          string                  `xml:"MinVersion,attr"`
+	MaxVersion          string                  `xml:"MaxVersion,attr"`
+	GenerateReader      bool                    `xml:"GenerateReader,attr"`
+	ImplementInterfaces []string                `xml:"ImplementInterfaces,attr"`
+	Fields              []xmlField              `xml:"Field"`
+	WriteOrder          xmlWriteOrderCollection `xml:"WriteOrder"`
 }
 
 type xmlField struct {
@@ -65,6 +80,8 @@ type xmlWriteOrderDirective struct {
 	MaxVersion     string `xml:"MaxVersion,attr"`
 }
 
+type getNamedField func(string) xmlField
+
 func generateEntities() {
 	specPath := "spec/EntitySpec.xml"
 	file, err := os.Open(specPath)
@@ -72,7 +89,7 @@ func generateEntities() {
 
 	defer file.Close()
 
-	entities, err := readEntities(file)
+	spec, err := readSpecification(file)
 	check(err)
 
 	var builder strings.Builder
@@ -85,78 +102,91 @@ func generateEntities() {
 	builder.WriteString(")\n")
 	builder.WriteString("\n")
 
-	var baseEntity xmlEntity
-	foundBaseEntity := false
-	for _, entity := range entities {
-		if entity.Name == "Entity" {
-			baseEntity = entity
-			foundBaseEntity = true
-			break
-		}
+	interfaces := make(map[string]xmlInterface)
+	for _, inf := range spec.Interfaces {
+		interfaces[inf.Name] = inf
 	}
 
-	if !foundBaseEntity {
-		panic("unable to find base entity")
-	}
-
-	// base interface
-	builder.WriteString("type Entity interface {\n")
-	builder.WriteString("	typeString() (typeString string)\n")
-	builder.WriteString("	minVersion() (version AcadVersion)\n")
-	builder.WriteString("	maxVersion() (version AcadVersion)\n")
-	builder.WriteString("	codePairs(version AcadVersion) (pairs []CodePair)\n")
-	builder.WriteString("	tryApplyCodePair(codePair CodePair)\n")
-	for _, field := range baseEntity.Fields {
-		fieldType := field.Type
-		if field.AllowMultiples {
-			fieldType = "[]" + fieldType
+	// output interfaces
+	for _, inf := range spec.Interfaces {
+		// base interface
+		builder.WriteString(fmt.Sprintf("type %s interface {\n", inf.Name))
+		for _, method := range inf.Methods {
+			builder.WriteString(fmt.Sprintf("	%s\n", method.Signature))
 		}
-		builder.WriteString(fmt.Sprintf("	%s() %s\n", field.Name, fieldType))       // getter
-		builder.WriteString(fmt.Sprintf("	Set%s(val %s)\n", field.Name, fieldType)) // setter
-	}
-	builder.WriteString("}\n")
-	builder.WriteString("\n")
-
-	// base reader
-	builder.WriteString("func tryApplyBaseCodePair(entity Entity, codePair CodePair) {\n")
-	builder.WriteString("	switch codePair.Code {\n")
-	for _, field := range baseEntity.Fields {
-		builder.WriteString(fmt.Sprintf("	case %d:\n", field.Code))
-		readValue := fmt.Sprintf("codePair.Value.(%sCodePairValue).Value", codeTypeName(field.Code))
-		if len(field.ReadConverter) > 0 {
-			readValue = strings.Replace(field.ReadConverter, "%v", readValue, -1)
-		}
-		if field.AllowMultiples {
-			readValue = fmt.Sprintf("append(entity.%s(), %s)", field.Name, readValue)
-		}
-		builder.WriteString(fmt.Sprintf("		entity.Set%s(%s)\n", field.Name, readValue))
-	}
-	builder.WriteString("	}\n")
-	builder.WriteString("}\n")
-	builder.WriteString("\n")
-
-	// for each entity
-	for _, entity := range entities {
-		if entity.Name == "Entity" {
-			continue
-		}
-
-		// declaration
-		builder.WriteString(fmt.Sprintf("type %s struct {\n", entity.Name))
-		// backing fields
-		for _, field := range baseEntity.Fields {
-			comment := ""
-			if len(field.Comment) > 0 {
-				comment = fmt.Sprintf(" // %s", field.Comment)
-			}
-			backingField := strings.ToLower(field.Name[0:1]) + field.Name[1:]
+		for _, field := range inf.Fields {
 			fieldType := field.Type
 			if field.AllowMultiples {
 				fieldType = "[]" + fieldType
 			}
-
-			builder.WriteString(fmt.Sprintf("	%s %s%s\n", backingField, fieldType, comment))
+			builder.WriteString(fmt.Sprintf("	%s() %s\n", field.Name, fieldType))       // getter
+			builder.WriteString(fmt.Sprintf("	Set%s(val %s)\n", field.Name, fieldType)) // setter
 		}
+		builder.WriteString("}\n")
+		builder.WriteString("\n")
+
+		// base reader
+		builder.WriteString(fmt.Sprintf("func tryApplyCodePairFor%s(entity Entity, codePair CodePair) bool {\n", inf.Name))
+		builder.WriteString("	switch codePair.Code {\n")
+		for _, field := range inf.Fields {
+			builder.WriteString(fmt.Sprintf("	case %d:\n", field.Code))
+			readValue := fmt.Sprintf("codePair.Value.(%sCodePairValue).Value", codeTypeName(field.Code))
+			if len(field.ReadConverter) > 0 {
+				readValue = strings.Replace(field.ReadConverter, "%v", readValue, -1)
+			}
+			if field.AllowMultiples {
+				readValue = fmt.Sprintf("append(entity.%s(), %s)", field.Name, readValue)
+			}
+			builder.WriteString(fmt.Sprintf("		entity.Set%s(%s)\n", field.Name, readValue))
+		}
+		builder.WriteString("	default:\n")
+		builder.WriteString("		return false\n")
+		builder.WriteString("	}\n")
+		builder.WriteString("	return true\n")
+		builder.WriteString("}\n")
+		builder.WriteString("\n")
+
+		// code pair builder
+		builder.WriteString(fmt.Sprintf("func codePairsFor%s(this %s, version AcadVersion) (pairs []CodePair) {\n", inf.Name, inf.Name))
+		if len(inf.WriteOrder.Directives) > 0 {
+			for _, directive := range inf.WriteOrder.Directives {
+				writeDirective(&builder, directive, inf.getNamedField, true)
+			}
+		} else {
+			for _, field := range inf.Fields {
+				writeField(&builder, field, true)
+			}
+		}
+		builder.WriteString("	return\n")
+		builder.WriteString("}\n")
+		builder.WriteString("\n")
+	}
+
+	// for each entity
+	for _, entity := range spec.Entities {
+		// declaration
+		builder.WriteString(fmt.Sprintf("type %s struct {\n", entity.Name))
+
+		// backing interface
+		for _, infName := range entity.ImplementInterfaces {
+			inf := interfaces[infName]
+			builder.WriteString(fmt.Sprintf("	// fields and methods for %s interface\n", inf.Name))
+			for _, field := range inf.Fields {
+				comment := ""
+				if len(field.Comment) > 0 {
+					comment = fmt.Sprintf(" // %s", field.Comment)
+				}
+				backingField := strings.ToLower(field.Name[0:1]) + field.Name[1:]
+				fieldType := field.Type
+				if field.AllowMultiples {
+					fieldType = "[]" + fieldType
+				}
+
+				builder.WriteString(fmt.Sprintf("	%s %s%s\n", backingField, fieldType, comment))
+			}
+		}
+
+		// specific fields
 		for _, field := range entity.Fields {
 			comment := ""
 			if len(field.Comment) > 0 {
@@ -174,9 +204,12 @@ func generateEntities() {
 		// constructor
 		builder.WriteString(fmt.Sprintf("func New%s() *%s {\n", entity.Name, entity.Name))
 		builder.WriteString(fmt.Sprintf("	return &%s{\n", entity.Name))
-		for _, field := range baseEntity.Fields {
-			backingField := strings.ToLower(field.Name[0:1]) + field.Name[1:]
-			builder.WriteString(fmt.Sprintf("		%s: %s,\n", backingField, field.DefaultValue))
+		for _, infName := range entity.ImplementInterfaces {
+			inf := interfaces[infName]
+			for _, field := range inf.Fields {
+				backingField := strings.ToLower(field.Name[0:1]) + field.Name[1:]
+				builder.WriteString(fmt.Sprintf("		%s: %s,\n", backingField, field.DefaultValue))
+			}
 		}
 		for _, field := range entity.Fields {
 			builder.WriteString(fmt.Sprintf("		%s: %s,\n", field.Name, field.DefaultValue))
@@ -185,25 +218,28 @@ func generateEntities() {
 		builder.WriteString("}\n")
 		builder.WriteString("\n")
 
-		// base entity getter/setter
-		for _, field := range baseEntity.Fields {
-			fieldType := field.Type
-			if field.AllowMultiples {
-				fieldType = "[]" + fieldType
+		// base interface getter/setter
+		for _, infName := range entity.ImplementInterfaces {
+			inf := interfaces[infName]
+			for _, field := range inf.Fields {
+				fieldType := field.Type
+				if field.AllowMultiples {
+					fieldType = "[]" + fieldType
+				}
+
+				// getter
+				builder.WriteString(fmt.Sprintf("func (this *%s) %s() %s {\n", entity.Name, field.Name, fieldType))
+				backingField := strings.ToLower(field.Name[0:1]) + field.Name[1:]
+				builder.WriteString(fmt.Sprintf("	return this.%s\n", backingField))
+				builder.WriteString("}\n")
+				builder.WriteString("\n")
+
+				// setter
+				builder.WriteString(fmt.Sprintf("func (this *%s) Set%s(val %s) {\n", entity.Name, field.Name, fieldType))
+				builder.WriteString(fmt.Sprintf("	this.%s = val\n", backingField))
+				builder.WriteString("}\n")
+				builder.WriteString("\n")
 			}
-
-			// getter
-			builder.WriteString(fmt.Sprintf("func (this *%s) %s() %s {\n", entity.Name, field.Name, fieldType))
-			backingField := strings.ToLower(field.Name[0:1]) + field.Name[1:]
-			builder.WriteString(fmt.Sprintf("	return this.%s\n", backingField))
-			builder.WriteString("}\n")
-			builder.WriteString("\n")
-
-			// setter
-			builder.WriteString(fmt.Sprintf("func (this *%s) Set%s(val %s) {\n", entity.Name, field.Name, fieldType))
-			builder.WriteString(fmt.Sprintf("	this.%s = val\n", backingField))
-			builder.WriteString("}\n")
-			builder.WriteString("\n")
 		}
 
 		// flags
@@ -292,7 +328,13 @@ func generateEntities() {
 
 			}
 			builder.WriteString("	default:\n")
-			builder.WriteString("		tryApplyBaseCodePair(this, codePair)\n")
+			builder.WriteString("		appliedCodePair := false\n")
+			for i := len(entity.ImplementInterfaces) - 1; i >= 0; i-- {
+				infName := entity.ImplementInterfaces[i]
+				builder.WriteString("		if !appliedCodePair {\n")
+				builder.WriteString(fmt.Sprintf("			appliedCodePair = tryApplyCodePairFor%s(this, codePair)\n", infName))
+				builder.WriteString("		}\n")
+			}
 			builder.WriteString("	}\n")
 			builder.WriteString("}\n")
 			builder.WriteString("\n")
@@ -301,21 +343,22 @@ func generateEntities() {
 		// writer
 		builder.WriteString(fmt.Sprintf("func (this *%s) codePairs(version AcadVersion) (pairs []CodePair) {\n", entity.Name))
 		builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewStringCodePair(0, \"%s\"))\n", strings.Split(entity.TypeString, ",")[0]))
-		for _, directive := range baseEntity.WriteOrder.Directives {
-			writeDirective(&builder, baseEntity, directive, true)
+		for _, infName := range entity.ImplementInterfaces {
+			inf := interfaces[infName]
+			builder.WriteString(fmt.Sprintf("	pairs = append(pairs, codePairsFor%s(this, version)...)\n", inf.Name))
 		}
 		if len(entity.WriteOrder.Directives) > 0 {
 			for _, directive := range entity.WriteOrder.Directives {
-				writeDirective(&builder, entity, directive, false)
+				writeDirective(&builder, directive, entity.getNamedField, false)
 			}
 		} else {
 			builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewStringCodePair(100, \"%s\"))\n", entity.SubclassMarker))
 			for _, field := range entity.Fields {
-				writeField(&builder, entity, field, false)
+				writeField(&builder, field, false)
 			}
 		}
 		builder.WriteString("\n")
-		builder.WriteString("	return pairs\n")
+		builder.WriteString("	return\n")
 		builder.WriteString("}\n")
 		builder.WriteString("\n")
 	}
@@ -324,7 +367,7 @@ func generateEntities() {
 	builder.WriteString("func createEntity(entityType string) (entity Entity, ok bool) {\n")
 	builder.WriteString("	ok = true\n")
 	builder.WriteString("	switch entityType {\n")
-	for _, entity := range entities {
+	for _, entity := range spec.Entities {
 		if entity.Name == "Entity" {
 			continue
 		}
@@ -363,13 +406,13 @@ func collectionHelpers(builder *strings.Builder, entity xmlEntity, entityName st
 	}
 }
 
-func writeDirective(builder *strings.Builder, entity xmlEntity, directive xmlWriteOrderDirective, asFunction bool) {
+func writeDirective(builder *strings.Builder, directive xmlWriteOrderDirective, getNamedField getNamedField, asFunction bool) {
 	switch directive.XMLName.Local {
 	case "WriteExtensionData":
 		// TODO:
 	case "WriteField":
-		field := entity.getNamedField(directive.Field)
-		writeField(builder, entity, field, asFunction)
+		field := getNamedField(directive.Field)
+		writeField(builder, field, asFunction)
 	case "WriteSpecificValue":
 		predicates := directivePredicates(directive)
 		indention := ""
@@ -382,7 +425,7 @@ func writeDirective(builder *strings.Builder, entity xmlEntity, directive xmlWri
 			builder.WriteString("	}\n")
 		}
 	default:
-		panic(fmt.Sprintf("Unsupported write directive '%s' specified for entity %s", directive.XMLName.Local, entity.Name))
+		panic(fmt.Sprintf("Unsupported write directive '%s'.", directive.XMLName.Local))
 	}
 }
 
@@ -400,13 +443,13 @@ func directivePredicates(directive xmlWriteOrderDirective) []string {
 	return predicates
 }
 
-func writeField(builder *strings.Builder, entity xmlEntity, field xmlField, asFunction bool) {
+func writeField(builder *strings.Builder, field xmlField, asInterface bool) {
 	if field.Code < 0 {
 		// specially handled, just needs to exist
 		return
 	}
 
-	predicates := fieldPredicates(field, asFunction)
+	predicates := fieldPredicates(field, asInterface)
 	indention := ""
 	if len(predicates) > 0 {
 		indention = "	"
@@ -414,7 +457,7 @@ func writeField(builder *strings.Builder, entity xmlEntity, field xmlField, asFu
 	}
 
 	suffix := ""
-	if asFunction {
+	if asInterface {
 		suffix = "()"
 	}
 
@@ -448,7 +491,7 @@ func writeField(builder *strings.Builder, entity xmlEntity, field xmlField, asFu
 	}
 }
 
-func fieldPredicates(field xmlField, asFunction bool) (predicates []string) {
+func fieldPredicates(field xmlField, asInterface bool) (predicates []string) {
 	if len(field.MinVersion) > 0 {
 		predicates = append(predicates, fmt.Sprintf("version >= %s", field.MinVersion))
 	}
@@ -457,7 +500,7 @@ func fieldPredicates(field xmlField, asFunction bool) (predicates []string) {
 	}
 	if field.DisableWritingDefault {
 		suffix := ""
-		if asFunction {
+		if asInterface {
 			suffix = "()"
 		}
 		predicates = append(predicates, fmt.Sprintf("this.%s%s != %s", field.Name, suffix, field.DefaultValue))
@@ -476,12 +519,23 @@ func (entity xmlEntity) getNamedField(name string) xmlField {
 	panic(fmt.Sprintf("Unable to find field %s.%s", entity.Name, name))
 }
 
+func (inf xmlInterface) getNamedField(name string) xmlField {
+	for _, field := range inf.Fields {
+		if field.Name == name {
+			return field
+		}
+	}
+
+	panic(fmt.Sprintf("Unable to find field %s.%s", inf.Name, name))
+}
+
 func (entity *xmlEntity) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	type tempXMLEntity xmlEntity
 
 	// set non-standard defaults
 	item := tempXMLEntity{
-		GenerateReader: true,
+		GenerateReader:      true,
+		ImplementInterfaces: []string{"Entity"},
 	}
 	err := d.DecodeElement(&item, &start)
 	if err != nil {
@@ -491,11 +545,7 @@ func (entity *xmlEntity) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 	return nil
 }
 
-func readEntities(reader io.Reader) ([]xmlEntity, error) {
-	var entities xmlEntities
-	if err := xml.NewDecoder(reader).Decode(&entities); err != nil {
-		return nil, err
-	}
-
-	return entities.Entities, nil
+func readSpecification(reader io.Reader) (spec xmlSpecification, error error) {
+	error = xml.NewDecoder(reader).Decode(&spec)
+	return
 }

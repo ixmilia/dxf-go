@@ -1,10 +1,15 @@
-<Entities>
+<Specification>
   <!--
 
   ENTITY - the parts common to all entities.
 
   -->
-  <Entity Name="Entity">
+  <Interface Name="Entity">
+    <Method Signature="codePairs(version AcadVersion) (pairs []CodePair)" />
+    <Method Signature="minVersion() AcadVersion" />
+    <Method Signature="maxVersion() AcadVersion" />
+    <Method Signature="tryApplyCodePair(pair CodePair)" />
+    <Method Signature="typeString() string" />
     <Field Name="IsInPaperSpace" Code="67" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" DisableWritingDefault="true" MinVersion="R12" />
     <Field Name="Layer" Code="8" Type="string" DefaultValue='"0"' WriteConverter='defaultIfEmpty(%v, "0")' />
     <Field Name="LineTypeName" Code="6" Type="string" DefaultValue='"BYLAYER"' DisableWritingDefault="true" />
@@ -43,7 +48,7 @@
       <!-- <WriteField Field="PlotStyle" /> -->
       <WriteField Field="ShadowMode" />
     </WriteOrder>
-  </Entity>
+  </Interface>
   <!--
 
   3DFACE
@@ -450,4 +455,4 @@
       <WriteField Field="ColumnHeights" />
     </WriteOrder>
   </Entity>
-</Entities>
+</Specification>

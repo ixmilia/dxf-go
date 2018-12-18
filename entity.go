@@ -274,7 +274,7 @@ func (a *Attribute) tryApplyCodePair(codePair CodePair) {
 	case 340:
 		a.secondaryAttributeHandles = append(a.secondaryAttributeHandles, codePair.Value.(StringCodePairValue).Value)
 	default:
-		tryApplyBaseCodePair(a, codePair)
+		tryApplyCodePairForEntity(a, codePair)
 	}
 }
 
@@ -374,7 +374,7 @@ func (ad *AttributeDefinition) tryApplyCodePair(codePair CodePair) {
 	case 340:
 		ad.SecondaryAttributeHandles = append(ad.SecondaryAttributeHandles, codePair.Value.(StringCodePairValue).Value)
 	default:
-		tryApplyBaseCodePair(ad, codePair)
+		tryApplyCodePairForEntity(ad, codePair)
 	}
 }
 
@@ -457,7 +457,7 @@ func (mt *MText) tryApplyCodePair(codePair CodePair) {
 	case 49:
 		mt.ColumnGutter = codePair.Value.(DoubleCodePairValue).Value
 	default:
-		tryApplyBaseCodePair(mt, codePair)
+		tryApplyCodePairForEntity(mt, codePair)
 	}
 }
 
@@ -493,6 +493,6 @@ func (entity *ProxyEntity) tryApplyCodePair(codePair CodePair) {
 	case 70:
 		entity.OriginalDataFormatIsDxf = boolFromShort(codePair.Value.(ShortCodePairValue).Value)
 	default:
-		tryApplyBaseCodePair(entity, codePair)
+		tryApplyCodePairForEntity(entity, codePair)
 	}
 }
