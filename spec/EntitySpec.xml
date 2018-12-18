@@ -461,6 +461,23 @@
   <!-- TODO MinVersion="R14" -->
   <!--
 
+  HELIX
+
+  -->
+  <Entity Name="Helix" SubclassMarker="AcDbHelix" TypeString="HELIX" MinVersion="R2007">
+    <Field Name="MajorReleaseNumber" Code="90" Type="int" DefaultValue="0" />
+    <Field Name="MaintainenceReleaseNumber" Code="91" Type="int" DefaultValue="0" />
+    <Field Name="AxisBasePoint" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="StartPoint" Code="11" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="11,21,31" />
+    <Field Name="AxisVector" Code="12" Type="Vector" DefaultValue="*NewZAxis()" CodeOverrides="12,22,32" />
+    <Field Name="Radius" Code="40" Type="float64" DefaultValue="0.0" />
+    <Field Name="NumberOfTurns" Code="41" Type="float64" DefaultValue="0.0" />
+    <Field Name="TurnHeight" Code="42" Type="float64" DefaultValue="0.0" />
+    <Field Name="IsRightHanded" Code="290" Type="bool" DefaultValue="false" />
+    <Field Name="Constraint" Code="280" Type="HelixConstraint" DefaultValue="HelixConstraintConstrainTurnHeight" ReadConverter="HelixConstraint(%v)" WriteConverter="int16(%v)" />
+  </Entity>
+  <!--
+
   LINE
 
   -->

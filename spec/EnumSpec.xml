@@ -116,6 +116,11 @@
     <Value Name="TTF" Value="iota" />
     <Value Name="SHX" />
   </Enum>
+  <Enum Name="HelixConstraint">
+    <Value Name="ConstrainTurnHeight" Value="iota" />
+    <Value Name="ConstrainTurns" />
+    <Value Name="ConstrainHeight" />
+  </Enum>
   <Enum Name="HorizontalTextJustification">
     <Value Name="Left" Value="iota" />
     <Value Name="Center" />
