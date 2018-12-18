@@ -348,6 +348,7 @@ func generateEntities() {
 	}
 	builder.WriteString("	default:\n")
 	builder.WriteString("		error = errors.New(fmt.Sprintf(\"Unsupported dimension type %s\", temp.DimensionType()))\n")
+	builder.WriteString("		return\n")
 	builder.WriteString("	}\n")
 	builder.WriteString("\n")
 	builder.WriteString("	for _, pair := range temp.collectedPairs {\n")
