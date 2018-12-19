@@ -24,8 +24,12 @@ func readEntities(np CodePair, reader codePairReader) (entities []Entity, nextPa
 		return
 	}
 
-	collected := collectEntities(entities)
-	entities = collected
+	entityBuffer := &entityBufferReader{
+		entities: entities,
+		position: 0,
+	}
+
+	entities = collectEntities(entityBuffer)
 	return
 }
 
@@ -111,13 +115,14 @@ func beforeWrite(entity *Entity) {
 func trailingCodePairs(entity *Entity, version AcadVersion) (pairs []CodePair) {
 	switch ent := (*entity).(type) {
 	case *Attribute:
-		for _, pair := range ent.MText.codePairs(version) {
-			pairs = append(pairs, pair)
-		}
+		pairs = append(pairs, ent.MText.codePairs(version)...)
 	case *AttributeDefinition:
-		for _, pair := range ent.MText.codePairs(version) {
-			pairs = append(pairs, pair)
+		pairs = append(pairs, ent.MText.codePairs(version)...)
+	case *Insert:
+		for _, att := range ent.Attributes {
+			pairs = append(pairs, att.codePairs(version)...)
 		}
+		pairs = append(pairs, ent.seqend.codePairs(version)...)
 	}
 
 	return
@@ -139,42 +144,98 @@ func afterRead(entity *Entity) {
 	}
 }
 
-func collectEntities(entities []Entity) (result []Entity) {
-	for i := 0; i < len(entities); i++ {
-		entity := entities[i]
-		result = append(result, entity)
-		switch ent := entity.(type) {
+func collectEntities(entityBuffer *entityBufferReader) (result []Entity) {
+	for entityBuffer.ItemsRemain() {
+		ent := entityBuffer.Peek()
+		entityBuffer.Advance()
+		switch entity := ent.(type) {
 		case *Attribute:
 			// ATTRIB should be followed by a single MTEXT
-			next, err := entityAt(entities, i+1)
+			mtext, err := getNextMText(entityBuffer)
 			if err == nil {
-				mtext, ok := next.(*MText)
-				if ok {
-					ent.MText = *mtext
-					i++
-				}
+				entity.MText = mtext
 			}
 		case *AttributeDefinition:
 			// ATTDEF should be followed by a single MTEXT
-			next, err := entityAt(entities, i+1)
+			mtext, err := getNextMText(entityBuffer)
 			if err == nil {
-				mtext, ok := next.(*MText)
-				if ok {
-					ent.MText = *mtext
-					i++
+				entity.MText = mtext
+			}
+		case *Insert:
+			// INSERT should be followed by multiple ATTRIB...
+			if entity.HasAttributes {
+				for entityBuffer.ItemsRemain() {
+					att, err := getNextAttribute(entityBuffer)
+					if err == nil {
+						entity.Attributes = append(entity.Attributes, att)
+					} else {
+						break
+					}
 				}
 			}
+			// ...and a single SEQEND
+			seqend, err := getNextSeqend(entityBuffer)
+			if err == nil {
+				entity.seqend = seqend
+			}
 		}
+
+		result = append(result, ent)
 	}
 
 	return
 }
 
-func entityAt(entities []Entity, index int) (entity Entity, error error) {
-	if index >= 0 && index < len(entities) {
-		entity = entities[index]
+func getNextAttribute(entityBuffer *entityBufferReader) (att Attribute, error error) {
+	if entityBuffer.ItemsRemain() {
+		switch next := entityBuffer.Peek().(type) {
+		case *Attribute:
+			att = *next
+			entityBuffer.Advance()
+			if entityBuffer.ItemsRemain() {
+				switch next := entityBuffer.Peek().(type) {
+				case *MText:
+					att.MText = *next
+					entityBuffer.Advance()
+				}
+			}
+		default:
+			error = errors.New("not an attribute")
+		}
 	} else {
-		error = errors.New("No more entities")
+		error = errors.New("no more entities")
+	}
+
+	return
+}
+
+func getNextMText(entityBuffer *entityBufferReader) (mtext MText, error error) {
+	if entityBuffer.ItemsRemain() {
+		switch next := entityBuffer.Peek().(type) {
+		case *MText:
+			mtext = *next
+			entityBuffer.Advance()
+		default:
+			error = errors.New("not an mtext")
+		}
+	} else {
+		error = errors.New("no more entities")
+	}
+
+	return
+}
+
+func getNextSeqend(entityBuffer *entityBufferReader) (seqend Seqend, error error) {
+	if entityBuffer.ItemsRemain() {
+		switch next := entityBuffer.Peek().(type) {
+		case *Seqend:
+			seqend = *next
+			entityBuffer.Advance()
+		default:
+			error = errors.New("not a seqend")
+		}
+	} else {
+		error = errors.New("no more entities")
 	}
 
 	return
@@ -522,4 +583,8 @@ func (entity *ProxyEntity) tryApplyCodePair(codePair CodePair) {
 	default:
 		tryApplyCodePairForEntity(entity, codePair)
 	}
+}
+
+func (s *Seqend) tryApplyCodePair(codePair CodePair) {
+	tryApplyCodePairForEntity(s, codePair)
 }

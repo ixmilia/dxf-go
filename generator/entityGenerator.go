@@ -410,6 +410,7 @@ func collectionHelpers(builder *strings.Builder, entity xmlEntity, entityName st
 
 func writeDirective(builder *strings.Builder, directive xmlWriteOrderDirective, getNamedField getNamedField, asFunction bool, indent string) {
 	switch directive.XMLName.Local {
+	case "NOP":
 	case "Foreach":
 		builder.WriteString(fmt.Sprintf("%s	for _, item := range this.%s {\n", indent, directive.Field))
 		for _, d := range directive.Directives {

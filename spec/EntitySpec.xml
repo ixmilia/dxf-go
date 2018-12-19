@@ -530,6 +530,28 @@
   </Entity>
   <!--
 
+  INSERT
+
+  -->
+  <Entity Name="Insert" SubclassMarker="AcDbBlockReference" TypeString="INSERT">
+    <Field Name="HasAttributes" Code="66" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" DisableWritingDefault="true" />
+    <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+    <Field Name="Location" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="XScaleFactor" Code="41" Type="float64" DefaultValue="1.0" DisableWritingDefault="true" />
+    <Field Name="YScaleFactor" Code="42" Type="float64" DefaultValue="1.0" DisableWritingDefault="true" />
+    <Field Name="ZScaleFactor" Code="43" Type="float64" DefaultValue="1.0" DisableWritingDefault="true" />
+    <Field Name="Rotation" Code="50" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="ColumnCount" Code="70" Type="int16" DefaultValue="1" DisableWritingDefault="true" />
+    <Field Name="RowCount" Code="71" Type="int16" DefaultValue="1" DisableWritingDefault="true" />
+    <Field Name="ColumnSpacing" Code="44" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="RowSpacing" Code="45" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="ExtrusionDirection" Code="210" Type="Vector" DefaultValue="*NewZAxis()" CodeOverrides="210,220,230" />
+    <!-- entity has trailing attributes and seqend -->
+    <Field Name="Attributes" Code="-1" Type="Attribute" DefaultValue="[]Attribute{}" AllowMultiples="true" />
+    <Field Name="seqend" Code="-1" Type="Seqend" DefaultValue="*NewSeqend()" />
+  </Entity>
+  <!--
+
   LINE
 
   -->
@@ -607,6 +629,17 @@
       <WriteField Field="ColumnGutter" />
       <WriteSpecificValue Code="50" Value="float64(len(this.ColumnHeights))" />
       <WriteField Field="ColumnHeights" />
+    </WriteOrder>
+  </Entity>
+  <!--
+
+  SEQEND
+
+  -->
+  <Entity Name="Seqend" SubclassMarker="nil" TypeString="SEQEND" GenerateReader="false">
+    <!-- empty entity -->
+    <WriteOrder>
+      <NOP />
     </WriteOrder>
   </Entity>
 </Specification>

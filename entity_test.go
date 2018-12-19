@@ -302,17 +302,111 @@ func TestWriteImage(t *testing.T) {
 	), actual)
 }
 
+func TestReadInsertAtEnd(t *testing.T) {
+	ins := parseEntity(t, "INSERT", join(
+		" 66", "1", // has attributes
+		"  0", "ATTRIB",
+		"  1", "attrib 1",
+		"  0", "ATTRIB",
+		"  1", "attrib 2",
+		"  0", "SEQEND",
+	)).(*Insert)
+	assertEqInt(t, 2, len(ins.Attributes))
+	assertEqString(t, "attrib 1", ins.Attributes[0].Value)
+	assertEqString(t, "attrib 2", ins.Attributes[1].Value)
+}
+
+func TestReadInsertAtEndNoSeqend(t *testing.T) {
+	ins := parseEntity(t, "INSERT", join(
+		" 66", "1", // has attributes
+		"  0", "ATTRIB",
+		"  1", "attrib 1",
+		"  0", "ATTRIB",
+		"  1", "attrib 2",
+	)).(*Insert)
+	assertEqInt(t, 2, len(ins.Attributes))
+	assertEqString(t, "attrib 1", ins.Attributes[0].Value)
+	assertEqString(t, "attrib 2", ins.Attributes[1].Value)
+}
+
+func TestReadInsertWithTrailingEntity(t *testing.T) {
+	entities := parseEntities(t, join(
+		"  0", "INSERT",
+		" 66", "1", // has attributes
+		"  0", "ATTRIB",
+		"  1", "attrib 1",
+		"  0", "ATTRIB",
+		"  1", "attrib 2",
+		"  0", "SEQEND",
+		"  0", "LINE", // trailing entity
+		" 10", "111.1",
+	))
+	assertEqInt(t, 2, len(entities))
+	ins := entities[0].(*Insert)
+	assertEqInt(t, 2, len(ins.Attributes))
+	assertEqString(t, "attrib 1", ins.Attributes[0].Value)
+	assertEqString(t, "attrib 2", ins.Attributes[1].Value)
+	line := entities[1].(*Line)
+	assertEqPoint(t, Point{111.1, 0.0, 0.0}, line.P1)
+}
+
+func TestReadInsertWithTrailingEntityNoSeqend(t *testing.T) {
+	entities := parseEntities(t, join(
+		"  0", "INSERT",
+		" 66", "1", // has attributes
+		"  0", "ATTRIB",
+		"  1", "attrib 1",
+		"  0", "ATTRIB",
+		"  1", "attrib 2",
+		"  0", "LINE", // trailing entity
+		" 10", "111.1",
+	))
+	assertEqInt(t, 2, len(entities))
+	ins := entities[0].(*Insert)
+	assertEqInt(t, 2, len(ins.Attributes))
+	assertEqString(t, "attrib 1", ins.Attributes[0].Value)
+	assertEqString(t, "attrib 2", ins.Attributes[1].Value)
+	line := entities[1].(*Line)
+	assertEqPoint(t, Point{111.1, 0.0, 0.0}, line.P1)
+}
+
+func TestWriteInsert(t *testing.T) {
+	ins := NewInsert()
+	att1 := *NewAttribute()
+	att1.Value = "attrib 1"
+	ins.Attributes = append(ins.Attributes, att1)
+	att2 := *NewAttribute()
+	att2.Value = "attrib 2"
+	ins.Attributes = append(ins.Attributes, att2)
+	actual := entityString(ins, R14)
+	assertContains(t, join(
+		"  1", "attrib 1",
+	), actual)
+	assertContains(t, join(
+		"  1", "attrib 2",
+	), actual)
+	assertContains(t, join(
+		"  0", "SEQEND",
+	), actual)
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
+	entities := parseEntities(t, join(
+		"  0", entityType,
+	)+"\r\n"+strings.TrimSpace(body))
+	assertEqInt(t, 1, len(entities))
+	return entities[0]
+}
+
+func parseEntities(t *testing.T, body string) []Entity {
 	drawing := parse(t, join(
 		"  0", "SECTION",
 		"  2", "ENTITIES",
-		"  0", entityType,
 	)+"\r\n"+strings.TrimSpace(body)+"\r\n"+join(
 		"  0", "ENDSEC",
 		"  0", "EOF",
 	))
-	assertEqInt(t, 1, len(drawing.Entities))
-	return drawing.Entities[0]
+	return drawing.Entities
 }
 
 func entityString(entity Entity, version AcadVersion) string {
