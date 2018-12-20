@@ -552,6 +552,55 @@
   </Entity>
   <!--
 
+  LEADER
+
+  -->
+  <Entity Name="Leader" SubclassMarker="AcDbLeader" TypeString="LEADER" MinVersion="R13">
+    <Field Name="DimensionStyleName" Code="3" Type="string" DefaultValue='""' />
+    <Field Name="UseArrowheads" Code="71" Type="bool" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+    <Field Name="PathType" Code="72" Type="LeaderPathType" DefaultValue="LeaderPathTypeStraightLineSegments" ReadConverter="LeaderPathType(%v)" WriteConverter="int16(%v)" />
+    <Field Name="AnnotationType" Code="73" Type="LeaderCreationAnnotationType" DefaultValue="LeaderCreationAnnotationTypeNoAnnotation" ReadConverter="LeaderCreationAnnotationType(%v)" WriteConverter="int16(%v)" />
+    <Field Name="HooklineDirection" Code="74" Type="LeaderHooklineDirection" DefaultValue="LeaderHooklineDirectionOppositeFromHorizontalVector" ReadConverter="LeaderHooklineDirection(%v)" WriteConverter="int16(%v)" />
+    <Field Name="UseHookline" Code="75" Type="bool" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+    <Field Name="TextAnnotationHeight" Code="40" Type="float64" DefaultValue="1.0" />
+    <Field Name="TextAnnotationWidth" Code="41" Type="float64" DefaultValue="1.0" />
+    <Field Name="Vertices" Code="-1" Type="Point" DefaultValue="[]Point{}" AllowMultiples="true" />
+    <Field Name="vertexCount" Code="76" Type="int" DefaultValue="0" ReadConverter="int(%v)" />
+    <Field Name="verticesX" Code="10" Type="float64" DefaultValue="[]float64{}" AllowMultiples="true" />
+    <Field Name="verticesY" Code="20" Type="float64" DefaultValue="[]float64{}" AllowMultiples="true" />
+    <Field Name="verticesZ" Code="30" Type="float64" DefaultValue="[]float64{}" AllowMultiples="true" />
+    <Field Name="OverrideColor" Code="77" Type="Color" DefaultValue="ByBlock()" DisableWritingDefault="true" ReadConverter="Color(%v)" WriteConverter="int16(%v)" />
+    <Field Name="AssociatedAnnotationReference" Code="340" Type="string" DefaultValue='""' />
+    <Field Name="Normal" Code="210" Type="Vector" DefaultValue="*NewZAxis()" CodeOverrides="210,220,230" />
+    <Field Name="Right" Code="211" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="211,221,231" />
+    <Field Name="BlockOffset" Code="212" Type="Vector" DefaultValue="*NewZeroVector()" CodeOverrides="212,222,232" />
+    <Field Name="AnnotationOffset" Code="213" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="213,223,233" MinVersion="R14" />
+    <WriteOrder>
+      <WriteSpecificValue Code="100" Value='"AcDbLeader"' />
+      <WriteField Field="DimensionStyleName" />
+      <WriteField Field="UseArrowheads" />
+      <WriteField Field="PathType" />
+      <WriteField Field="AnnotationType" />
+      <WriteField Field="HooklineDirection" />
+      <WriteField Field="UseHookline" />
+      <WriteField Field="TextAnnotationHeight" />
+      <WriteField Field="TextAnnotationWidth" />
+      <WriteSpecificValue Code="76" Value="int16(len(this.Vertices))" />
+      <Foreach Field="Vertices">
+        <WriteSpecificValue Code="10" Value="item.X" />
+        <WriteSpecificValue Code="20" Value="item.Y" />
+        <WriteSpecificValue Code="30" Value="item.Z" />
+      </Foreach>
+      <WriteField Field="OverrideColor" />
+      <WriteField Field="AssociatedAnnotationReference" />
+      <WriteField Field="Normal" />
+      <WriteField Field="Right" />
+      <WriteField Field="BlockOffset" />
+      <WriteField Field="AnnotationOffset" />
+    </WriteOrder>
+  </Entity>
+  <!--
+
   LINE
 
   -->

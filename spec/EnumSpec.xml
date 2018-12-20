@@ -150,6 +150,20 @@
     <Value Name="SpatialIndex" />
     <Value Name="LayerAndSpatialIndex" />
   </Enum>
+  <Enum Name="LeaderCreationAnnotationType">
+    <Value Name="WithTextAnnotation" Value="iota" />
+    <Value Name="WithToleranceAnnotation" />
+    <Value Name="WithBlockReferenceAnnotation" />
+    <Value Name="NoAnnotation" />
+  </Enum>
+  <Enum Name="LeaderHooklineDirection">
+    <Value Name="OppositeFromHorizontalVector" Value="iota" />
+    <Value Name="SameAsHorizontalVector" />
+  </Enum>
+  <Enum Name="LeaderPathType">
+    <Value Name="StraightLineSegments" Value="iota" />
+    <Value Name="Spline" />
+  </Enum>
   <Enum Name="LineTypeStyle">
     <Value Name="Off" Value="iota" />
     <Value Name="Solid" />

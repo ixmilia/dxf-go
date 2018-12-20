@@ -138,6 +138,10 @@ func afterRead(entity *Entity) {
 		for i := 0; i < minLength; i++ {
 			ent.ClippingVertices = append(ent.ClippingVertices, Point{ent.clippingVerticesX[i], ent.clippingVerticesY[i], 0.0})
 		}
+	case *Leader:
+		for i := 0; i < ent.vertexCount; i++ {
+			ent.Vertices = append(ent.Vertices, Point{ent.verticesX[i], ent.verticesY[i], ent.verticesZ[i]})
+		}
 	case *ProxyEntity:
 		ent.GraphicsData = stringsToBytes(ent.graphicsDataString)
 		ent.EntityData = stringsToBytes(ent.entityDataString)
