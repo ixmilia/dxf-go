@@ -164,6 +164,16 @@
     <Value Name="StraightLineSegments" Value="iota" />
     <Value Name="Spline" />
   </Enum>
+  <Enum Name="LightType">
+    <Value Name="Distant" Value="1" />
+    <Value Name="Point" Value="2" />
+    <Value Name="Spot" Value="3" />
+  </Enum>
+  <Enum Name="LightAttenuationType">
+    <Value Name="None" Value="iota" />
+    <Value Name="InverseLinear" />
+    <Value Name="InverseSquare" />
+  </Enum>
   <Enum Name="LineTypeStyle">
     <Value Name="Off" Value="iota" />
     <Value Name="Solid" />
@@ -245,6 +255,10 @@
     <Value Name="CastsShadows" />
     <Value Name="ReceivesShadows" />
     <Value Name="IgnoresShadows" />
+  </Enum>
+  <Enum Name="ShadowType">
+    <Value Name="RayTraced" Value="iota" />
+    <Value Name="ShadowMaps" />
   </Enum>
   <Enum Name="SnapIsometricPlane">
     <Value Name="Left" Value="iota" />

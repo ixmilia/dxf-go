@@ -601,6 +601,31 @@
   </Entity>
   <!--
 
+  LIGHT
+
+  -->
+  <Entity Name="Light" SubclassMarker="AcDbLight" TypeString="LIGHT" MinVersion="R2007">
+    <Field Name="VersionNumber" Code="90" Type="int" DefaultValue="0" />
+    <Field Name="Name" Code="1" Type="string" DefaultValue='""' />
+    <Field Name="LightType" Code="70" Type="LightType" DefaultValue="LightTypeDistant" ReadConverter="LightType(%v)" WriteConverter="int16(%v)" />
+    <Field Name="IsActive" Code="290" Type="bool" DefaultValue="true" />
+    <Field Name="PlotGlyph" Code="291" Type="bool" DefaultValue="true" />
+    <Field Name="Intensity" Code="40" Type="float64" DefaultValue="1.0" />
+    <Field Name="Position" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="TargetLocation" Code="11" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="11,21,31" />
+    <Field Name="AttentuationType" Code="72" Type="LightAttenuationType" DefaultValue="LightAttenuationTypeNone" ReadConverter="LightAttenuationType(%v)" WriteConverter="int16(%v)" />
+    <Field Name="UseAttenuationLimits" Code="292" Type="bool" DefaultValue="true" />
+    <Field Name="AttenuationStartLimit" Code="41" Type="float64" DefaultValue="0.0" />
+    <Field Name="AttenuationEndLimit" Code="42" Type="float64" DefaultValue="1.0" />
+    <Field Name="HotspotAngle" Code="50" Type="float64" DefaultValue="0.0" />
+    <Field Name="FalloffAngle" Code="51" Type="float64" DefaultValue="0.0" />
+    <Field Name="CastShadows" Code="293" Type="bool" DefaultValue="true" />
+    <Field Name="ShadowType" Code="73" Type="ShadowType" DefaultValue="ShadowTypeRayTraced" ReadConverter="ShadowType(%v)" WriteConverter="int16(%v)" />
+    <Field Name="ShadowMapSize" Code="91" Type="int" DefaultValue="0" />
+    <Field Name="ShadowMapSoftness" Code="280" Type="int16" DefaultValue="0" />
+  </Entity>
+  <!--
+
   LINE
 
   -->
