@@ -470,6 +470,62 @@ func (ad *AttributeDefinition) tryApplyCodePair(codePair CodePair) {
 	}
 }
 
+func (pl *LWPolyline) tryApplyCodePair(codePair CodePair) {
+	switch codePair.Code {
+	// entity codes
+	case 39:
+		pl.Thickness = codePair.Value.(DoubleCodePairValue).Value
+	case 43:
+		pl.ConstantWidth = codePair.Value.(DoubleCodePairValue).Value
+	case 70:
+		pl.flags = int(codePair.Value.(ShortCodePairValue).Value)
+	case 90:
+		pl.vertexCount = codePair.Value.(IntCodePairValue).Value
+	case 210:
+		pl.ExtrusionDirection.X = codePair.Value.(DoubleCodePairValue).Value
+	case 220:
+		pl.ExtrusionDirection.Y = codePair.Value.(DoubleCodePairValue).Value
+	case 230:
+		pl.ExtrusionDirection.Z = codePair.Value.(DoubleCodePairValue).Value
+	// vertex codes
+	case 10:
+		// start a new vertex
+		v := *NewVertex()
+		v.X = codePair.Value.(DoubleCodePairValue).Value
+		pl.Vertices = append(pl.Vertices, v)
+	case 20:
+		// update the last vertex
+		if len(pl.Vertices) > 0 {
+			pl.Vertices[len(pl.Vertices)-1].Y = codePair.Value.(DoubleCodePairValue).Value
+		}
+	case 40:
+		// update the last vertex
+		if len(pl.Vertices) > 0 {
+			pl.Vertices[len(pl.Vertices)-1].StartingWidth = codePair.Value.(DoubleCodePairValue).Value
+		}
+	case 41:
+		// update the last vertex
+		if len(pl.Vertices) > 0 {
+			pl.Vertices[len(pl.Vertices)-1].EndingWidth = codePair.Value.(DoubleCodePairValue).Value
+		}
+	case 42:
+		// update the last vertex
+		if len(pl.Vertices) > 0 {
+			pl.Vertices[len(pl.Vertices)-1].Bulge = codePair.Value.(DoubleCodePairValue).Value
+		}
+	case 91:
+		// update the last vertex
+		if len(pl.Vertices) > 0 {
+			pl.Vertices[len(pl.Vertices)-1].ID = codePair.Value.(IntCodePairValue).Value
+		}
+	default:
+		appliedCodePair := false
+		if !appliedCodePair {
+			appliedCodePair = tryApplyCodePairForEntity(pl, codePair)
+		}
+	}
+}
+
 func (mt *MText) tryApplyCodePair(codePair CodePair) {
 	switch codePair.Code {
 	case 10:

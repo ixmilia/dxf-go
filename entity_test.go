@@ -390,6 +390,41 @@ func TestWriteInsert(t *testing.T) {
 	), actual)
 }
 
+func TestReadLWPolyline(t *testing.T) {
+	lw := parseEntity(t, "LWPOLYLINE", join(
+		" 70", "1",
+		" 90", "2", // 2 vertices
+		" 10", "1.0", // v1
+		" 20", "2.0",
+		" 10", "3.0", // v2
+		" 20", "4.0",
+		" 91", "42",
+	)).(*LWPolyline)
+	assert(t, lw.IsClosed(), "expected LWPOLYLINE to be closed")
+	assertEqInt(t, 2, len(lw.Vertices))
+	assertEqFloat64(t, 1.0, lw.Vertices[0].X)
+	assertEqFloat64(t, 2.0, lw.Vertices[0].Y)
+	assertEqInt(t, 0, lw.Vertices[0].ID)
+	assertEqFloat64(t, 3.0, lw.Vertices[1].X)
+	assertEqFloat64(t, 4.0, lw.Vertices[1].Y)
+	assertEqInt(t, 42, lw.Vertices[1].ID)
+}
+
+func TestWriteLWPolyline(t *testing.T) {
+	lw := NewLWPolyline()
+	lw.Vertices = append(lw.Vertices, Vertex{X: 1.0, Y: 2.0})
+	lw.Vertices = append(lw.Vertices, Vertex{X: 3.0, Y: 4.0, ID: 42})
+	actual := entityString(lw, R2013)
+	assertContains(t, join(
+		" 10", "1.0",
+		" 20", "2.0",
+		" 10", "3.0",
+		" 20", "4.0",
+		" 91", "       42",
+		"  0",
+	), actual)
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
 	entities := parseEntities(t, join(
 		"  0", entityType,

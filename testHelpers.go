@@ -34,6 +34,10 @@ func assertEqInt(t *testing.T, expected, actual int) {
 	}
 }
 
+func assertEqFloat64(t *testing.T, expected, actual float64) {
+	assert(t, expected == actual, fmt.Sprintf(expectedActualString("f"), expected, actual))
+}
+
 func assertEqPoint(t *testing.T, expected, actual Point) {
 	if expected != actual {
 		t.Errorf("Expected: %s\nActual: %s", expected.String(), actual.String())

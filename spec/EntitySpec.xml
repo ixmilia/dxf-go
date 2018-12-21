@@ -637,6 +637,39 @@
   </Entity>
   <!--
 
+  LWPOLYLINE
+
+  -->
+  <Entity Name="LWPolyline" SubclassMarker="AcDbPolyline" TypeString="LWPOLYLINE" MinVersion="R14" GenerateReader="false">
+    <Field Name="flags" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)">
+      <Flag Name="IsClosed" Mask="1" />
+      <Flag Name="IsPLineGen" Mask="128" />
+    </Field>
+    <Field Name="ConstantWidth" Code="43" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="Thickness" Code="39" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="ExtrusionDirection" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
+    <Field Name="vertexCount" Code="90" Type="int" DefaultValue="0" />
+    <Field Name="Vertices" Code="-1" Type="Vertex" DefaultValue="[]Vertex{}" AllowMultiples="true" />
+    <WriteOrder>
+      <WriteSpecificValue Code="100" Value='"AcDbPolyline"' />
+      <WriteSpecificValue Code="90" Value="len(this.Vertices)" />
+      <WriteField Field="flags" />
+      <WriteField Field="ConstantWidth" />
+      <WriteSpecificValue Code="38" Value="this.Elevation()" WriteCondition="this.Elevation() != 0.0" />
+      <WriteField Field="Thickness" />
+      <Foreach Field="Vertices">
+        <WriteSpecificValue Code="10" Value="item.X" />
+        <WriteSpecificValue Code="20" Value="item.Y" />
+        <WriteSpecificValue Code="91" Value="item.ID" WriteCondition="item.ID != 0" MinVersion="R2013" />
+        <WriteSpecificValue Code="40" Value="item.StartingWidth" WriteCondition="item.StartingWidth != 0.0" />
+        <WriteSpecificValue Code="41" Value="item.EndingWidth" WriteCondition="item.EndingWidth != 0.0" />
+        <WriteSpecificValue Code="42" Value="item.Bulge" WriteCondition="item.Bulge != 0.0" />
+      </Foreach>
+      <WriteField Field="ExtrusionDirection" />
+    </WriteOrder>
+  </Entity>
+  <!--
+
   MTEXT
 
   -->
