@@ -142,6 +142,16 @@ func afterRead(entity *Entity) {
 		for i := 0; i < ent.vertexCount; i++ {
 			ent.Vertices = append(ent.Vertices, Point{ent.verticesX[i], ent.verticesY[i], ent.verticesZ[i]})
 		}
+	case *MLine:
+		for i := 0; i < ent.vertexCount; i++ {
+			ent.Vertices = append(ent.Vertices, Point{ent.vertexX[i], ent.vertexY[i], ent.vertexZ[i]})
+		}
+		for i := 0; i < ent.vertexCount; i++ {
+			ent.SegmentDirections = append(ent.Vertices, Point{ent.segmentDirectionX[i], ent.segmentDirectionY[i], ent.segmentDirectionZ[i]})
+		}
+		for i := 0; i < ent.vertexCount; i++ {
+			ent.MiterDirections = append(ent.Vertices, Point{ent.miterDirectionX[i], ent.miterDirectionY[i], ent.miterDirectionZ[i]})
+		}
 	case *ProxyEntity:
 		ent.GraphicsData = stringsToBytes(ent.graphicsDataString)
 		ent.EntityData = stringsToBytes(ent.entityDataString)
