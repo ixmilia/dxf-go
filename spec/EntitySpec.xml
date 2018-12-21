@@ -820,6 +820,26 @@
   </Entity>
   <!--
 
+  OLEFRAME
+
+  -->
+  <Entity Name="OleFrame" SubclassMarker="AcDbOleFrame" TypeString="OLEFRAME" MinVersion="R13">
+    <Field Name="VersionNumber" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
+    <Field Name="binaryDataLength" Code="90" Type="int" DefaultValue="0" />
+    <Field Name="binaryDataStrings" Code="310" Type="string" DefaultValue="[]string{}" AllowMultiples="true" />
+    <Field Name="BinaryData" Code="-1" Type="byte" DefaultValue="[]byte{}" AllowMultiples="true" />
+    <WriteOrder>
+      <WriteSpecificValue Code="100" Value='"AcDbOleFrame"' />
+      <WriteField Field="VersionNumber" />
+      <WriteField Field="binaryDataLength" />
+      <Foreach Field="binaryDataStrings">
+        <WriteSpecificValue Code="310" Value="item" />
+      </Foreach>
+      <WriteSpecificValue Code="1" Value='"OLE"' />
+    </WriteOrder>
+  </Entity>
+  <!--
+
   SEQEND
 
   -->

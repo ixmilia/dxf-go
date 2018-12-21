@@ -101,17 +101,6 @@ func writeEntitiesSection(entities []Entity, writer codePairWriter, version Acad
 	return nil
 }
 
-func beforeWrite(entity *Entity) {
-	switch ent := (*entity).(type) {
-	case *ProxyEntity:
-		// gather graphics and entity data into strings
-		ent.graphicsDataSize = len(ent.GraphicsData)
-		ent.graphicsDataString = bytesToStrings(ent.GraphicsData)
-		ent.entityDataSize = len(ent.EntityData)
-		ent.entityDataString = bytesToStrings(ent.EntityData)
-	}
-}
-
 func trailingCodePairs(entity *Entity, version AcadVersion) (pairs []CodePair) {
 	switch ent := (*entity).(type) {
 	case *Attribute:
@@ -126,6 +115,20 @@ func trailingCodePairs(entity *Entity, version AcadVersion) (pairs []CodePair) {
 	}
 
 	return
+}
+
+func beforeWrite(entity *Entity) {
+	switch ent := (*entity).(type) {
+	case *OleFrame:
+		ent.binaryDataLength = len(ent.BinaryData)
+		ent.binaryDataStrings = bytesToStrings(ent.BinaryData)
+	case *ProxyEntity:
+		// gather graphics and entity data into strings
+		ent.graphicsDataSize = len(ent.GraphicsData)
+		ent.graphicsDataString = bytesToStrings(ent.GraphicsData)
+		ent.entityDataSize = len(ent.EntityData)
+		ent.entityDataString = bytesToStrings(ent.EntityData)
+	}
 }
 
 func afterRead(entity *Entity) {
@@ -152,6 +155,8 @@ func afterRead(entity *Entity) {
 		for i := 0; i < ent.vertexCount; i++ {
 			ent.MiterDirections = append(ent.Vertices, Point{ent.miterDirectionX[i], ent.miterDirectionY[i], ent.miterDirectionZ[i]})
 		}
+	case *OleFrame:
+		ent.BinaryData = stringsToBytes(ent.binaryDataStrings)
 	case *ProxyEntity:
 		ent.GraphicsData = stringsToBytes(ent.graphicsDataString)
 		ent.EntityData = stringsToBytes(ent.entityDataString)
