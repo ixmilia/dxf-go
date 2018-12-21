@@ -1,5 +1,6 @@
 package dxf
 
+// Vertex represents a vertex of an LWPolyline
 type Vertex struct {
 	X             float64
 	Y             float64
@@ -9,6 +10,7 @@ type Vertex struct {
 	Bulge         float64
 }
 
+// NewVertex creates a new Vertex for an LWPolyline
 func NewVertex() *Vertex {
 	return &Vertex{
 		X:             0.0,
