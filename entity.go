@@ -122,6 +122,9 @@ func beforeWrite(entity *Entity) {
 	case *OleFrame:
 		ent.binaryDataLength = len(ent.BinaryData)
 		ent.binaryDataStrings = bytesToStrings(ent.BinaryData)
+	case *Ole2Frame:
+		ent.binaryDataLength = len(ent.BinaryData)
+		ent.binaryDataStrings = bytesToStrings(ent.BinaryData)
 	case *ProxyEntity:
 		// gather graphics and entity data into strings
 		ent.graphicsDataSize = len(ent.GraphicsData)
@@ -156,6 +159,8 @@ func afterRead(entity *Entity) {
 			ent.MiterDirections = append(ent.Vertices, Point{ent.miterDirectionX[i], ent.miterDirectionY[i], ent.miterDirectionZ[i]})
 		}
 	case *OleFrame:
+		ent.BinaryData = stringsToBytes(ent.binaryDataStrings)
+	case *Ole2Frame:
 		ent.BinaryData = stringsToBytes(ent.binaryDataStrings)
 	case *ProxyEntity:
 		ent.GraphicsData = stringsToBytes(ent.graphicsDataString)

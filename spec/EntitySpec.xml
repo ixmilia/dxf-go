@@ -840,6 +840,36 @@
   </Entity>
   <!--
 
+  OLE2FRAME
+
+  -->
+    <Entity Name="Ole2Frame" SubclassMarker="AcDbOle2Frame" TypeString="OLE2FRAME" MinVersion="R14">
+    <Field Name="VersionNumber" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
+    <Field Name="Description" Code="3" Type="string" DefaultValue='""' />
+    <Field Name="UpperLeftCorner" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="LowerRightCorner" Code="11" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="11,21,31" />
+    <Field Name="ObjectType" Code="71" Type="OleObjectType" DefaultValue="OleObjectTypeStatic" ReadConverter="OleObjectType(%v)" WriteConverter="int16(%v)" />
+    <Field Name="TileMode" Code="72" Type="TileModeDescriptor" DefaultValue="TileModeDescriptorInTiledViewport" ReadConverter="TileModeDescriptor(%v)" WriteConverter="int16(%v)" />
+    <Field Name="binaryDataLength" Code="90" Type="int" DefaultValue="0" />
+    <Field Name="binaryDataStrings" Code="310" Type="string" DefaultValue="[]string{}" AllowMultiples="true" />
+    <Field Name="BinaryData" Code="-1" Type="byte" DefaultValue="[]byte{}" AllowMultiples="true" />
+    <WriteOrder>
+      <WriteSpecificValue Code="100" Value='"AcDbOle2Frame"' />
+      <WriteField Field="VersionNumber" />
+      <WriteField Field="Description" />
+      <WriteField Field="UpperLeftCorner" />
+      <WriteField Field="LowerRightCorner" />
+      <WriteField Field="ObjectType" />
+      <WriteField Field="TileMode" />
+      <WriteField Field="binaryDataLength" />
+      <Foreach Field="binaryDataStrings">
+        <WriteSpecificValue Code="310" Value="item" />
+      </Foreach>
+      <WriteSpecificValue Code="1" Value='"OLE"' />
+    </WriteOrder>
+  </Entity>
+  <!--
+
   SEQEND
 
   -->

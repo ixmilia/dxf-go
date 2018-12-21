@@ -213,6 +213,11 @@
     <Value Name="Fractional" />
     <Value Name="WindowsDesktop" />
   </Enum>
+  <Enum Name="OleObjectType">
+    <Value Name="Link" Value="1" />
+    <Value Name="Embedded" Value="2" />
+    <Value Name="Static" Value="3" />
+  </Enum>
   <Enum Name="OrthographicViewType">
     <Value Name="None" Value="iota" />
     <Value Name="Top" />
@@ -281,6 +286,10 @@
   <Enum Name="TextLineSpacingStyle">
     <Value Name="AtLeast" Value="1" />
     <Value Name="Exact" Value="2" />
+  </Enum>
+  <Enum Name="TileModeDescriptor">
+    <Value Name="InTiledViewport" Value="iota" />
+    <Value Name="InNonTiledViewport" />
   </Enum>
   <Enum Name="TimeZone">
     <Value Name="InternationalDateLineWest" Value="-12000" />
