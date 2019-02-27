@@ -40,8 +40,8 @@ import dxf "github.com/IxMilia/dxf-go"
 
 drawing := *dxf.NewDrawing()
 line := dxf.NewLine()
-line.P1 = dxf.Point{1.0, 2.0, 3.0}
-line.P2 = dxf.Point{4.0, 5.0, 6.0}
+line.P1 = dxf.Point{X: 1.0, Y: 2.0, Z: 3.0}
+line.P2 = dxf.Point{X: 4.0, Y: 5.0, Z: 6.0}
 drawing.Entities = append(drawing.Entities, line)
 // ...
 
