@@ -870,6 +870,17 @@
   </Entity>
   <!--
 
+  POINT
+
+  -->
+  <Entity Name="ModelPoint" SubclassMarker="AcDbPoint" TypeString="POINT">
+    <Field Name="Location" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="Thickness" Code="39" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="ExtrusionDirection" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
+    <Field Name="Angle" Code="50" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+  </Entity>
+  <!--
+
   SEQEND
 
   -->

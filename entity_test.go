@@ -425,6 +425,27 @@ func TestWriteLWPolyline(t *testing.T) {
 	), actual)
 }
 
+func TestReadModelPoint(t *testing.T) {
+	p := parseEntity(t, "POINT", join(
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+	)).(*ModelPoint)
+	assertEqPoint(t, Point{1.0, 2.0, 3.0}, p.Location)
+}
+
+func TestWriteModelPoint(t *testing.T) {
+	p := NewModelPoint()
+	p.Location = Point{1.0, 2.0, 3.0}
+	actual := entityString(p, R14)
+	assertContains(t, join(
+		"100", "AcDbPoint",
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+	), actual)
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
 	entities := parseEntities(t, join(
 		"  0", entityType,
