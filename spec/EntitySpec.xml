@@ -911,6 +911,15 @@
   </Entity>
   <!--
 
+  RAY
+
+  -->
+  <Entity Name="Ray" SubclassMarker="AcDbRay" TypeString="RAY" MinVersion="R13">
+    <Field Name="StartPoint" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="UnitDirectionVector" Code="11" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="11,21,31" />
+  </Entity>
+  <!--
+
   SEQEND
 
   -->
