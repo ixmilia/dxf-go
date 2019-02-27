@@ -649,7 +649,7 @@
     <Field Name="Thickness" Code="39" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
     <Field Name="ExtrusionDirection" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
     <Field Name="vertexCount" Code="90" Type="int" DefaultValue="0" />
-    <Field Name="Vertices" Code="-1" Type="Vertex" DefaultValue="[]Vertex{}" AllowMultiples="true" />
+    <Field Name="Vertices" Code="-1" Type="LwVertex" DefaultValue="[]LwVertex{}" AllowMultiples="true" />
     <WriteOrder>
       <WriteSpecificValue Code="100" Value='"AcDbPolyline"' />
       <WriteSpecificValue Code="90" Value="len(this.Vertices)" />
@@ -881,6 +881,36 @@
   </Entity>
   <!--
 
+  POLYLINE
+
+  -->
+  <Entity Name="Polyline" SubclassMarker="nil" TypeString="POLYLINE" GenerateReader="false" GenerateWriter="false">
+    <Field Name="Location" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="Thickness" Code="39" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="Flags" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true">
+      <Flag Name="IsClosed" Mask="1" />
+      <Flag Name="CurveFitVerticiesAdded" Mask="2" />
+      <Flag Name="SplineFitVerticiesAdded" Mask="4" />
+      <Flag Name="Is3DPolyline" Mask="8" />
+      <Flag Name="Is3DPolygonMesh" Mask="16" />
+      <Flag Name="IsPolygonMeshClosedInNDirection" Mask="32" />
+      <Flag Name="IsPolyfaceMesh" Mask="64" />
+      <Flag Name="IsLineTypePatternGeneratedContinuously" Mask="128" />
+    </Field>
+    <Field Name="DefaultStartingWidth" Code="40" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="DefaultEndingWidth" Code="41" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="PolygonMeshMVertexCount" Code="71" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true" />
+    <Field Name="PolygonMeshNVertexCount" Code="72" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true" />
+    <Field Name="SmoothSurfaceMDensity" Code="73" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true" />
+    <Field Name="SmoothSurfaceNDensity" Code="74" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true" />
+    <Field Name="SurfaceType" Code="75" Type="PolylineCurvedAndSmoothSurfaceType" DefaultValue="PolylineCurvedAndSmoothSurfaceTypeNone" ReadConverter="PolylineCurvedAndSmoothSurfaceType(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true" />
+    <Field Name="Normal" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
+    <!-- entity has trailing vertices and seqend -->
+    <Field Name="Vertices" Code="-1" Type="Vertex" DefaultValue="[]Vertex{}" AllowMultiples="true" />
+    <Field Name="seqend" Code="-1" Type="Seqend" DefaultValue="*NewSeqend()" />
+  </Entity>
+  <!--
+
   SEQEND
 
   -->
@@ -889,5 +919,31 @@
     <WriteOrder>
       <NOP />
     </WriteOrder>
+  </Entity>
+  <!--
+
+  VERTEX
+
+  -->
+  <Entity Name="Vertex" SubclassMarker="AcDbVertex" TypeString="VERTEX" GenerateWriter="false">
+    <Field Name="Location" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="StartingWidth" Code="40" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="EndingWidth" Code="41" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="Bulge" Code="42" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="Flags" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)">
+      <Flag Name="IsExtraCreatedByCurveFit" Mask="1" />
+      <Flag Name="IsCurveFitTangentDefined" Mask="2" />
+      <Flag Name="IsSplineVertexCreatedBySplineFitting" Mask="8" />
+      <Flag Name="IsSplineFrameControlPoint" Mask="16" />
+      <Flag Name="Is3DPolylineVertex" Mask="32" />
+      <Flag Name="Is3DPolygonMesh" Mask="64" />
+      <Flag Name="IsPolyfaceMeshVertex" Mask="128" />
+    </Field>
+    <Field Name="CurveFitTangentDirection" Code="50" Type="float64" DefaultValue="0.0" />
+    <Field Name="PolyfaceMeshVertexIndex1" Code="71" Type="int" DefaultValue="0" DisableWritingDefault="true" ReadConverter="int(%v)" WriteConverter="int16(%v)" MinVersion="R13" />
+    <Field Name="PolyfaceMeshVertexIndex2" Code="72" Type="int" DefaultValue="0" DisableWritingDefault="true" ReadConverter="int(%v)" WriteConverter="int16(%v)" MinVersion="R13" />
+    <Field Name="PolyfaceMeshVertexIndex3" Code="73" Type="int" DefaultValue="0" DisableWritingDefault="true" ReadConverter="int(%v)" WriteConverter="int16(%v)" MinVersion="R13" />
+    <Field Name="PolyfaceMeshVertexIndex4" Code="74" Type="int" DefaultValue="0" DisableWritingDefault="true" ReadConverter="int(%v)" WriteConverter="int16(%v)" MinVersion="R13" />
+    <Field Name="Identifier" Code="91" Type="int" DefaultValue="0" MinVersion="R2010" />
   </Entity>
 </Specification>

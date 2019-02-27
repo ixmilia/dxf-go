@@ -112,6 +112,11 @@ func trailingCodePairs(entity *Entity, version AcadVersion) (pairs []CodePair) {
 			pairs = append(pairs, att.codePairs(version)...)
 		}
 		pairs = append(pairs, ent.seqend.codePairs(version)...)
+	case *Polyline:
+		for _, v := range ent.Vertices {
+			pairs = append(pairs, v.codePairs(version)...)
+		}
+		pairs = append(pairs, ent.seqend.codePairs(version)...)
 	}
 
 	return
@@ -131,6 +136,12 @@ func beforeWrite(entity *Entity) {
 		ent.graphicsDataString = bytesToStrings(ent.GraphicsData)
 		ent.entityDataSize = len(ent.EntityData)
 		ent.entityDataString = bytesToStrings(ent.EntityData)
+	case *Polyline:
+		// set vertex types
+		for i := range ent.Vertices {
+			ent.Vertices[i].SetIs3DPolylineVertex(ent.Is3DPolyline())
+			ent.Vertices[i].SetIs3DPolygonMesh(ent.Is3DPolygonMesh())
+		}
 	}
 }
 
@@ -202,6 +213,21 @@ func collectEntities(entityBuffer *entityBufferReader) (result []Entity) {
 			if err == nil {
 				entity.seqend = seqend
 			}
+		case *Polyline:
+			// POLYLINE should be followed by multiple VERTEX...
+			for entityBuffer.ItemsRemain() {
+				v, err := getNextVertex(entityBuffer)
+				if err == nil {
+					entity.Vertices = append(entity.Vertices, v)
+				} else {
+					break
+				}
+			}
+			// ...and a single SEQEND
+			seqend, err := getNextSeqend(entityBuffer)
+			if err == nil {
+				entity.seqend = seqend
+			}
 		}
 
 		result = append(result, ent)
@@ -257,6 +283,22 @@ func getNextSeqend(entityBuffer *entityBufferReader) (seqend Seqend, error error
 			entityBuffer.Advance()
 		default:
 			error = errors.New("not a seqend")
+		}
+	} else {
+		error = errors.New("no more entities")
+	}
+
+	return
+}
+
+func getNextVertex(entityBuffer *entityBufferReader) (vertex Vertex, error error) {
+	if entityBuffer.ItemsRemain() {
+		switch next := entityBuffer.Peek().(type) {
+		case *Vertex:
+			vertex = *next
+			entityBuffer.Advance()
+		default:
+			error = errors.New("not a vertex")
 		}
 	} else {
 		error = errors.New("no more entities")
@@ -510,7 +552,7 @@ func (pl *LWPolyline) tryApplyCodePair(codePair CodePair) {
 	// vertex codes
 	case 10:
 		// start a new vertex
-		v := *NewVertex()
+		v := *NewLwVertex()
 		v.X = codePair.Value.(DoubleCodePairValue).Value
 		pl.Vertices = append(pl.Vertices, v)
 	case 20:
@@ -665,6 +707,143 @@ func (entity *ProxyEntity) tryApplyCodePair(codePair CodePair) {
 	}
 }
 
+func (p *Polyline) tryApplyCodePair(codePair CodePair) {
+	switch codePair.Code {
+	case 10:
+		p.Location.X = codePair.Value.(DoubleCodePairValue).Value
+	case 20:
+		p.Location.Y = codePair.Value.(DoubleCodePairValue).Value
+	case 30:
+		p.Location.Z = codePair.Value.(DoubleCodePairValue).Value
+	case 39:
+		p.Thickness = codePair.Value.(DoubleCodePairValue).Value
+	case 70:
+		p.Flags = int(codePair.Value.(ShortCodePairValue).Value)
+	case 40:
+		p.DefaultStartingWidth = codePair.Value.(DoubleCodePairValue).Value
+	case 41:
+		p.DefaultEndingWidth = codePair.Value.(DoubleCodePairValue).Value
+	case 71:
+		p.PolygonMeshMVertexCount = int(codePair.Value.(ShortCodePairValue).Value)
+	case 72:
+		p.PolygonMeshNVertexCount = int(codePair.Value.(ShortCodePairValue).Value)
+	case 73:
+		p.SmoothSurfaceMDensity = int(codePair.Value.(ShortCodePairValue).Value)
+	case 74:
+		p.SmoothSurfaceNDensity = int(codePair.Value.(ShortCodePairValue).Value)
+	case 75:
+		p.SurfaceType = PolylineCurvedAndSmoothSurfaceType(codePair.Value.(ShortCodePairValue).Value)
+	case 210:
+		p.Normal.X = codePair.Value.(DoubleCodePairValue).Value
+	case 220:
+		p.Normal.Y = codePair.Value.(DoubleCodePairValue).Value
+	case 230:
+		p.Normal.Z = codePair.Value.(DoubleCodePairValue).Value
+	default:
+		appliedCodePair := false
+		if !appliedCodePair {
+			appliedCodePair = tryApplyCodePairForEntity(p, codePair)
+		}
+	}
+}
+
 func (s *Seqend) tryApplyCodePair(codePair CodePair) {
 	tryApplyCodePairForEntity(s, codePair)
+}
+
+func (p *Polyline) codePairs(version AcadVersion) (pairs []CodePair) {
+	subclassMarker := "AcDb2dPolyline"
+	if p.Is3DPolyline() || p.Is3DPolygonMesh() {
+		subclassMarker = "AcDb3dPolyline"
+	}
+
+	pairs = append(pairs, NewStringCodePair(0, "POLYLINE"))
+	pairs = append(pairs, codePairsForEntity(p, version)...)
+	pairs = append(pairs, NewStringCodePair(100, subclassMarker))
+	if version <= R13 {
+		containsVertices := len(p.Vertices) > 0
+		pairs = append(pairs, NewShortCodePair(66, shortFromBool(containsVertices)))
+	}
+	if version >= R12 {
+		pairs = append(pairs, NewDoubleCodePair(10, p.Location.X))
+		pairs = append(pairs, NewDoubleCodePair(20, p.Location.Y))
+		pairs = append(pairs, NewDoubleCodePair(30, p.Location.Z))
+	}
+	if p.Thickness != 0.0 {
+		pairs = append(pairs, NewDoubleCodePair(39, p.Thickness))
+	}
+	if p.Flags != 0 {
+		pairs = append(pairs, NewShortCodePair(70, int16(p.Flags)))
+	}
+	if p.DefaultStartingWidth != 0.0 {
+		pairs = append(pairs, NewDoubleCodePair(40, p.DefaultStartingWidth))
+	}
+	if p.DefaultEndingWidth != 0.0 {
+		pairs = append(pairs, NewDoubleCodePair(41, p.DefaultEndingWidth))
+	}
+	if p.PolygonMeshMVertexCount != 0 {
+		pairs = append(pairs, NewShortCodePair(71, int16(p.PolygonMeshMVertexCount)))
+	}
+	if p.PolygonMeshNVertexCount != 0 {
+		pairs = append(pairs, NewShortCodePair(72, int16(p.PolygonMeshNVertexCount)))
+	}
+	if p.SmoothSurfaceMDensity != 0 {
+		pairs = append(pairs, NewShortCodePair(73, int16(p.SmoothSurfaceMDensity)))
+	}
+	if p.SmoothSurfaceNDensity != 0 {
+		pairs = append(pairs, NewShortCodePair(74, int16(p.SmoothSurfaceNDensity)))
+	}
+	if p.SurfaceType != PolylineCurvedAndSmoothSurfaceTypeNone {
+		pairs = append(pairs, NewShortCodePair(75, int16(p.SurfaceType)))
+	}
+	if p.Normal != *NewZAxis() {
+		pairs = append(pairs, NewDoubleCodePair(210, p.Normal.X))
+		pairs = append(pairs, NewDoubleCodePair(220, p.Normal.Y))
+		pairs = append(pairs, NewDoubleCodePair(230, p.Normal.Z))
+	}
+	return
+}
+
+func (v *Vertex) codePairs(version AcadVersion) (pairs []CodePair) {
+	subclassMarker := "AcDb2dVertex"
+	if v.Is3DPolylineVertex() || v.Is3DPolygonMesh() {
+		subclassMarker = "AcDb3dPolylineVertex"
+	}
+
+	pairs = append(pairs, NewStringCodePair(0, "VERTEX"))
+	pairs = append(pairs, codePairsForEntity(v, version)...)
+	pairs = append(pairs, NewStringCodePair(100, "AcDbVertex"))
+	pairs = append(pairs, NewStringCodePair(100, subclassMarker))
+	pairs = append(pairs, NewDoubleCodePair(10, v.Location.X))
+	pairs = append(pairs, NewDoubleCodePair(20, v.Location.Y))
+	pairs = append(pairs, NewDoubleCodePair(30, v.Location.Z))
+	if v.StartingWidth != 0.0 {
+		pairs = append(pairs, NewDoubleCodePair(40, v.StartingWidth))
+	}
+	if v.EndingWidth != 0.0 {
+		pairs = append(pairs, NewDoubleCodePair(41, v.EndingWidth))
+	}
+	if v.Bulge != 0.0 {
+		pairs = append(pairs, NewDoubleCodePair(42, v.Bulge))
+	}
+	pairs = append(pairs, NewShortCodePair(70, int16(v.Flags)))
+	pairs = append(pairs, NewDoubleCodePair(50, v.CurveFitTangentDirection))
+	if version >= R13 {
+		if v.PolyfaceMeshVertexIndex1 != 0 {
+			pairs = append(pairs, NewShortCodePair(71, int16(v.PolyfaceMeshVertexIndex1)))
+		}
+		if v.PolyfaceMeshVertexIndex2 != 0 {
+			pairs = append(pairs, NewShortCodePair(72, int16(v.PolyfaceMeshVertexIndex2)))
+		}
+		if v.PolyfaceMeshVertexIndex3 != 0 {
+			pairs = append(pairs, NewShortCodePair(73, int16(v.PolyfaceMeshVertexIndex3)))
+		}
+		if v.PolyfaceMeshVertexIndex4 != 0 {
+			pairs = append(pairs, NewShortCodePair(74, int16(v.PolyfaceMeshVertexIndex4)))
+		}
+	}
+	if version >= R2010 {
+		pairs = append(pairs, NewIntCodePair(91, v.Identifier))
+	}
+	return
 }

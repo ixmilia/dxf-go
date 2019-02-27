@@ -412,8 +412,8 @@ func TestReadLWPolyline(t *testing.T) {
 
 func TestWriteLWPolyline(t *testing.T) {
 	lw := NewLWPolyline()
-	lw.Vertices = append(lw.Vertices, Vertex{X: 1.0, Y: 2.0})
-	lw.Vertices = append(lw.Vertices, Vertex{X: 3.0, Y: 4.0, ID: 42})
+	lw.Vertices = append(lw.Vertices, LwVertex{X: 1.0, Y: 2.0})
+	lw.Vertices = append(lw.Vertices, LwVertex{X: 3.0, Y: 4.0, ID: 42})
 	actual := entityString(lw, R2013)
 	assertContains(t, join(
 		" 10", "1.0",
@@ -444,6 +444,173 @@ func TestWriteModelPoint(t *testing.T) {
 		" 20", "2.0",
 		" 30", "3.0",
 	), actual)
+}
+
+func TestReadPolylineWithNoVertices(t *testing.T) {
+	p := parseEntity(t, "POLYLINE", join(
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+		"  0", "SEQEND",
+	)).(*Polyline)
+	assertEqPoint(t, Point{1.0, 2.0, 3.0}, p.Location)
+	assertEqInt(t, 0, len(p.Vertices))
+}
+
+func TestReadPolylineWithMutlipleVertices(t *testing.T) {
+	p := parseEntity(t, "POLYLINE", join(
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+		"  0", "VERTEX",
+		" 10", "11.0",
+		" 20", "22.0",
+		" 30", "33.0",
+		"  0", "VERTEX",
+		" 10", "111.0",
+		" 20", "222.0",
+		" 30", "333.0",
+		"  0", "SEQEND",
+	)).(*Polyline)
+	assertEqPoint(t, Point{1.0, 2.0, 3.0}, p.Location)
+	assertEqInt(t, 2, len(p.Vertices))
+	assertEqPoint(t, Point{11.0, 22.0, 33.0}, p.Vertices[0].Location)
+	assertEqPoint(t, Point{111.0, 222.0, 333.0}, p.Vertices[1].Location)
+}
+
+func TestReadPolylineWithNoVerticesNoSeqend(t *testing.T) {
+	p := parseEntity(t, "POLYLINE", join(
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+	)).(*Polyline)
+	assertEqPoint(t, Point{1.0, 2.0, 3.0}, p.Location)
+	assertEqInt(t, 0, len(p.Vertices))
+}
+
+func TestReadPolylineWithMultipleVerticesNoSeqend(t *testing.T) {
+	p := parseEntity(t, "POLYLINE", join(
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+		"  0", "VERTEX",
+		" 10", "11.0",
+		" 20", "22.0",
+		" 30", "33.0",
+		"  0", "VERTEX",
+		" 10", "111.0",
+		" 20", "222.0",
+		" 30", "333.0",
+	)).(*Polyline)
+	assertEqPoint(t, Point{1.0, 2.0, 3.0}, p.Location)
+	assertEqInt(t, 2, len(p.Vertices))
+	assertEqPoint(t, Point{11.0, 22.0, 33.0}, p.Vertices[0].Location)
+	assertEqPoint(t, Point{111.0, 222.0, 333.0}, p.Vertices[1].Location)
+}
+
+func TestReadPolylineWithNoVerticesNoSeqendTrailingEntity(t *testing.T) {
+	entities := parseEntities(t, join(
+		"  0", "POLYLINE",
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+		"  0", "LINE",
+		" 10", "11.0",
+		" 20", "22.0",
+		" 30", "33.0",
+	))
+	assertEqInt(t, 2, len(entities))
+
+	p := entities[0].(*Polyline)
+	assertEqPoint(t, Point{1.0, 2.0, 3.0}, p.Location)
+	assertEqInt(t, 0, len(p.Vertices))
+
+	l := entities[1].(*Line)
+	assertEqPoint(t, Point{11.0, 22.0, 33.0}, l.P1)
+}
+
+func TestReadPolylineWithMultipleVerticesNoSeqendTrailingEntity(t *testing.T) {
+	entities := parseEntities(t, join(
+		"  0", "POLYLINE",
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+		"  0", "VERTEX",
+		" 10", "11.0",
+		" 20", "22.0",
+		" 30", "33.0",
+		"  0", "VERTEX",
+		" 10", "111.0",
+		" 20", "222.0",
+		" 30", "333.0",
+		"  0", "LINE",
+		" 10", "11.0",
+		" 20", "22.0",
+		" 30", "33.0",
+	))
+	assertEqInt(t, 2, len(entities))
+
+	p := entities[0].(*Polyline)
+	assertEqPoint(t, Point{1.0, 2.0, 3.0}, p.Location)
+	assertEqInt(t, 2, len(p.Vertices))
+	assertEqPoint(t, Point{11.0, 22.0, 33.0}, p.Vertices[0].Location)
+	assertEqPoint(t, Point{111.0, 222.0, 333.0}, p.Vertices[1].Location)
+
+	l := entities[1].(*Line)
+	assertEqPoint(t, Point{11.0, 22.0, 33.0}, l.P1)
+}
+
+func TestWrite2DPolylineTest(t *testing.T) {
+	p := NewPolyline()
+	p.Vertices = append(p.Vertices, *NewVertex())
+	actual := entityString(p, R14)
+	assertContains(t, join(
+		"100", "AcDb2dPolyline",
+	), actual)
+	assertContains(t, join(
+		"100", "AcDbVertex",
+		"100", "AcDb2dVertex",
+	), actual)
+	assertContains(t, join(
+		"  0", "SEQEND",
+	), actual)
+}
+
+func TestWrite3DPolylineTest(t *testing.T) {
+	p := NewPolyline()
+	v := *NewVertex()
+	v.Location.X = 1.0
+	v.Location.Y = 2.0
+	v.Location.Z = 3.0
+	p.Vertices = append(p.Vertices, v)
+	p.SetIs3DPolyline(true)
+	actual := entityString(p, R14)
+	assertContains(t, join(
+		"100", "AcDb3dPolyline",
+	), actual)
+	assertContains(t, join(
+		"100", "AcDbVertex",
+		"100", "AcDb3dPolylineVertex",
+	), actual)
+	assertContains(t, join(
+		"  0", "SEQEND",
+	), actual)
+}
+
+func TestRoundTripPolylineTest(t *testing.T) {
+	p := NewPolyline()
+	v := *NewVertex()
+	v.Location.X = 1.0
+	v.Location.Y = 2.0
+	v.Location.Z = 3.0
+	p.Vertices = append(p.Vertices, v)
+	actual := entityString(p, R14)
+
+	drawing := parse(t, actual)
+	assertEqInt(t, 1, len(drawing.Entities))
+	p2 := drawing.Entities[0].(*Polyline)
+	assertEqInt(t, 1, len(p2.Vertices))
+	assertEqPoint(t, v.Location, p2.Vertices[0].Location)
 }
 
 func parseEntity(t *testing.T, entityType string, body string) Entity {
