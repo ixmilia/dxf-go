@@ -920,6 +920,16 @@
   </Entity>
   <!--
 
+  REGION
+
+  -->
+  <Entity Name="Region" SubclassMarker="AcDbModelerGeometry" TypeString="REGION" MinVersion="R13">
+    <Field Name="FormatVersionNumber" Code="70" Type="int16" DefaultValue="1" />
+    <Field Name="CustomData" Code="1" Type="string" DefaultValue="[]string{}" AllowMultiples="true" />
+    <Field Name="CustomData2" Code="3" Type="string" DefaultValue="[]string{}" AllowMultiples="true" />
+  </Entity>
+  <!--
+
   SEQEND
 
   -->
