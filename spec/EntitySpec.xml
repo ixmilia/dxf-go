@@ -930,6 +930,23 @@
   </Entity>
   <!--
 
+  RTEXT
+
+  -->
+  <Entity Name="RText" SubclassMarker="RText" TypeString="RTEXT" MinVersion="R2000" MaxVersion="R2000">
+    <Field Name="InsertionPoint" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="ExtrusionDirection" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
+    <Field Name="RotationAngle" Code="50" Type="float64" DefaultValue="0.0" />
+    <Field Name="TextHeight" Code="40" Type="float64" DefaultValue="0.0" />
+    <Field Name="TextStyle" Code="7" Type="string" DefaultValue='"STANDARD"' />
+    <Field Name="TypeFlags" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)">
+      <Flag Name="IsExpression" Mask="1" />
+      <Flag Name="IsInlineMTextSequencesEnabled" Mask="2" />
+    </Field>
+    <Field Name="Contents" Code="1" Type="string" DefaultValue='""' />
+  </Entity>
+  <!--
+
   SEQEND
 
   -->
