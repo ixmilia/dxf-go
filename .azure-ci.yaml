@@ -1,65 +1,12 @@
-variables:
-  PackageName: github.com/IxMilia/dxf-go
-
 jobs:
 - job: Windows
   pool:
     vmImage: vs2017-win2016
   steps:
-  - task: Go@0
-    displayName: Version
-    inputs:
-      command: custom
-      customCommand: version
-  - task: Go@0
-    displayName: Get
-    inputs:
-      command: get
-      arguments: -v -t -d $(PackageName)
-  - task: Go@0
-    displayName: Generate
-    inputs:
-      command: custom
-      customCommand: generate
-      arguments: -v $(PackageName)
-  - task: Go@0
-    displayName: Build
-    inputs:
-      command: build
-      arguments: -v $(PackageName)
-  - task: Go@0
-    displayName: Test
-    inputs:
-      command: test
-      arguments: -v $(PackageName)
+  - script: build-and-test.cmd
 
 - job: Linux
   pool:
     vmImage: ubuntu-16.04
   steps:
-  - task: Go@0
-    displayName: Version
-    inputs:
-      command: custom
-      customCommand: version
-  - task: Go@0
-    displayName: Get
-    inputs:
-      command: get
-      arguments: -v -t -d $(PackageName)
-  - task: Go@0
-    displayName: Generate
-    inputs:
-      command: custom
-      customCommand: generate
-      arguments: -v $(PackageName)
-  - task: Go@0
-    displayName: Build
-    inputs:
-      command: build
-      arguments: -v $(PackageName)
-  - task: Go@0
-    displayName: Test
-    inputs:
-      command: test
-      arguments: -v $(PackageName)
+  - script: ./build-and-test.sh
