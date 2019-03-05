@@ -113,7 +113,7 @@ func TestWriteEntityFieldFlag(t *testing.T) {
 }
 
 func TestWriteVersionSpecificEntities(t *testing.T) {
-	solid := NewSolid()
+	solid := NewSolid3D()
 	drawing := *NewDrawing()
 	drawing.Entities = append(drawing.Entities, solid)
 
@@ -156,14 +156,14 @@ func TestReadMultipleSpecificEntityData(t *testing.T) {
 	solid := parseEntity(t, "3DSOLID", join(
 		"  1", "line 1",
 		"  1", "line 2",
-	)).(*Solid)
+	)).(*Solid3D)
 	assertEqInt(t, 2, len(solid.CustomData))
 	assertEqString(t, "line 1", solid.CustomData[0])
 	assertEqString(t, "line 2", solid.CustomData[1])
 }
 
 func TestWriteMultipleSpecificEntityData(t *testing.T) {
-	solid := NewSolid()
+	solid := NewSolid3D()
 	solid.AddCustomData("line 1")
 	solid.AddCustomData("line 2")
 	actual := entityString(solid, R13)
@@ -176,7 +176,7 @@ func TestWriteMultipleSpecificEntityData(t *testing.T) {
 }
 
 func TestWriteConditionsOnWriteOrderDirectives(t *testing.T) {
-	solid := NewSolid()
+	solid := NewSolid3D()
 	solid.AddCustomData("custom data")
 
 	actual := entityString(solid, R2007)
