@@ -1032,6 +1032,62 @@
   </Entity>
   <!--
 
+  SPLINE
+
+  -->
+  <Entity Name="Spline" SubclassMarker="AcDbSpline" TypeString="SPLINE" GenerateReader="false" MinVersion="R13">
+    <Field Name="Normal" Code="210" Type="Vector" DefaultValue="*NewZAxis()" CodeOverrides="210,220,230" />
+    <Field Name="Flags" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)">
+      <Flag Name="IsClosed" Mask="1" />
+      <Flag Name="IsPeriodic" Mask="2" />
+      <Flag Name="IsRational" Mask="4" />
+      <Flag Name="IsPlanar" Mask="8" />
+      <Flag Name="IsLinear" Mask="16" />
+    </Field>
+    <Field Name="DegreeOfCurve" Code="71" Type="int" DefaultValue="1" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
+    <Field Name="numberOfKnots" Code="72" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
+    <Field Name="numberOfControlPoints" Code="73" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
+    <Field Name="numberOfFitPoints" Code="74" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
+    <Field Name="KnotTolerance" Code="42" Type="float64" DefaultValue="0.0000001" DisableWritingDefault="true" />
+    <Field Name="ControlPointTolerance" Code="43" Type="float64" DefaultValue="0.0000001" DisableWritingDefault="true" />
+    <Field Name="FitTolerance" Code="44" Type="float64" DefaultValue="0.0000001" DisableWritingDefault="true" />
+    <Field Name="StartTangent" Code="12" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="12,22,32" />
+    <Field Name="EndTangent" Code="13" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="13,23,33" />
+    <Field Name="KnotValues" Code="40" Type="float64" DefaultValue="[]float64{}" AllowMultiples="true" />
+    <Field Name="weights" Code="41" Type="float64" DefaultValue="[]float64{}" AllowMultiples="true" />
+    <Field Name="ControlPoints" Code="10" Type="ControlPoint" DefaultValue="[]ControlPoint{}" AllowMultiples="true" />
+    <Field Name="FitPoints" Code="11" Type="Point" DefaultValue="[]Point{}" AllowMultiples="true" />
+    <WriteOrder>
+      <WriteSpecificValue Code="100" Value='"AcDbSpline"' />
+      <WriteField Field="Normal" />
+      <WriteField Field="Flags" />
+      <WriteField Field="DegreeOfCurve" />
+      <WriteSpecificValue Code="72" Value="int16(len(this.KnotValues))" />
+      <WriteSpecificValue Code="73" Value="int16(len(this.ControlPoints))" />
+      <WriteSpecificValue Code="74" Value="int16(len(this.FitPoints))" />
+      <WriteField Field="KnotTolerance" />
+      <WriteField Field="ControlPointTolerance" />
+      <WriteField Field="FitTolerance" />
+      <WriteField Field="StartTangent" />
+      <WriteField Field="EndTangent" />
+      <WriteField Field="KnotValues" />
+      <Foreach Field="ControlPoints" WriteCondition="this.shouldWriteWeights()">
+        <WriteSpecificValue Code="41" Value="item.Weight" />
+      </Foreach>
+      <Foreach Field="ControlPoints">
+        <WriteSpecificValue Code="10" Value="item.Point.X" />
+        <WriteSpecificValue Code="20" Value="item.Point.Y" />
+        <WriteSpecificValue Code="30" Value="item.Point.Z" />
+      </Foreach>
+      <Foreach Field="FitPoints">
+        <WriteSpecificValue Code="11" Value="item.X" />
+        <WriteSpecificValue Code="21" Value="item.Y" />
+        <WriteSpecificValue Code="31" Value="item.Z" />
+      </Foreach>
+    </WriteOrder>
+  </Entity>
+  <!--
+
   VERTEX
 
   -->

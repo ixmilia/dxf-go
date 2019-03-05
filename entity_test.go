@@ -667,6 +667,86 @@ func TestWriteSection(t *testing.T) {
 	), actual)
 }
 
+func TestReadSplineWithWeights(t *testing.T) {
+	s := parseEntity(t, "SPLINE", join(
+		" 73", "2", // 2 control points
+		" 41", "7.0",
+		" 41", "8.0",
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+		" 10", "4.0",
+		" 20", "5.0",
+		" 30", "6.0",
+	)).(*Spline)
+	assertEqInt(t, 2, len(s.ControlPoints))
+	assertEqFloat64(t, 7.0, s.ControlPoints[0].Weight)
+	assertEqPoint(t, Point{X: 1.0, Y: 2.0, Z: 3.0}, s.ControlPoints[0].Point)
+	assertEqFloat64(t, 8.0, s.ControlPoints[1].Weight)
+	assertEqPoint(t, Point{X: 4.0, Y: 5.0, Z: 6.0}, s.ControlPoints[1].Point)
+}
+
+func TestReadSplineWithoutWeights(t *testing.T) {
+	s := parseEntity(t, "SPLINE", join(
+		" 73", "2", // 2 control points
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+		" 10", "4.0",
+		" 20", "5.0",
+		" 30", "6.0",
+	)).(*Spline)
+	assertEqInt(t, 2, len(s.ControlPoints))
+	assertEqFloat64(t, 1.0, s.ControlPoints[0].Weight)
+	assertEqPoint(t, Point{X: 1.0, Y: 2.0, Z: 3.0}, s.ControlPoints[0].Point)
+	assertEqFloat64(t, 1.0, s.ControlPoints[1].Weight)
+	assertEqPoint(t, Point{X: 4.0, Y: 5.0, Z: 6.0}, s.ControlPoints[1].Point)
+}
+
+func TestWriteSplineWithStandardWeights(t *testing.T) {
+	s := NewSpline()
+	s.ControlPoints = append(s.ControlPoints, ControlPoint{Point: Point{X: 1.0, Y: 2.0, Z: 3.0}, Weight: 1.0})
+	s.ControlPoints = append(s.ControlPoints, ControlPoint{Point: Point{X: 4.0, Y: 5.0, Z: 6.0}, Weight: 1.0})
+	actual := entityString(s, R13)
+	assertContains(t, join(
+		" 73", "     2",
+	), actual)
+	assertContains(t, join(
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+		" 10", "4.0",
+		" 20", "5.0",
+		" 30", "6.0",
+	), actual)
+	assertNotContains(t, join(
+		" 41", "1.0",
+		" 41", "1.0",
+	), actual)
+}
+
+func TestWriteSplineWithNonStandardWeights(t *testing.T) {
+	s := NewSpline()
+	s.ControlPoints = append(s.ControlPoints, ControlPoint{Point: Point{X: 1.0, Y: 2.0, Z: 3.0}, Weight: 7.0})
+	s.ControlPoints = append(s.ControlPoints, ControlPoint{Point: Point{X: 4.0, Y: 5.0, Z: 6.0}, Weight: 8.0})
+	actual := entityString(s, R13)
+	assertContains(t, join(
+		" 73", "     2",
+	), actual)
+	assertContains(t, join(
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+		" 10", "4.0",
+		" 20", "5.0",
+		" 30", "6.0",
+	), actual)
+	assertContains(t, join(
+		" 41", "7.0",
+		" 41", "8.0",
+	), actual)
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
 	entities := parseEntities(t, join(
 		"  0", entityType,

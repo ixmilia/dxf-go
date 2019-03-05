@@ -176,6 +176,17 @@ func afterRead(entity *Entity) {
 	case *ProxyEntity:
 		ent.GraphicsData = stringsToBytes(ent.graphicsDataString)
 		ent.EntityData = stringsToBytes(ent.entityDataString)
+	case *Spline:
+		if len(ent.weights) == len(ent.ControlPoints) {
+			for i := range ent.ControlPoints {
+				ent.ControlPoints[i].Weight = ent.weights[i]
+			}
+		} else {
+			for i := range ent.ControlPoints {
+				ent.ControlPoints[i].Weight = 1.0
+			}
+		}
+		ent.weights = []float64{}
 	}
 }
 
@@ -813,6 +824,92 @@ func (s *Section) tryApplyCodePair(codePair CodePair) {
 
 func (s *Seqend) tryApplyCodePair(codePair CodePair) {
 	tryApplyCodePairForEntity(s, codePair)
+}
+
+func (s *Spline) shouldWriteWeights() bool {
+	for _, cp := range s.ControlPoints {
+		if cp.Weight != 1.0 {
+			// if any weight is no 1.0, write them all
+			return true
+		}
+	}
+
+	// otherwise defaults are fine
+	return false
+}
+
+func (s *Spline) tryApplyCodePair(codePair CodePair) {
+	switch codePair.Code {
+	case 210:
+		s.Normal.X = codePair.Value.(DoubleCodePairValue).Value
+	case 220:
+		s.Normal.Y = codePair.Value.(DoubleCodePairValue).Value
+	case 230:
+		s.Normal.Z = codePair.Value.(DoubleCodePairValue).Value
+	case 70:
+		s.Flags = int(codePair.Value.(ShortCodePairValue).Value)
+	case 71:
+		s.DegreeOfCurve = int(codePair.Value.(ShortCodePairValue).Value)
+	case 72:
+		s.numberOfKnots = int(codePair.Value.(ShortCodePairValue).Value)
+	case 73:
+		s.numberOfControlPoints = int(codePair.Value.(ShortCodePairValue).Value)
+	case 74:
+		s.numberOfFitPoints = int(codePair.Value.(ShortCodePairValue).Value)
+	case 42:
+		s.KnotTolerance = codePair.Value.(DoubleCodePairValue).Value
+	case 43:
+		s.ControlPointTolerance = codePair.Value.(DoubleCodePairValue).Value
+	case 44:
+		s.FitTolerance = codePair.Value.(DoubleCodePairValue).Value
+	case 12:
+		s.StartTangent.X = codePair.Value.(DoubleCodePairValue).Value
+	case 22:
+		s.StartTangent.Y = codePair.Value.(DoubleCodePairValue).Value
+	case 32:
+		s.StartTangent.Z = codePair.Value.(DoubleCodePairValue).Value
+	case 13:
+		s.EndTangent.X = codePair.Value.(DoubleCodePairValue).Value
+	case 23:
+		s.EndTangent.Y = codePair.Value.(DoubleCodePairValue).Value
+	case 33:
+		s.EndTangent.Z = codePair.Value.(DoubleCodePairValue).Value
+	case 40:
+		s.KnotValues = append(s.KnotValues, codePair.Value.(DoubleCodePairValue).Value)
+	case 41:
+		s.weights = append(s.weights, codePair.Value.(DoubleCodePairValue).Value)
+	case 10:
+		// start new control point
+		s.ControlPoints = append(s.ControlPoints, ControlPoint{Point: Point{X: codePair.Value.(DoubleCodePairValue).Value, Y: 0.0, Z: 0.0}, Weight: 1.0})
+	case 20:
+		// augment last control point
+		if len(s.ControlPoints) > 0 {
+			s.ControlPoints[len(s.ControlPoints)-1].Point.Y = codePair.Value.(DoubleCodePairValue).Value
+		}
+	case 30:
+		// augment last control point
+		if len(s.ControlPoints) > 0 {
+			s.ControlPoints[len(s.ControlPoints)-1].Point.Z = codePair.Value.(DoubleCodePairValue).Value
+		}
+	case 11:
+		// start new fit point
+		s.FitPoints = append(s.FitPoints, Point{X: codePair.Value.(DoubleCodePairValue).Value, Y: 0.0, Z: 0.0})
+	case 21:
+		// augment last fit point
+		if len(s.FitPoints) > 0 {
+			s.FitPoints[len(s.FitPoints)-1].Y = codePair.Value.(DoubleCodePairValue).Value
+		}
+	case 31:
+		// augment last fit point
+		if len(s.FitPoints) > 0 {
+			s.FitPoints[len(s.FitPoints)-1].Z = codePair.Value.(DoubleCodePairValue).Value
+		}
+	default:
+		appliedCodePair := false
+		if !appliedCodePair {
+			appliedCodePair = tryApplyCodePairForEntity(s, codePair)
+		}
+	}
 }
 
 func (p *Polyline) codePairs(version AcadVersion) (pairs []CodePair) {

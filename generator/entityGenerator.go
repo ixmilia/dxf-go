@@ -409,6 +409,11 @@ func collectionHelpers(builder *strings.Builder, entity xmlEntity, entityName st
 }
 
 func writeDirective(builder *strings.Builder, directive xmlWriteOrderDirective, getNamedField getNamedField, asFunction bool, indent string) {
+	predicates := directivePredicates(directive)
+	if len(predicates) > 0 {
+		builder.WriteString(fmt.Sprintf("	if %s {\n", strings.Join(predicates, " && ")))
+		indent += "\t"
+	}
 	switch directive.XMLName.Local {
 	case "NOP":
 	case "Foreach":
@@ -423,17 +428,12 @@ func writeDirective(builder *strings.Builder, directive xmlWriteOrderDirective, 
 		field := getNamedField(directive.Field)
 		writeField(builder, field, asFunction, indent)
 	case "WriteSpecificValue":
-		predicates := directivePredicates(directive)
-		if len(predicates) > 0 {
-			builder.WriteString(fmt.Sprintf("	if %s {\n", strings.Join(predicates, " && ")))
-			indent += "\t"
-		}
 		builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indent, codeTypeName(directive.Code), directive.Code, directive.Value))
-		if len(predicates) > 0 {
-			builder.WriteString("	}\n")
-		}
 	default:
 		panic(fmt.Sprintf("Unsupported write directive '%s'.", directive.XMLName.Local))
+	}
+	if len(predicates) > 0 {
+		builder.WriteString("	}\n")
 	}
 }
 
