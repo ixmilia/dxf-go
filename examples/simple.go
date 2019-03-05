@@ -1,15 +1,10 @@
-package main
+package examples
 
 import (
 	"fmt"
 
 	dxf "github.com/IxMilia/dxf-go"
 )
-
-func main() {
-	read()
-	write()
-}
 
 func read() {
 	drawing, err := dxf.ReadFile("path/to/file.dxf")

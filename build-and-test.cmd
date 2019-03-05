@@ -1,8 +1,10 @@
 @echo off
 
+:: logging
 go version
 if errorlevel 1 goto :error
 
+:: main task
 go generate
 if errorlevel 1 goto :error
 
@@ -11,6 +13,11 @@ if errorlevel 1 goto :error
 
 go test -v
 if errorlevel 1 goto :error
+
+:: verify examples
+cd examples
+call build.cmd
+
 goto :eof
 
 :error
