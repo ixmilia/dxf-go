@@ -613,6 +613,60 @@ func TestRoundTripPolylineTest(t *testing.T) {
 	assertEqPoint(t, v.Location, p2.Vertices[0].Location)
 }
 
+func TestReadSection(t *testing.T) {
+	s := parseEntity(t, "SECTION", join(
+		// 3 vertices
+		" 92", "3",
+		" 11", "1.0",
+		" 21", "2.0",
+		" 31", "3.0",
+		" 11", "11.0",
+		" 21", "22.0",
+		" 31", "33.0",
+		" 11", "111.0",
+		" 21", "222.0",
+		" 31", "333.0",
+		// 1 back vertex
+		" 93", "1",
+		" 12", "4.0",
+		" 22", "5.0",
+		" 32", "6.0",
+	)).(*Section)
+	assertEqInt(t, 3, len(s.Vertices))
+	assertEqPoint(t, s.Vertices[0], Point{X: 1.0, Y: 2.0, Z: 3.0})
+	assertEqPoint(t, s.Vertices[1], Point{X: 11.0, Y: 22.0, Z: 33.0})
+	assertEqPoint(t, s.Vertices[2], Point{X: 111.0, Y: 222.0, Z: 333.0})
+	assertEqInt(t, 1, len(s.BackLineVertices))
+	assertEqPoint(t, s.BackLineVertices[0], Point{X: 4.0, Y: 5.0, Z: 6.0})
+}
+
+func TestWriteSection(t *testing.T) {
+	s := NewSection()
+	s.Vertices = append(s.Vertices, Point{X: 1.0, Y: 2.0, Z: 3.0})
+	s.Vertices = append(s.Vertices, Point{X: 11.0, Y: 22.0, Z: 33.0})
+	s.Vertices = append(s.Vertices, Point{X: 111.0, Y: 222.0, Z: 333.0})
+	s.BackLineVertices = append(s.BackLineVertices, Point{X: 4.0, Y: 5.0, Z: 6.0})
+	actual := entityString(s, R2007)
+	assertContains(t, join(
+		// 3 vertices
+		" 92", "        3",
+		" 11", "1.0",
+		" 21", "2.0",
+		" 31", "3.0",
+		" 11", "11.0",
+		" 21", "22.0",
+		" 31", "33.0",
+		" 11", "111.0",
+		" 21", "222.0",
+		" 31", "333.0",
+		// 1 back vertex
+		" 93", "        1",
+		" 12", "4.0",
+		" 22", "5.0",
+		" 32", "6.0",
+	), actual)
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
 	entities := parseEntities(t, join(
 		"  0", entityType,

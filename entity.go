@@ -747,6 +747,70 @@ func (p *Polyline) tryApplyCodePair(codePair CodePair) {
 	}
 }
 
+func (s *Section) tryApplyCodePair(codePair CodePair) {
+	switch codePair.Code {
+	case 90:
+		s.State = codePair.Value.(IntCodePairValue).Value
+	case 91:
+		s.Flags = codePair.Value.(IntCodePairValue).Value
+	case 1:
+		s.Name = codePair.Value.(StringCodePairValue).Value
+	case 10:
+		s.VerticalDirection.X = codePair.Value.(DoubleCodePairValue).Value
+	case 20:
+		s.VerticalDirection.Y = codePair.Value.(DoubleCodePairValue).Value
+	case 30:
+		s.VerticalDirection.Z = codePair.Value.(DoubleCodePairValue).Value
+	case 40:
+		s.TopHeight = codePair.Value.(DoubleCodePairValue).Value
+	case 41:
+		s.BottomHeight = codePair.Value.(DoubleCodePairValue).Value
+	case 70:
+		s.IndicatorTransparency = codePair.Value.(ShortCodePairValue).Value
+	case 63:
+		s.IndicatorColor = Color(codePair.Value.(ShortCodePairValue).Value)
+	case 411:
+		s.IndicatorColorName = codePair.Value.(StringCodePairValue).Value
+	case 92:
+		s.vertexCount = codePair.Value.(IntCodePairValue).Value
+	case 11:
+		// start new vertex
+		s.Vertices = append(s.Vertices, Point{X: codePair.Value.(DoubleCodePairValue).Value, Y: 0.0, Z: 0.0})
+	case 21:
+		// augment last vertex
+		if len(s.Vertices) > 0 {
+			s.Vertices[len(s.Vertices)-1].Y = codePair.Value.(DoubleCodePairValue).Value
+		}
+	case 31:
+		// augment last vertex
+		if len(s.Vertices) > 0 {
+			s.Vertices[len(s.Vertices)-1].Z = codePair.Value.(DoubleCodePairValue).Value
+		}
+	case 93:
+		s.backLineVertexCount = codePair.Value.(IntCodePairValue).Value
+	case 12:
+		// start new back vertex
+		s.BackLineVertices = append(s.BackLineVertices, Point{X: codePair.Value.(DoubleCodePairValue).Value, Y: 0.0, Z: 0.0})
+	case 22:
+		// augment last back vertex
+		if len(s.BackLineVertices) > 0 {
+			s.BackLineVertices[len(s.BackLineVertices)-1].Y = codePair.Value.(DoubleCodePairValue).Value
+		}
+	case 32:
+		// augment last back vertex
+		if len(s.BackLineVertices) > 0 {
+			s.BackLineVertices[len(s.BackLineVertices)-1].Z = codePair.Value.(DoubleCodePairValue).Value
+		}
+	case 360:
+		s.GeometrySettingsHandle = codePair.Value.(StringCodePairValue).Value
+	default:
+		appliedCodePair := false
+		if !appliedCodePair {
+			appliedCodePair = tryApplyCodePairForEntity(s, codePair)
+		}
+	}
+}
+
 func (s *Seqend) tryApplyCodePair(codePair CodePair) {
 	tryApplyCodePairForEntity(s, codePair)
 }
