@@ -1100,6 +1100,46 @@
   <!-- TODO MinVersion=R2005 -->
   <!--
 
+  TEXT
+
+  -->
+  <Entity Name="Text" SubclassMarker="AcDbText" TypeString="TEXT">
+    <Field Name="Thickness" Code="39" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="Location" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="Height" Code="40" Type="float64" DefaultValue="1.0" />
+    <Field Name="Value" Code="1" Type="string" DefaultValue='""' />
+    <Field Name="Rotation" Code="50" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="RelativeXScaleFactor" Code="41" Type="float64" DefaultValue="1.0" DisableWritingDefault="true" />
+    <Field Name="ObliqueAngle" Code="51" Type="float64" DefaultValue="0.0" DisableWritingDefault="true" />
+    <Field Name="TextStyleName" Code="7" Type="string" DefaultValue='"STANDARD"' DisableWritingDefault="true" />
+    <Field Name="TextGenerationFlags" Code="71" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true">
+      <Flag Name="IsTextBackwards" Mask="2" />
+      <Flag Name="IsTextUpsideDown" Mask="4" />
+    </Field>
+    <Field Name="HorizontalTextJustification" Code="72" Type="HorizontalTextJustification" DefaultValue="HorizontalTextJustificationLeft" ReadConverter="HorizontalTextJustification(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true" />
+    <Field Name="SecondAlignmentPoint" Code="11" Type="Point" DefaultValue="*NewOrigin()" DisableWritingDefault="true" CodeOverrides="11,21,31" />
+    <Field Name="Normal" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
+    <Field Name="VerticalTextJustification" Code="73" Type="VerticalTextJustification" DefaultValue="VerticalTextJustificationBaseline" ReadConverter="VerticalTextJustification(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true" />
+    <WriteOrder>
+      <WriteSpecificValue Code="100" Value='"AcDbText"' />
+      <WriteField Field="Thickness" />
+      <WriteField Field="Location" />
+      <WriteField Field="Height" />
+      <WriteField Field="Value" />
+      <WriteField Field="Rotation" />
+      <WriteField Field="RelativeXScaleFactor" />
+      <WriteField Field="ObliqueAngle" />
+      <WriteField Field="TextStyleName" />
+      <WriteField Field="TextGenerationFlags" />
+      <WriteField Field="HorizontalTextJustification" />
+      <WriteField Field="SecondAlignmentPoint" />
+      <WriteField Field="Normal" />
+      <WriteField Field="VerticalTextJustification" />
+      <WriteSpecificValue Code="100" Value='"AcDbText"' />
+    </WriteOrder>
+  </Entity>
+  <!--
+
   VERTEX
 
   -->
