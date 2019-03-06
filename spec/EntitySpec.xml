@@ -1088,6 +1088,18 @@
   </Entity>
   <!--
 
+  SURFACE
+
+  -->
+  <!-- TODO MinVersion=R2007 -->
+  <!--
+
+  TABLE
+
+  -->
+  <!-- TODO MinVersion=R2005 -->
+  <!--
+
   VERTEX
 
   -->
