@@ -1140,6 +1140,18 @@
   </Entity>
   <!--
 
+  TOLERANCE
+
+  -->
+  <Entity Name="Tolerance" SubclassMarker="AcDbFcf" TypeString="TOLERANCE" MinVersion="R13">
+    <Field Name="DimensionStyleName" Code="3" Type="string" DefaultValue='""' />
+    <Field Name="InsertionPoint" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="DisplayText" Code="1" Type="string" DefaultValue='""' MinVersion="R2000" />
+    <Field Name="ExtrusionDirection" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
+    <Field Name="DirectionVector" Code="11" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="11,21,31" />
+  </Entity>
+  <!--
+
   VERTEX
 
   -->
