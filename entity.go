@@ -187,7 +187,26 @@ func afterRead(entity *Entity) {
 			}
 		}
 		ent.weights = []float64{}
+	case *DgnUnderlay:
+		afterReadUnderlay(ent)
+	case *DwfUnderlay:
+		afterReadUnderlay(ent)
+	case *PdfUnderlay:
+		afterReadUnderlay(ent)
 	}
+}
+
+func afterReadUnderlay(underlay Underlay) {
+	pointX := underlay.pointX()
+	pointY := underlay.pointY()
+	if len(pointX) == len(pointY) {
+		for i := 0; i < len(pointX); i++ {
+			p := Point{X: pointX[i], Y: pointY[i], Z: 0.0}
+			underlay.SetBoundaryPoints(append(underlay.BoundaryPoints(), p))
+		}
+	}
+	underlay.SetpointX([]float64{})
+	underlay.SetpointY([]float64{})
 }
 
 func collectEntities(entityBuffer *entityBufferReader) (result []Entity) {

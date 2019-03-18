@@ -1165,6 +1165,52 @@
   </Entity>
   <!--
 
+  UNDERLAY
+
+  -->
+  <Interface Name="Underlay">
+    <Field Name="ObjectHandle" Code="340" Type="string" DefaultValue='""' />
+    <Field Name="InsertionPoint" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="XScale" Code="41" Type="float64" DefaultValue="1.0" />
+    <Field Name="YScale" Code="42" Type="float64" DefaultValue="1.0" />
+    <Field Name="ZScale" Code="43" Type="float64" DefaultValue="1.0" />
+    <Field Name="RotationAngle" Code="50" Type="float64" DefaultValue="0.0" />
+    <Field Name="Normal" Code="210" Type="Vector" DefaultValue="*NewZAxis()" CodeOverrides="210,220,230" />
+    <Field Name="Flags" Code="280" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)">
+      <Flag Name="IsClippingOn" Mask="1" />
+      <Flag Name="IsUnderlayOn" Mask="2" />
+      <Flag Name="IsMonochrome" Mask="4" />
+      <Flag Name="AdjustForBackground" Mask="8" />
+      <Flag Name="IsClipInsideMode" Mask="16" />
+    </Field>
+    <Field Name="Contrast" Code="281" Type="int16" DefaultValue="100" />
+    <Field Name="Fade" Code="282" Type="int16" DefaultValue="0" />
+    <Field Name="BoundaryPoints" Code="-1" Type="Point" DefaultValue="[]Point{}" AllowMultiples="true" />
+    <Field Name="pointX" Code="11" Type="float64" DefaultValue="[]float64{}" AllowMultiples="true" />
+    <Field Name="pointY" Code="21" Type="float64" DefaultValue="[]float64{}" AllowMultiples="true" />
+    <WriteOrder>
+      <WriteSpecificValue Code="100" Value='"AcDbUnderlayReference"' />
+      <WriteField Field="ObjectHandle" />
+      <WriteField Field="InsertionPoint" />
+      <WriteField Field="XScale" />
+      <WriteField Field="YScale" />
+      <WriteField Field="ZScale" />
+      <WriteField Field="RotationAngle" />
+      <WriteField Field="Normal" />
+      <WriteField Field="Flags" />
+      <WriteField Field="Contrast" />
+      <WriteField Field="Fade" />
+      <Foreach Field="BoundaryPoints()">
+        <WriteSpecificValue Code="11" Value="item.X" />
+        <WriteSpecificValue Code="21" Value="item.Y" />
+      </Foreach>
+    </WriteOrder>
+  </Interface>
+  <Entity Name="DgnUnderlay" TypeString="DGNUNDERLAY" ImplementInterfaces="Entity,Underlay" />
+  <Entity Name="DwfUnderlay" TypeString="DWFUNDERLAY" ImplementInterfaces="Entity,Underlay" />
+  <Entity Name="PdfUnderlay" TypeString="PDFUNDERLAY" ImplementInterfaces="Entity,Underlay" />
+  <!--
+
   VERTEX
 
   -->

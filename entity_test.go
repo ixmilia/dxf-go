@@ -747,6 +747,44 @@ func TestWriteSplineWithNonStandardWeights(t *testing.T) {
 	), actual)
 }
 
+func TestReadUnderlay(t *testing.T) {
+	u := parseEntity(t, "DGNUNDERLAY", join(
+		" 10", "1.0", // insertion point
+		" 20", "2.0",
+		" 30", "3.0",
+		" 11", "4.0", // boundary points
+		" 21", "5.0",
+		" 11", "6.0",
+		" 21", "7.0",
+	)).(*DgnUnderlay)
+	assertEqPoint(t, Point{X: 1.0, Y: 2.0, Z: 3.0}, u.InsertionPoint())
+	assertEqInt(t, 2, len(u.BoundaryPoints()))
+	assertEqPoint(t, Point{X: 4.0, Y: 5.0, Z: 0.0}, u.BoundaryPoints()[0])
+	assertEqPoint(t, Point{X: 6.0, Y: 7.0, Z: 0.0}, u.BoundaryPoints()[1])
+}
+
+func TestWriteUnderlay(t *testing.T) {
+	u := NewDgnUnderlay()
+	u.SetInsertionPoint(Point{X: 1.0, Y: 2.0, Z: 3.0})
+	u.SetBoundaryPoints(append(u.BoundaryPoints(), Point{X: 4.0, Y: 5.0, Z: 0.0}))
+	u.SetBoundaryPoints(append(u.BoundaryPoints(), Point{X: 6.0, Y: 7.0, Z: 0.0}))
+	actual := entityString(u, R14)
+	assertContains(t, join(
+		"  0", "DGNUNDERLAY",
+	), actual)
+	assertContains(t, join(
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+	), actual)
+	assertContains(t, join(
+		" 11", "4.0",
+		" 21", "5.0",
+		" 11", "6.0",
+		" 21", "7.0",
+	), actual)
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
 	entities := parseEntities(t, join(
 		"  0", entityType,

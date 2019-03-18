@@ -176,6 +176,9 @@ func generateEntities() {
 					comment = fmt.Sprintf(" // %s", field.Comment)
 				}
 				backingField := strings.ToLower(field.Name[0:1]) + field.Name[1:]
+				if backingField == field.Name {
+					backingField = "_" + backingField
+				}
 				fieldType := field.Type
 				if field.AllowMultiples {
 					fieldType = "[]" + fieldType
@@ -207,6 +210,9 @@ func generateEntities() {
 			inf := interfaces[infName]
 			for _, field := range inf.Fields {
 				backingField := strings.ToLower(field.Name[0:1]) + field.Name[1:]
+				if backingField == field.Name {
+					backingField = "_" + backingField
+				}
 				builder.WriteString(fmt.Sprintf("		%s: %s,\n", backingField, field.DefaultValue))
 			}
 		}
@@ -229,6 +235,9 @@ func generateEntities() {
 				// getter
 				builder.WriteString(fmt.Sprintf("func (this *%s) %s() %s {\n", entity.Name, field.Name, fieldType))
 				backingField := strings.ToLower(field.Name[0:1]) + field.Name[1:]
+				if backingField == field.Name {
+					backingField = "_" + backingField
+				}
 				builder.WriteString(fmt.Sprintf("	return this.%s\n", backingField))
 				builder.WriteString("}\n")
 				builder.WriteString("\n")
@@ -327,7 +336,9 @@ func generateEntities() {
 					writeDirective(&builder, directive, entity.getNamedField, false, "")
 				}
 			} else {
-				builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewStringCodePair(100, \"%s\"))\n", entity.SubclassMarker))
+				if len(entity.SubclassMarker) > 0 {
+					builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewStringCodePair(100, \"%s\"))\n", entity.SubclassMarker))
+				}
 				for _, field := range entity.Fields {
 					writeField(&builder, field, false, "")
 				}
