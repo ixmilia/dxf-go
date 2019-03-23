@@ -481,7 +481,7 @@
   IMAGE
 
     -->
-  <Entity Name="Image" SubclassMarker="AcDbRasterImage" TypeString="IMAGE" MinVersion="R14">
+  <Interface Name="RasterImage">
     <Field Name="ClassVersion" Code="90" Type="int" DefaultValue="0" />
     <Field Name="Location" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" Comment="The location of the bottom-left corner of the image" />
     <Field Name="UVector" Code="11" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="11,21,31" />
@@ -520,14 +520,15 @@
       <WriteField Field="Fade" />
       <WriteField Field="imageDefinitionReactorHandle" />
       <WriteField Field="ClippingType" />
-      <WriteSpecificValue Code="91" Value="len(this.ClippingVertices)" />
-      <Foreach Field="ClippingVertices">
+      <WriteSpecificValue Code="91" Value="len(this.ClippingVertices())" />
+      <Foreach Field="ClippingVertices()">
         <WriteSpecificValue Code="14" Value="item.X" />
         <WriteSpecificValue Code="24" Value="item.Y" />
       </Foreach>
       <WriteField Field="IsInsideClipping" />
     </WriteOrder>
-  </Entity>
+  </Interface>
+  <Entity Name="Image" TypeString="IMAGE" ImplementInterfaces="Entity,RasterImage" MinVersion="R14" />
   <!--
 
   INSERT

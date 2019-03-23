@@ -147,13 +147,13 @@ func beforeWrite(entity *Entity) {
 
 func afterRead(entity *Entity) {
 	switch ent := (*entity).(type) {
-	case *Image:
-		minLength := len(ent.clippingVerticesX)
-		if len(ent.clippingVerticesY) < minLength {
-			minLength = len(ent.clippingVerticesY)
+	case RasterImage:
+		minLength := len(ent.clippingVerticesX())
+		if len(ent.clippingVerticesY()) < minLength {
+			minLength = len(ent.clippingVerticesY())
 		}
 		for i := 0; i < minLength; i++ {
-			ent.ClippingVertices = append(ent.ClippingVertices, Point{ent.clippingVerticesX[i], ent.clippingVerticesY[i], 0.0})
+			ent.SetClippingVertices(append(ent.ClippingVertices(), Point{ent.clippingVerticesX()[i], ent.clippingVerticesY()[i], 0.0}))
 		}
 	case *Leader:
 		for i := 0; i < ent.vertexCount; i++ {
