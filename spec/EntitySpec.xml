@@ -1235,4 +1235,10 @@
     <Field Name="PolyfaceMeshVertexIndex4" Code="74" Type="int" DefaultValue="0" DisableWritingDefault="true" ReadConverter="int(%v)" WriteConverter="int16(%v)" MinVersion="R13" />
     <Field Name="Identifier" Code="91" Type="int" DefaultValue="0" MinVersion="R2010" />
   </Entity>
+  <!--
+
+  VIEWPORT
+
+  -->
+  <!-- TODO MinVersion="R12" -->
 </Specification>
