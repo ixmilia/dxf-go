@@ -788,6 +788,36 @@ func TestWriteUnderlay(t *testing.T) {
 	), actual)
 }
 
+func TestReadWipeout(t *testing.T) {
+	wo := parseEntity(t, "WIPEOUT", join(
+		" 91", "2",
+		" 14", "1.0",
+		" 24", "2.0",
+		" 14", "3.0",
+		" 24", "4.0",
+	)).(*Wipeout)
+	assertEqInt(t, 2, len(wo.ClippingVertices()))
+	assertEqPoint(t, Point{1.0, 2.0, 0.0}, wo.ClippingVertices()[0])
+	assertEqPoint(t, Point{3.0, 4.0, 0.0}, wo.ClippingVertices()[1])
+}
+
+func TestWriteWipeout(t *testing.T) {
+	wo := NewWipeout()
+	wo.SetClippingVertices(append(wo.ClippingVertices(), Point{1.0, 2.0, 0.0}))
+	wo.SetClippingVertices(append(wo.ClippingVertices(), Point{3.0, 4.0, 0.0}))
+	actual := entityString(wo, R2000)
+	assertContains(t, join(
+		"100", "AcDbWipeout",
+	), actual)
+	assertContains(t, join(
+		" 91", "        2",
+		" 14", "1.0",
+		" 24", "2.0",
+		" 14", "3.0",
+		" 24", "4.0",
+	), actual)
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
 	entities := parseEntities(t, join(
 		"  0", entityType,

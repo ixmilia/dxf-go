@@ -482,6 +482,7 @@
 
     -->
   <Interface Name="RasterImage">
+    <Field Name="subclassMarker" Code="100" Type="string" DefaultValue='""' />
     <Field Name="ClassVersion" Code="90" Type="int" DefaultValue="0" />
     <Field Name="Location" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" Comment="The location of the bottom-left corner of the image" />
     <Field Name="UVector" Code="11" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="11,21,31" />
@@ -506,7 +507,7 @@
     <Field Name="clippingVerticesY" Code="24" Type="float64" DefaultValue="[]float64{}" AllowMultiples="true" />
     <Field Name="IsInsideClipping" Code="290" Type="bool" DefaultValue="false" MinVersion="R2010" />
     <WriteOrder>
-      <WriteSpecificValue Code="100" Value='"AcDbRasterImage"' />
+      <WriteField Field="subclassMarker" />
       <WriteField Field="ClassVersion" />
       <WriteField Field="Location" />
       <WriteField Field="UVector" />
@@ -1242,4 +1243,11 @@
 
   -->
   <!-- TODO MinVersion="R12" -->
+  <!--
+
+  WIPEOUT
+
+  -->
+  <!-- inherits from IMAGE -->
+  <Entity Name="Wipeout" TypeString="WIPEOUT" ImplementInterfaces="Entity,RasterImage" MinVersion="R2000" />
 </Specification>

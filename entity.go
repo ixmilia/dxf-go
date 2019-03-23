@@ -124,6 +124,10 @@ func trailingCodePairs(entity *Entity, version AcadVersion) (pairs []CodePair) {
 
 func beforeWrite(entity *Entity) {
 	switch ent := (*entity).(type) {
+	case *Image:
+		ent.SetsubclassMarker("AcDbRasterImage")
+	case *Wipeout:
+		ent.SetsubclassMarker("AcDbWipeout")
 	case *OleFrame:
 		ent.binaryDataLength = len(ent.BinaryData)
 		ent.binaryDataStrings = bytesToStrings(ent.BinaryData)
