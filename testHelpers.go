@@ -44,6 +44,12 @@ func assertEqPoint(t *testing.T, expected, actual Point) {
 	}
 }
 
+func assertEqVector(t *testing.T, expected, actual Vector) {
+	if expected != actual {
+		t.Errorf("Expected: %s\nActual: %s", expected.String(), actual.String())
+	}
+}
+
 func assertEqString(t *testing.T, expected, actual string) {
 	if expected != actual {
 		t.Errorf("Expected: %s\nActual: %s", expected, actual)

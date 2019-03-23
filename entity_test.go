@@ -818,6 +818,34 @@ func TestWriteWipeout(t *testing.T) {
 	), actual)
 }
 
+func TestReadXLine(t *testing.T) {
+	x := parseEntity(t, "XLINE", join(
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+		" 11", "4.0",
+		" 21", "5.0",
+		" 31", "6.0",
+	)).(*XLine)
+	assertEqPoint(t, Point{1.0, 2.0, 3.0}, x.FirstPoint)
+	assertEqVector(t, Vector{4.0, 5.0, 6.0}, x.UnitDirectionVector)
+}
+
+func TestWriteXLine(t *testing.T) {
+	x := NewXLine()
+	x.FirstPoint = Point{1.0, 2.0, 3.0}
+	x.UnitDirectionVector = Vector{4.0, 5.0, 6.0}
+	actual := entityString(x, R13)
+	assertContains(t, join(
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+		" 11", "4.0",
+		" 21", "5.0",
+		" 31", "6.0",
+	), actual)
+}
+
 func parseEntity(t *testing.T, entityType string, body string) Entity {
 	entities := parseEntities(t, join(
 		"  0", entityType,

@@ -1250,4 +1250,13 @@
   -->
   <!-- inherits from IMAGE -->
   <Entity Name="Wipeout" TypeString="WIPEOUT" ImplementInterfaces="Entity,RasterImage" MinVersion="R2000" />
+  <!--
+
+  XLINE
+
+  -->
+  <Entity Name="XLine" SubclassMarker="AcDbXline" TypeString="XLINE" MinVersion="R13">
+    <Field Name="FirstPoint" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+    <Field Name="UnitDirectionVector" Code="11" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="11,21,31" />
+  </Entity>
 </Specification>
