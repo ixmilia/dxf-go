@@ -14,6 +14,80 @@
       <Field Name="bitmapPreviewData" Code="310" Type="[]string" DefaultValue="[]string{}" AllowMultiples="true" MinVersion="R2000" />
     </TableItem>
   </Table>
+  <Table Collection="DimStyles" TypeString="DIMSTYLE">
+    <TableItem Name="DimStyle" ClassName="AcDbDimStyleTable">
+      <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+      <Field Name="DimensioningSuffix" Code="3" Type="string" DefaultValue='""' />
+      <Field Name="AlternateDimensioningSuffix" Code="4" Type="string" DefaultValue='""' />
+      <Field Name="ArrowBlockName" Code="5" Type="string" DefaultValue='""' MaxVersion="R14" />
+      <Field Name="FirstArrowBlockName" Code="6" Type="string" DefaultValue='""' MaxVersion="R14" />
+      <Field Name="SecondArrowBlockName" Code="7" Type="string" DefaultValue='""' MaxVersion="R14" />
+      <Field Name="DimensioningScaleFactor" Code="40" Type="float64" DefaultValue="1.0" />
+      <Field Name="DimensioningArrowSize" Code="41" Type="float64" DefaultValue="0.18" />
+      <Field Name="DimensionExtensionLineOffset" Code="42" Type="float64" DefaultValue="0.0625" />
+      <Field Name="DimensionLineIncrement" Code="43" Type="float64" DefaultValue="0.38" />
+      <Field Name="DimensionExtensionLineIncrement" Code="44" Type="float64" DefaultValue="0.18" />
+      <Field Name="DimensionDistanceRoundingValue" Code="45" Type="float64" DefaultValue="0.0" />
+      <Field Name="DimensionLineExtension" Code="46" Type="float64" DefaultValue="0.0" />
+      <Field Name="DimensionPlusTolerance" Code="47" Type="float64" DefaultValue="0.0" />
+      <Field Name="DimensionMinusTolerance" Code="48" Type="float64" DefaultValue="0.0" />
+      <Field Name="GenerateDimensionTolerances" Code="71" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+      <Field Name="GenerateDimensionLimits" Code="72" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+      <Field Name="DimensionTextInsideHorizontal" Code="73" Type="bool" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+      <Field Name="DimensionTextOutsideHorizontal" Code="74" Type="bool" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+      <Field Name="SuppressFirstDimensionExtensionLine" Code="75" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+      <Field Name="SuppressSecondDimensionExtensionLine" Code="76" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+      <Field Name="TextAboveDimensionLine" Code="77" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+      <Field Name="DimensionUnitZeroSuppression" Code="78" Type="UnitZeroSuppression" DefaultValue="UnitZeroSuppressionSuppressZeroFeetAndZeroInches" ReadConverter="UnitZeroSuppression(%v)" WriteConverter="int16(%v)" />
+      <Field Name="DimensionAngleZeroSuppression" Code="79" Type="UnitZeroSuppression" DefaultValue="UnitZeroSuppressionSuppressZeroFeetAndZeroInches" ReadConverter="UnitZeroSuppression(%v)" WriteConverter="int16(%v)" MinVersion="R2000" />
+      <Field Name="DimensioningTextHeight" Code="140" Type="float64" DefaultValue="0.18" />
+      <Field Name="CenterMarkSize" Code="141" Type="float64" DefaultValue="0.09" />
+      <Field Name="DimensioningTickSize" Code="142" Type="float64" DefaultValue="0.0" />
+      <Field Name="AlternateDimensioningScaleFactor" Code="143" Type="float64" DefaultValue="25.4" />
+      <Field Name="DimensionLinearMeasurementScaleFactor" Code="144" Type="float64" DefaultValue="1.0" />
+      <Field Name="DimensionVerticalTextPosition" Code="145" Type="float64" DefaultValue="0.0" />
+      <Field Name="DimensionToleranceDisplaceScaleFactor" Code="146" Type="float64" DefaultValue="1.0" />
+      <Field Name="DimensionLineGap" Code="147" Type="float64" DefaultValue="0.09" />
+      <Field Name="AlternateDimensioningUnitRounding" Code="148" Type="float64" DefaultValue="0.0" MinVersion="R2000" />
+      <Field Name="UseAlternateDimensioning" Code="170" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+      <Field Name="AlternateDimensioningDecimalPlaces" Code="171" Type="int16" DefaultValue="2" />
+      <Field Name="ForceDimensionLineExtensionsOutsideIfTextExists" Code="172" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+      <Field Name="UseSeparateArrowBlocksForDimensions" Code="173" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+      <Field Name="ForceDimensionTextInsideExtensions" Code="174" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+      <Field Name="SuppressOutsideExtensionDimensionLines" Code="175" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" />
+      <Field Name="DimensionLineColor" Code="176" Type="Color" DefaultValue="ByBlock()" ReadConverter="Color(%v)" WriteConverter="int16(%v)" />
+      <Field Name="DimensionExtensionLineColor" Code="177" Type="Color" DefaultValue="ByBlock()" ReadConverter="Color(%v)" WriteConverter="int16(%v)" />
+      <Field Name="DimensionTextColor" Code="178" Type="Color" DefaultValue="ByBlock()" ReadConverter="Color(%v)" WriteConverter="int16(%v)" />
+      <Field Name="AngularDimensionPrecision" Code="179" Type="int16" DefaultValue="12" MinVersion="R2000" />
+      <Field Name="DimensionUnitFormat" Code="270" Type="UnitFormat" DefaultValue="UnitFormatScientific" ReadConverter="UnitFormat(%v)" WriteConverter="int16(%v)" MinVersion="R13" />
+      <Field Name="DimensionUnitToleranceDecimalPlaces" Code="271" Type="int16" DefaultValue="0" MinVersion="R13" />
+      <Field Name="DimensionToleraceDecimalPlaces" Code="272" Type="int16" DefaultValue="0" MinVersion="R13" />
+      <Field Name="AlternateDimensioningUnits" Code="273" Type="UnitFormat" DefaultValue="UnitFormatScientific" ReadConverter="UnitFormat(%v)" WriteConverter="int16(%v)" MinVersion="R13" />
+      <Field Name="AlternateDimensioningToleranceDecimalPlaces" Code="274" Type="int16" DefaultValue="0" MinVersion="R13" />
+      <Field Name="DimensioningAngleFormat" Code="275" Type="AngleFormat" DefaultValue="AngleFormatDecimalDegrees" ReadConverter="AngleFormat(%v)" WriteConverter="int16(%v)" MinVersion="R13" />
+      <Field Name="DimensionPrecision" Code="276" Type="int16" DefaultValue="12" MinVersion="R2000" />
+      <Field Name="DimensionNonAngularUnits" Code="277" Type="NonAngularUnits" DefaultValue="NonAngularUnitsScientific" ReadConverter="NonAngularUnits(%v)" WriteConverter="int16(%v)" MinVersion="R2000" />
+      <Field Name="DimensionDecilamSeparatorChar" Code="278" Type="rune" DefaultValue="'.'" ReadConverter="rune(%v)" WriteConverter="int16(%v)" MinVersion="R2000" />
+      <Field Name="DimensionTextMovementRule" Code="279" Type="DimensionTextMovementRule" DefaultValue="DimensionTextMovementRuleMoveLineWithText" ReadConverter="DimensionTextMovementRule(%v)" WriteConverter="int16(%v)" MinVersion="R2000" />
+      <Field Name="DimensionTextJustification" Code="280" Type="DimensionTextJustification" DefaultValue="DimensionTextJustificationAboveLineCenter" ReadConverter="DimensionTextJustification(%v)" WriteConverter="int16(%v)" MinVersion="R13" />
+      <Field Name="SuppressFirstDimensionExtensionLine" Code="281" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R13" />
+      <Field Name="SuppressSecondDimensionExtensionLine" Code="282" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R13" />
+      <Field Name="DimensionToleranceVerticalJustification" Code="283" Type="Justification" DefaultValue="JustificationTop" ReadConverter="Justification(%v)" WriteConverter="int16(%v)" MinVersion="R13" />
+      <Field Name="DimensionToleranceZeroSuppression" Code="284" Type="UnitZeroSuppression" DefaultValue="UnitZeroSuppressionSuppressZeroFeetAndZeroInches" ReadConverter="UnitZeroSuppression(%v)" WriteConverter="int16(%v)" MinVersion="R13" />
+      <Field Name="AlternateDimensioningZeroSuppression" Code="285" Type="UnitZeroSuppression" DefaultValue="UnitZeroSuppressionSuppressZeroFeetAndZeroInches" ReadConverter="UnitZeroSuppression(%v)" WriteConverter="int16(%v)" MinVersion="R13" />
+      <Field Name="AlternateDimensioningToleranceZeroSuppression" Code="286" Type="UnitZeroSuppression" DefaultValue="UnitZeroSuppressionSuppressZeroFeetAndZeroInches" ReadConverter="UnitZeroSuppression(%v)" WriteConverter="int16(%v)" MinVersion="R13" />
+      <Field Name="DimensionTextAndArrowPlacement" Code="287" Type="DimensionFit" DefaultValue="DimensionFitTextAndArrowsOutsideLines" ReadConverter="DimensionFit(%v)" WriteConverter="int16(%v)" MinVersion="R13" />
+      <Field Name="DimensionCursorControlsTextPosition" Code="288" Type="bool" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R13" />
+      <Field Name="DimensionTextAndArrowPlacement" Code="289" Type="DimensionFit" DefaultValue="DimensionFitTextAndArrowsOutsideLines" ReadConverter="DimensionFit(%v)" WriteConverter="int16(%v)" MinVersion="R2000" />
+      <Field Name="DimensionTextStyle" Code="340" Type="string" DefaultValue='""' MinVersion="R13" />
+      <Field Name="DimensionLeaderBlockName" Code="341" Type="string" DefaultValue='""' MinVersion="R2000" />
+      <Field Name="ArrowBlockName" Code="342" Type="string" DefaultValue='""' MinVersion="R2000" />
+      <Field Name="FirstArrowBlockName" Code="343" Type="string" DefaultValue='""' MinVersion="R2000" />
+      <Field Name="SecondArrowBlockName" Code="344" Type="string" DefaultValue='""' MinVersion="R2000" />
+      <Field Name="DimensionLineWeight" Code="371" Type="LineWeight" DefaultValue="NewLineWeightStandard()" ReadConverter="LineWeight(%v)" WriteConverter="int16(%v)" MinVersion="R2000" />
+      <Field Name="DimensionExtensionLineWeight" Code="372" Type="LineWeight" DefaultValue="NewLineWeightStandard()" ReadConverter="LineWeight(%v)" WriteConverter="int16(%v)" MinVersion="R2000" />
+    </TableItem>
+  </Table>
   <Table Collection="Layers" TypeString="LAYER">
     <TableItem Name="Layer" ClassName="AcDbLayerTableRecord">
       <Field Name="Name" Code="2" Type="string" DefaultValue='""' />

@@ -51,18 +51,26 @@ func generateTables() {
 	for _, table := range tables {
 		tableItem := table.Items[0]
 		// declaration
+		seenFields := make(map[string]bool)
 		builder.WriteString(fmt.Sprintf("type %s struct {\n", tableItem.Name))
 		for _, field := range tableItem.Fields {
-			builder.WriteString(fmt.Sprintf("	%s %s\n", field.Name, field.Type))
+			if !seenFields[field.Name] {
+				seenFields[field.Name] = true
+				builder.WriteString(fmt.Sprintf("	%s %s\n", field.Name, field.Type))
+			}
 		}
 		builder.WriteString("}\n")
 		builder.WriteString("\n")
 
 		// constructor
+		seenFields = make(map[string]bool)
 		builder.WriteString(fmt.Sprintf("func New%s() *%s {\n", tableItem.Name, tableItem.Name))
 		builder.WriteString(fmt.Sprintf("	return &%s{\n", tableItem.Name))
 		for _, field := range tableItem.Fields {
-			builder.WriteString(fmt.Sprintf("		%s: %s,\n", field.Name, field.DefaultValue))
+			if !seenFields[field.Name] {
+				seenFields[field.Name] = true
+				builder.WriteString(fmt.Sprintf("		%s: %s,\n", field.Name, field.DefaultValue))
+			}
 		}
 		builder.WriteString("	}\n")
 		builder.WriteString("}\n")

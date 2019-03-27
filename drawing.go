@@ -15,6 +15,7 @@ type Drawing struct {
 
 	AppIds       []AppId
 	BlockRecords []BlockRecord
+	DimStyles    []DimStyle
 	Layers       []Layer
 
 	Entities []Entity
