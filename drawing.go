@@ -13,8 +13,9 @@ import (
 type Drawing struct {
 	Header Header
 
-	AppIds []AppId
-	Layers []Layer
+	AppIds       []AppId
+	BlockRecords []BlockRecord
+	Layers       []Layer
 
 	Entities []Entity
 }

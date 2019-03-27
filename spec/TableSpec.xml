@@ -4,6 +4,16 @@
       <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
     </TableItem>
   </Table>
+  <Table Collection="BlockRecords" TypeString="BLOCK_RECORD">
+    <TableItem Name="BlockRecord" ClassName="AcDbBlockTableRecord">
+      <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+      <Field Name="LayoutHandle" Code="340" Type="string" DefaultValue='""' MinVersion="R2000" />
+      <Field Name="InsertionUnits" Code="70" Type="Units" DefaultValue="UnitsUnitless" ReadConverter="Units(%v)" WriteConverter="int16(%v)" MinVersion="R2007" />
+      <Field Name="Explodability" Code="280" Type="bool" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2007" />
+      <Field Name="Scalability" Code="281" Type="bool" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2007" />
+      <Field Name="bitmapPreviewData" Code="310" Type="[]string" DefaultValue="[]string{}" AllowMultiples="true" MinVersion="R2000" />
+    </TableItem>
+  </Table>
   <Table Collection="Layers" TypeString="LAYER">
     <TableItem Name="Layer" ClassName="AcDbLayerTableRecord">
       <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
