@@ -130,4 +130,17 @@
       <Field Name="FontFlags" Code="1071" Type="int" DefaultValue="0" MinVersion="R2010" />
     </TableItem>
   </Table>
+  <Table Collection="Ucss" TypeString="UCS">
+    <TableItem Name="Ucs" ClassName="AcDbUCSTableRecord">
+      <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+      <Field Name="Origin" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
+      <Field Name="XAxis" Code="11" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="11,21,31" />
+      <Field Name="YAxis" Code="12" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="12,22,32" />
+      <Field Name="OrthographicViewType" Code="79" Type="OrthographicViewType" DefaultValue="OrthographicViewTypeNone" ReadConverter="OrthographicViewType(%v)" WriteConverter="int16(%v)" MinVersion="R2000" />
+      <Field Name="Elevation" Code="146" Type="float64" DefaultValue="0.0" MinVersion="R2000" />
+      <Field Name="BaseUcsHandle" Code="346" Type="string" DefaultValue='""' DisableWritingDefault="true" MinVersion="R2000" />
+      <Field Name="OrthographicType" Code="71" Type="OrthographicViewType" DefaultValue="OrthographicViewTypeTop" ReadConverter="OrthographicViewType(%v)" WriteConverter="int16(%v)" MinVersion="R2000" />
+      <Field Name="OrthographicOrigin" Code="13" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="13,23,33" MinVersion="R2000" />
+    </TableItem>
+  </Table>
 </Tables>

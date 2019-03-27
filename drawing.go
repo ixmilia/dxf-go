@@ -19,6 +19,7 @@ type Drawing struct {
 	Layers       []Layer
 	LineTypes    []LineType
 	Styles       []Style
+	Ucss         []Ucs
 
 	Entities []Entity
 }
