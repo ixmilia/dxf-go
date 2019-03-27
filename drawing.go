@@ -13,6 +13,7 @@ import (
 type Drawing struct {
 	Header   Header
 	Entities []Entity
+	Layers   []Layer
 }
 
 // NewDrawing returns a new, fully initialized drawing.
@@ -51,6 +52,11 @@ func (d *Drawing) String() string {
 
 func (d *Drawing) saveToCodePairWriter(writer codePairWriter) error {
 	err := d.Header.writeHeaderSection(writer)
+	if err != nil {
+		return err
+	}
+
+	err = writeTablesSection(d, writer, d.Header.Version)
 	if err != nil {
 		return err
 	}
@@ -116,6 +122,8 @@ func readFromCodePairReader(reader codePairReader) (Drawing, error) {
 				drawing.Entities, nextPair, err = readEntities(nextPair, reader)
 			case "HEADER":
 				drawing.Header, nextPair, err = readHeader(nextPair, reader)
+			case "TABLES":
+				nextPair, err = readTables(&drawing, nextPair, reader)
 			default:
 				// swallow unsupported section
 				for err == nil && !nextPair.isEndSection() {

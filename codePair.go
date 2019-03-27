@@ -22,6 +22,14 @@ func (pair *CodePair) isEndSection() bool {
 	return pair.Code == 0 && pair.Value.(StringCodePairValue).Value == "ENDSEC"
 }
 
+func (pair *CodePair) isStartTable() bool {
+	return pair.Code == 0 && pair.Value.(StringCodePairValue).Value == "TABLE"
+}
+
+func (pair *CodePair) isEndTable() bool {
+	return pair.Code == 0 && pair.Value.(StringCodePairValue).Value == "ENDTAB"
+}
+
 func (pair *CodePair) isEOF() bool {
 	return pair.Code == 0 && pair.Value.(StringCodePairValue).Value == "EOF"
 }

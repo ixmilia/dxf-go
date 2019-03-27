@@ -6,6 +6,12 @@ import (
 	"testing"
 )
 
+func roundTripDrawing(t *testing.T, d *Drawing) (result Drawing) {
+	s := d.String()
+	result = parse(t, s)
+	return
+}
+
 func assert(t *testing.T, condition bool, message string) {
 	if !condition {
 		t.Error(message)

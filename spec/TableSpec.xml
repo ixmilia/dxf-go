@@ -1,0 +1,13 @@
+<Tables>
+  <Table Collection="Layers" TypeString="LAYER">
+    <TableItem Name="Layer" ClassName="AcDbLayerTableRecord">
+      <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+      <Field Name="Color" Code="62" Type="Color" DefaultValue="Color(7)" ReadConverter="Color(%v)" WriteConverter="int16(%v)" />
+      <Field Name="LineTypeName" Code="6" Type="string" DefaultValue='"CONTINUOUS"' />
+      <Field Name="IsLayerPlotted" Code="290" Type="bool" DefaultValue="true" MinVersion="R2000" />
+      <Field Name="LineWeight" Code="370" Type="LineWeight" DefaultValue="NewLineWeightStandard()" ReadConverter="LineWeight(%v)" WriteConverter="int16(%v)" MinVersion="R2000" />
+      <Field Name="PlotStyleHandle" Code="390" Type="string" DefaultValue='""' MinVersion="R2000" />
+      <Field Name="MaterialHandle" Code="347" Type="string" DefaultValue='""' MinVersion="R2000" />
+    </TableItem>
+  </Table>
+</Tables>

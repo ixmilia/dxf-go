@@ -9,6 +9,7 @@ func main() {
 	generateEnums()
 	generateHeader()
 	generateEntities()
+	generateTables()
 }
 
 func check(e error) {
