@@ -117,4 +117,17 @@
       <Field Name="TextStrings" Code="9" Type="[]string" DefaultValue="[]string{}" AllowMultiples="true" MinVersion="R13" />
     </TableItem>
   </Table>
+  <Table Collection="Styles" TypeString="STYLE">
+    <TableItem Name="Style" ClassName="AcDbTextStyleTableRecord">
+      <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+      <Field Name="TextHeight" Code="40" Type="float64" DefaultValue="0.0" />
+      <Field Name="WidthFactor" Code="41" Type="float64" DefaultValue="1.0" />
+      <Field Name="ObliqueAngle" Code="50" Type="float64" DefaultValue="0.0" />
+      <Field Name="TextGenerationFlags" Code="71" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
+      <Field Name="LastHeightUsed" Code="42" Type="float64" DefaultValue="0.2" />
+      <Field Name="PrimaryFontFileName" Code="3" Type="string" DefaultValue='"txt"' />
+      <Field Name="BigFontFileName" Code="4" Type="string" DefaultValue='""' />
+      <Field Name="FontFlags" Code="1071" Type="int" DefaultValue="0" MinVersion="R2010" />
+    </TableItem>
+  </Table>
 </Tables>

@@ -18,6 +18,7 @@ type Drawing struct {
 	DimStyles    []DimStyle
 	Layers       []Layer
 	LineTypes    []LineType
+	Styles       []Style
 
 	Entities []Entity
 }
