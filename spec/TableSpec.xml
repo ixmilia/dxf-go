@@ -1,4 +1,9 @@
 <Tables>
+  <Table Collection="AppIds" TypeString="APPID">
+    <TableItem Name="AppId" ClassName="AcDbRegAppTableRecord">
+      <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+    </TableItem>
+  </Table>
   <Table Collection="Layers" TypeString="LAYER">
     <TableItem Name="Layer" ClassName="AcDbLayerTableRecord">
       <Field Name="Name" Code="2" Type="string" DefaultValue='""' />

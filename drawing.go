@@ -11,9 +11,12 @@ import (
 
 // The Drawing struct represents a complete DXF drawing.
 type Drawing struct {
-	Header   Header
+	Header Header
+
+	AppIds []AppId
+	Layers []Layer
+
 	Entities []Entity
-	Layers   []Layer
 }
 
 // NewDrawing returns a new, fully initialized drawing.
