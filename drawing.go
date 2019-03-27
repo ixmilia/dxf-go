@@ -17,6 +17,7 @@ type Drawing struct {
 	BlockRecords []BlockRecord
 	DimStyles    []DimStyle
 	Layers       []Layer
+	LineTypes    []LineType
 
 	Entities []Entity
 }
