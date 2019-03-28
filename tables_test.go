@@ -64,6 +64,27 @@ func TestReadLayers(t *testing.T) {
 	assertEqString(t, "layer-2", drawing.Layers[1].Name)
 }
 
+func TestUnsupportedTable(t *testing.T) {
+	drawing := parse(t, join(
+		"  0", "SECTION",
+		"  2", "TABLES",
+		"  0", "TABLE",
+		"  2", "UNSUPPORTED",
+		"  0", "UNSUPPORTED",
+		"  2", "unsupported-name",
+		"  0", "ENDTAB",
+		"  0", "TABLE",
+		"  2", "LAYER",
+		"  0", "LAYER",
+		"  2", "layer-name",
+		"  0", "ENDTAB",
+		"  0", "ENDSEC",
+		"  0", "EOF",
+	))
+	assertEqInt(t, 1, len(drawing.Layers))
+	assertEqString(t, "layer-name", drawing.Layers[0].Name)
+}
+
 func parseTableItem(t *testing.T, tableType, body string) (drawing Drawing) {
 	drawing = parse(t, join(
 		"  0", "SECTION",
