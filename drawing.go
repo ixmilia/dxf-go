@@ -21,6 +21,7 @@ type Drawing struct {
 	Styles       []Style
 	Ucss         []Ucs
 	Views        []View
+	ViewPorts    []ViewPort
 
 	Entities []Entity
 }

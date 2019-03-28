@@ -172,4 +172,55 @@
       <Field Name="BaseUCSHandle" Code="346" Type="string" DefaultValue='""' DisableWritingDefault="true" WriteCondition="this.IsAssociatedUCSPresent" MinVersion="R2000" />
     </TableItem>
   </Table>
+  <Table Collection="ViewPorts" TypeString="VPORT">
+    <TableItem Name="ViewPort" ClassName="AcDbViewportTableRecord">
+      <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+      <Field Name="LowerLeft" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20" />
+      <Field Name="UpperRight" Code="11" Type="Point" DefaultValue="Point{1.0, 1.0, 0.0}" CodeOverrides="11,21" />
+      <Field Name="ViewCenter" Code="12" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="12,22" />
+      <Field Name="SnapBasePoint" Code="13" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="13,23" />
+      <Field Name="SnapSpacing" Code="14" Type="Vector" DefaultValue="Vector{1.0, 1.0, 0.0}" WriteConverter="ensurePositiveOrDefault(%v, 1.0)" CodeOverrides="14,24" />
+      <Field Name="GridSpacing" Code="15" Type="Vector" DefaultValue="Vector{1.0, 1.0, 0.0}" WriteConverter="ensurePositiveOrDefault(%v, 1.0)" CodeOverrides="15,25" />
+      <Field Name="ViewDirection" Code="16" Type="Vector" DefaultValue="*NewZAxis()" CodeOverrides="16,26,36" />
+      <Field Name="TargetViewPoint" Code="17" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="17,27,37" />
+      <Field Name="ViewHeight" Code="40" Type="float64" DefaultValue="1.0" WriteConverter="ensurePositiveOrDefault(%v, 1.0)" MaxVersion="R2004" />
+      <Field Name="ViewPortAspectRatio" Code="41" Type="float64" DefaultValue="1.0" WriteConverter="ensurePositiveOrDefault(%v, 1.0)" MaxVersion="R2004" />
+      <Field Name="LensLength" Code="42" Type="float64" DefaultValue="50.0" WriteConverter="ensurePositiveOrDefault(%v, 50.0)" />
+      <Field Name="FrontClippingPlane" Code="43" Type="float64" DefaultValue="0.0" />
+      <Field Name="BackClippingPlane" Code="44" Type="float64" DefaultValue="0.0" />
+      <Field Name="ViewHeight" Code="45" Type="float64" DefaultValue="1.0" WriteConverter="ensurePositiveOrDefault(%v, 1.0)" MinVersion="R2007" />
+      <Field Name="SnapRotationAngle" Code="50" Type="float64" DefaultValue="0.0" />
+      <Field Name="ViewTwistAngle" Code="51" Type="float64" DefaultValue="0.0" />
+      <Field Name="ViewMode" Code="71" Type="ViewMode" DefaultValue="ViewMode(0)" ReadConverter="ViewMode(int(%v))" WriteConverter="int16(%v)" />
+      <Field Name="CircleSides" Code="72" Type="int" DefaultValue="1000" ReadConverter="int(%v)" WriteConverter="int16(ensurePositiveOrDefault(float64(%v), 1000.0))" />
+      <Field Name="FastZoom" Code="73" Type="bool" DefaultValue="true" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MaxVersion="R2004" />
+      <Field Name="UCSIcon" Code="74" Type="int16" DefaultValue="3" WriteConverter="int16(ensurePositiveOrDefault(float64(%v), 3.0))" />
+      <Field Name="SnapOn" Code="75" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MaxVersion="R2004" />
+      <Field Name="GridOn" Code="76" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MaxVersion="R2004" />
+      <Field Name="SnapStyle" Code="77" Type="SnapStyle" DefaultValue="SnapStyleStandard" ReadConverter="SnapStyle(%v)" WriteConverter="int16(%v)" MaxVersion="R2004" />
+      <Field Name="SnapIsometricPlane" Code="78" Type="SnapIsometricPlane" DefaultValue="SnapIsometricPlaneLeft" ReadConverter="SnapIsometricPlane(%v)" WriteConverter="int16(%v)" MaxVersion="R2004" />
+      <Field Name="PlotStyleSheet" Code="1" Type="string" DefaultValue='""' MinVersion="R2007" />
+      <Field Name="RenderMode" Code="281" Type="ViewRenderMode" DefaultValue="ViewRenderModeClassic2D" ReadConverter="ViewRenderMode(%v)" WriteConverter="int16(%v)" MinVersion="R2000" />
+      <Field Name="HasOwnUCS" Code="65" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2000" MaxVersion="R2004" />
+      <Field Name="UCSOrigin" Code="110" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="110,120,130" WriteCondition="this.HasOwnUCS" MinVersion="R2000" />
+      <Field Name="UCSXAxis" Code="111" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="111,121,131" WriteCondition="this.HasOwnUCS" MinVersion="R2000" />
+      <Field Name="UCSYAxis" Code="112" Type="Vector" DefaultValue="*NewYAxis()" CodeOverrides="112,122,132" WriteCondition="this.HasOwnUCS" MinVersion="R2000" />
+      <Field Name="OrthographicViewType" Code="79" Type="OrthographicViewType" DefaultValue="OrthographicViewTypeNone" ReadConverter="OrthographicViewType(%v)" WriteConverter="int16(%v)" WriteCondition="this.HasOwnUCS" MinVersion="R2000" />
+      <Field Name="UCSElevation" Code="146" Type="float64" DefaultValue="0.0" WriteCondition="this.HasOwnUCS" MinVersion="R2000" />
+      <Field Name="UCSHandle" Code="345" Type="string" DefaultValue='""' WriteCondition="this.HasOwnUCS" DisableWritingDefault="true" MinVersion="R2000" />
+      <Field Name="BaseUCSHandle" Code="346" Type="string" DefaultValue='""' WriteCondition="this.HasOwnUCS" DisableWritingDefault="true" MinVersion="R2000" />
+      <Field Name="ShadePlotSetting" Code="170" Type="ShadeEdgeMode" DefaultValue="ShadeEdgeModeFacesShadedEdgeNotHighlighted" ReadConverter="ShadeEdgeMode(%v)" WriteConverter="int16(%v)" MinVersion="R2007" />
+      <Field Name="MajorGridLines" Code="61" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2007" />
+      <Field Name="BackgroundObjectHandle" Code="332" Type="string" DefaultValue='""' DisableWritingDefault="true" MinVersion="R2007" />
+      <Field Name="ShadePlotObjectHandle" Code="333" Type="string" DefaultValue='""' DisableWritingDefault="true" MinVersion="R2007" />
+      <Field Name="VisualStyleObjectHandle" Code="348" Type="string" DefaultValue='""' DisableWritingDefault="true" MinVersion="R2007" />
+      <Field Name="IsDefaultLightingOn" Code="292" Type="bool" DefaultValue="true" MinVersion="R2007" />
+      <Field Name="DefaultLightingType" Code="282" Type="DefaultLightingType" DefaultValue="DefaultLightingTypeOneDistantLight" ReadConverter="DefaultLightingType(%v)" WriteConverter="int16(%v)" MinVersion="R2007" />
+      <Field Name="Brightness" Code="141" Type="float64" DefaultValue="0.0" MinVersion="R2007" />
+      <Field Name="Contrast" Code="142" Type="float64" DefaultValue="0.0" MinVersion="R2007" />
+      <Field Name="AmbientColor" Code="62" Type="Color" DefaultValue="Color(7)" ReadConverter="Color(%v)" WriteConverter="int16(%v)" WriteCondition="int16(this.AmbientColor) != 7" MinVersion="R2007" />
+      <Field Name="AmbientColorInt" Code="421" Type="int" DefaultValue="0" WriteCondition="int16(this.AmbientColor) != 0" MinVersion="R2007" />
+      <Field Name="AmbientColorName" Code="431" Type="string" DefaultValue='"BLACK"' WriteCondition='this.AmbientColorName != "BLACK"' MinVersion="R2007" />
+    </TableItem>
+  </Table>
 </Tables>

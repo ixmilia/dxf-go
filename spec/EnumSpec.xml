@@ -36,6 +36,10 @@
     <Value Name="ContinuousUpdate" />
     <Value Name="DistanceAngleFormat" />
   </Enum>
+  <Enum Name="DefaultLightingType">
+    <Value Name="OneDistantLight" Value="iota" />
+    <Value Name="TwoDistanceLights" />
+  </Enum>
   <Enum Name="DimensionArcSymbolDisplayMode">
     <Value Name="SymbolBeforeText" Value="iota" />
     <Value Name="SymbolAboveText" />
