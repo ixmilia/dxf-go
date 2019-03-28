@@ -2,6 +2,7 @@
   <Table Collection="AppIds" TypeString="APPID">
     <TableItem Name="AppId" ClassName="AcDbRegAppTableRecord">
       <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+      <Field Name="Flags" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
     </TableItem>
   </Table>
   <Table Collection="BlockRecords" TypeString="BLOCK_RECORD">
@@ -17,6 +18,7 @@
   <Table Collection="DimStyles" TypeString="DIMSTYLE">
     <TableItem Name="DimStyle" ClassName="AcDbDimStyleTable">
       <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+      <Field Name="Flags" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
       <Field Name="DimensioningSuffix" Code="3" Type="string" DefaultValue='""' />
       <Field Name="AlternateDimensioningSuffix" Code="4" Type="string" DefaultValue='""' />
       <Field Name="ArrowBlockName" Code="5" Type="string" DefaultValue='""' MaxVersion="R14" />
@@ -91,6 +93,7 @@
   <Table Collection="Layers" TypeString="LAYER">
     <TableItem Name="Layer" ClassName="AcDbLayerTableRecord">
       <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+      <Field Name="Flags" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
       <Field Name="Color" Code="62" Type="Color" DefaultValue="Color(7)" ReadConverter="Color(%v)" WriteConverter="int16(%v)" />
       <Field Name="LineTypeName" Code="6" Type="string" DefaultValue='"CONTINUOUS"' />
       <Field Name="IsLayerPlotted" Code="290" Type="bool" DefaultValue="true" MinVersion="R2000" />
@@ -102,6 +105,7 @@
   <Table Collection="LineTypes" TypeString="LTYPE">
     <TableItem Name="LineType" ClassName="AcDbLinetypeTableRecord">
       <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+      <Field Name="Flags" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
       <Field Name="Description" Code="3" Type="string" DefaultValue='""' />
       <Field Name="AlignmentCode" Code="72" Type="int" DefaultValue="int('A')" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
       <Field Name="ElementCount" Code="73" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
@@ -120,6 +124,7 @@
   <Table Collection="Styles" TypeString="STYLE">
     <TableItem Name="Style" ClassName="AcDbTextStyleTableRecord">
       <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+      <Field Name="Flags" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
       <Field Name="TextHeight" Code="40" Type="float64" DefaultValue="0.0" />
       <Field Name="WidthFactor" Code="41" Type="float64" DefaultValue="1.0" />
       <Field Name="ObliqueAngle" Code="50" Type="float64" DefaultValue="0.0" />
@@ -133,6 +138,7 @@
   <Table Collection="Ucss" TypeString="UCS">
     <TableItem Name="Ucs" ClassName="AcDbUCSTableRecord">
       <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+      <Field Name="Flags" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
       <Field Name="Origin" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20,30" />
       <Field Name="XAxis" Code="11" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="11,21,31" />
       <Field Name="YAxis" Code="12" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="12,22,32" />
@@ -146,6 +152,7 @@
   <Table Collection="Views" TypeString="VIEW">
     <TableItem Name="View" ClassName="AcDbViewTableRecord">
       <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+      <Field Name="Flags" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
       <Field Name="ViewHeight" Code="40" Type="float64" DefaultValue="1.0" WriteConverter="ensurePositiveOrDefault(%v, 1.0)" />
       <Field Name="ViewCenterPoint" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20" />
       <Field Name="ViewWidth" Code="41" Type="float64" DefaultValue="1.0" WriteConverter="ensurePositiveOrDefault(%v, 1.0)" />
@@ -175,6 +182,7 @@
   <Table Collection="ViewPorts" TypeString="VPORT">
     <TableItem Name="ViewPort" ClassName="AcDbViewportTableRecord">
       <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+      <Field Name="Flags" Code="70" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" />
       <Field Name="LowerLeft" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20" />
       <Field Name="UpperRight" Code="11" Type="Point" DefaultValue="Point{1.0, 1.0, 0.0}" CodeOverrides="11,21" />
       <Field Name="ViewCenter" Code="12" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="12,22" />

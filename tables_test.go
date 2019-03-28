@@ -24,6 +24,7 @@ func TestWriteLayer(t *testing.T) {
 		"100", "AcDbSymbolTableRecord",
 		"100", "AcDbLayerTableRecord",
 		"  2", "layer-name",
+		" 70", "     0",
 		" 62", "     7",
 		"  6", "CONTINUOUS",
 	), actual)
