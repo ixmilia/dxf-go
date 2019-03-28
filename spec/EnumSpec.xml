@@ -427,6 +427,15 @@
     <Value Name="Middle" />
     <Value Name="Top" />
   </Enum>
+  <Enum Name="ViewRenderMode">
+    <Value Name="Classic2D" Value="iota" />
+    <Value Name="Wireframe" />
+    <Value Name="HiddenLine" />
+    <Value Name="FlatShaded" />
+    <Value Name="GouraudShaded" />
+    <Value Name="FlatShadedWithWireframe" />
+    <Value Name="GouraudShadedWithWireframe" />
+  </Enum>
   <Enum Name="XrefClippingBoundaryVisibility">
     <Value Name="NotDisplayedNotPlotted" Value="iota" />
     <Value Name="DisplayedAndPlotted" />

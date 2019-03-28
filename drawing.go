@@ -20,6 +20,7 @@ type Drawing struct {
 	LineTypes    []LineType
 	Styles       []Style
 	Ucss         []Ucs
+	Views        []View
 
 	Entities []Entity
 }

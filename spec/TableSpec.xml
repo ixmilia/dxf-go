@@ -143,4 +143,33 @@
       <Field Name="OrthographicOrigin" Code="13" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="13,23,33" MinVersion="R2000" />
     </TableItem>
   </Table>
+  <Table Collection="Views" TypeString="VIEW">
+    <TableItem Name="View" ClassName="AcDbViewTableRecord">
+      <Field Name="Name" Code="2" Type="string" DefaultValue='""' />
+      <Field Name="ViewHeight" Code="40" Type="float64" DefaultValue="1.0" WriteConverter="ensurePositiveOrDefault(%v, 1.0)" />
+      <Field Name="ViewCenterPoint" Code="10" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="10,20" />
+      <Field Name="ViewWidth" Code="41" Type="float64" DefaultValue="1.0" WriteConverter="ensurePositiveOrDefault(%v, 1.0)" />
+      <Field Name="ViewDirection" Code="11" Type="Vector" DefaultValue="*NewZAxis()" CodeOverrides="11,21,31" />
+      <Field Name="TargetPoint" Code="12" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="12,22,32" />
+      <Field Name="LensLength" Code="42" Type="float64" DefaultValue="1.0" WriteConverter="ensurePositiveOrDefault(%v, 1.0)" />
+      <Field Name="FrontClippingPlane" Code="43" Type="float64" DefaultValue="0.0" />
+      <Field Name="BackClippingPlane" Code="44" Type="float64" DefaultValue="1.0" />
+      <Field Name="TwistAngle" Code="50" Type="float64" DefaultValue="0.0" />
+      <Field Name="ViewMode" Code="71" Type="int16" DefaultValue="0" />
+      <Field Name="RenderMode" Code="281" Type="ViewRenderMode" DefaultValue="ViewRenderModeClassic2D" ReadConverter="ViewRenderMode(%v)" WriteConverter="int16(%v)" MinVersion="R2000" />
+      <Field Name="IsAssociatedUCSPresent" Code="72" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2000" />
+      <Field Name="IsCameraPlottable" Code="73" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" MinVersion="R2007" />
+      <Field Name="BackgroundObjectHandle" Code="332" Type="string" DefaultValue='""' DisableWritingDefault="true" MinVersion="R2007" />
+      <Field Name="SelectionObjectHandle" Code="334" Type="string" DefaultValue='""' DisableWritingDefault="true" MinVersion="R2007" />
+      <Field Name="VisualStyleObjectHandle" Code="348" Type="string" DefaultValue='""' DisableWritingDefault="true" MinVersion="R2007" />
+      <Field Name="SunOwnershipHandle" Code="361" Type="string" DefaultValue='""' DisableWritingDefault="true" MinVersion="R2010" />
+      <Field Name="UCSOrigin" Code="110" Type="Point" DefaultValue="*NewOrigin()" CodeOverrides="110,120,130" WriteCondition="this.IsAssociatedUCSPresent" MinVersion="R2000" />
+      <Field Name="UCSXAxis" Code="111" Type="Vector" DefaultValue="*NewXAxis()" CodeOverrides="111,121,131" WriteCondition="this.IsAssociatedUCSPresent" MinVersion="R2000" />
+      <Field Name="UCSYAxis" Code="112" Type="Vector" DefaultValue="*NewYAxis()" CodeOverrides="112,122,132" WriteCondition="this.IsAssociatedUCSPresent" MinVersion="R2000" />
+      <Field Name="OrthographicViewType" Code="79" Type="OrthographicViewType" DefaultValue="OrthographicViewTypeNone" ReadConverter="OrthographicViewType(%v)" WriteConverter="int16(%v)" WriteCondition="this.IsAssociatedUCSPresent" MinVersion="R2000" />
+      <Field Name="UCSElevation" Code="146" Type="float64" DefaultValue="0.0" WriteCondition="this.IsAssociatedUCSPresent" MinVersion="R2000" />
+      <Field Name="UCSHandle" Code="345" Type="string" DefaultValue='""' DisableWritingDefault="true" WriteCondition="this.IsAssociatedUCSPresent" MinVersion="R2000" />
+      <Field Name="BaseUCSHandle" Code="346" Type="string" DefaultValue='""' DisableWritingDefault="true" WriteCondition="this.IsAssociatedUCSPresent" MinVersion="R2000" />
+    </TableItem>
+  </Table>
 </Tables>
