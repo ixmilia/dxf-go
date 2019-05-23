@@ -10,14 +10,14 @@ A go package for reading and writing DXF CAD files.
 Acquisition:
 
 ``` bash
-go get -d -t github.com/IxMilia/dxf-go
-go generate github.com/IxMilia/dxf-go
+go get -d -t github.com/ixmilia/dxf-go
+go generate github.com/ixmilia/dxf-go
 ```
 
 Open a DXF file:
 
 ``` go
-import dxf "github.com/IxMilia/dxf-go"
+import dxf "github.com/ixmilia/dxf-go"
 // ...
 
 drawing, err := dxf.ReadFile("path/to/file.dxf")
@@ -35,7 +35,7 @@ for _, entity := range drawing.Entities {
 Save a DXF file:
 
 ``` go
-import dxf "github.com/IxMilia/dxf-go"
+import dxf "github.com/ixmilia/dxf-go"
 //...
 
 drawing := *dxf.NewDrawing()

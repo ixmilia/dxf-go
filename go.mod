@@ -1,4 +1,4 @@
-module github.com/IxMilia/dxf-go
+module github.com/ixmilia/dxf-go
 
 go 1.12
 

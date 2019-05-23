@@ -3,7 +3,7 @@ package examples
 import (
 	"fmt"
 
-	dxf "github.com/IxMilia/dxf-go"
+	dxf "github.com/ixmilia/dxf-go"
 )
 
 func read() {
