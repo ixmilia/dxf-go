@@ -9,20 +9,23 @@ import (
 
 type codePairReader interface {
 	readCodePair() (CodePair, error)
+	setUtf8Reader()
 }
 
-// ASCII
-type asciiCodePairReader struct {
-	scanner bufio.Scanner
+// text
+type textCodePairReader struct {
+	scanner    bufio.Scanner
+	readAsUtf8 bool
 }
 
-func newASCIICodePairReader(reader io.Reader) *asciiCodePairReader {
-	return &asciiCodePairReader{
-		scanner: *bufio.NewScanner(reader),
+func newTextCodePairReader(reader io.Reader) codePairReader {
+	return &textCodePairReader{
+		scanner:    *bufio.NewScanner(reader),
+		readAsUtf8: false,
 	}
 }
 
-func (a *asciiCodePairReader) readLine() (line string, err error) {
+func (a *textCodePairReader) readLine() (line string, err error) {
 	if !a.scanner.Scan() {
 		err = a.scanner.Err()
 		return
@@ -31,7 +34,7 @@ func (a *asciiCodePairReader) readLine() (line string, err error) {
 	return
 }
 
-func (a *asciiCodePairReader) readCode() (int, error) {
+func (a *textCodePairReader) readCode() (int, error) {
 	line, err := a.readLine()
 	if err != nil {
 		return 0, err
@@ -45,7 +48,7 @@ func (a *asciiCodePairReader) readCode() (int, error) {
 	return code, nil
 }
 
-func (a *asciiCodePairReader) readCodePair() (CodePair, error) {
+func (a *textCodePairReader) readCodePair() (CodePair, error) {
 	var codePair CodePair
 	code, err := a.readCode()
 	if err != nil {
@@ -89,8 +92,55 @@ func (a *asciiCodePairReader) readCodePair() (CodePair, error) {
 		}
 		codePair = NewShortCodePair(code, int16(value))
 	case "String":
+		if !a.readAsUtf8 {
+			stringValue = parseUtf8(stringValue)
+		}
 		codePair = NewStringCodePair(code, stringValue)
 	}
 
 	return codePair, nil
+}
+
+func (a *textCodePairReader) setUtf8Reader() {
+	a.readAsUtf8 = true
+}
+
+func parseUtf8(v string) string {
+	var final strings.Builder
+	var seq strings.Builder
+	inEscapeSequence := false
+	sequenceStart := 0
+	for i, r := range v {
+		if !inEscapeSequence {
+			if r == '\\' {
+				inEscapeSequence = true
+				sequenceStart = i
+				seq.Reset()
+				seq.WriteRune(r)
+			} else {
+				final.WriteRune(r)
+			}
+		} else {
+			seq.WriteRune(r)
+			if i == sequenceStart+6 {
+				inEscapeSequence = false
+				escaped := seq.String()
+				seq.Reset()
+				if strings.HasPrefix(escaped, "\\U+") {
+					codeStr := escaped[3:]
+					code, err := strconv.ParseUint(codeStr, 16, 64)
+					if err == nil {
+						final.WriteRune(rune(code))
+					} else {
+						final.WriteRune('?')
+					}
+				} else {
+					final.WriteString(escaped)
+				}
+			}
+		}
+	}
+
+	final.WriteString(seq.String())
+	return final.String()
 }

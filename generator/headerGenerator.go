@@ -230,7 +230,12 @@ func generateHeader() {
 					builder.WriteString("				}\n")
 					builder.WriteString(fmt.Sprintf("				header.%s = %s\n", variable.FieldName, generateReadFunction(variable)))
 				}
+			}
 
+			if variable.Name == "ACADVER" {
+				builder.WriteString(fmt.Sprintf("				if header.%s >= R2007 {\n", variable.FieldName))
+				builder.WriteString("					reader.setUtf8Reader()\n")
+				builder.WriteString("				}\n")
 			}
 		}
 	}

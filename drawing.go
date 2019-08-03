@@ -46,7 +46,7 @@ func (d *Drawing) SaveFile(path string) error {
 
 // SaveToWriter writes the current drawing to the specified io.Writer.
 func (d *Drawing) SaveToWriter(writer io.Writer) error {
-	codePairWriter := newASCIICodePairWriter(writer)
+	codePairWriter := newTextCodePairWriter(writer, d.Header.Version)
 	return d.saveToCodePairWriter(codePairWriter)
 }
 
@@ -93,7 +93,7 @@ func ReadFile(path string) (Drawing, error) {
 
 // ReadFromReader reads a DXF drawing from the specified io.Reader.
 func ReadFromReader(reader io.Reader) (Drawing, error) {
-	codePairReader := newASCIICodePairReader(reader)
+	codePairReader := newTextCodePairReader(reader)
 	return readFromCodePairReader(codePairReader)
 }
 
