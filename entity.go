@@ -767,6 +767,8 @@ func (p *Polyline) tryApplyCodePair(codePair CodePair) {
 		p.SmoothSurfaceNDensity = int(codePair.Value.(ShortCodePairValue).Value)
 	case 75:
 		p.SurfaceType = PolylineCurvedAndSmoothSurfaceType(codePair.Value.(ShortCodePairValue).Value)
+	case 250:
+		p.CLO_PolylineType = PolylineType(codePair.Value.(ShortCodePairValue).Value)
 	case 210:
 		p.Normal.X = codePair.Value.(DoubleCodePairValue).Value
 	case 220:

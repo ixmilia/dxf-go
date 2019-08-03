@@ -906,6 +906,7 @@
     <Field Name="SmoothSurfaceMDensity" Code="73" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true" />
     <Field Name="SmoothSurfaceNDensity" Code="74" Type="int" DefaultValue="0" ReadConverter="int(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true" />
     <Field Name="SurfaceType" Code="75" Type="PolylineCurvedAndSmoothSurfaceType" DefaultValue="PolylineCurvedAndSmoothSurfaceTypeNone" ReadConverter="PolylineCurvedAndSmoothSurfaceType(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true" />
+    <Field Name="CLO_PolylineType" Code="250" Type="PolylineType" DefaultValue="PolylineTypeBaseline" ReadConverter="PolylineTypeBaseline(%v)" WriteConverter="int16(%v)" DisableWritingDefault="true" />
     <Field Name="Normal" Code="210" Type="Vector" DefaultValue="*NewZAxis()" DisableWritingDefault="true" CodeOverrides="210,220,230" />
     <!-- entity has trailing vertices and seqend -->
     <Field Name="Vertices" Code="-1" Type="Vertex" DefaultValue="[]Vertex{}" AllowMultiples="true" />

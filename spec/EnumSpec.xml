@@ -243,6 +243,12 @@
     <Value Name="CubicBSpline" />
     <Value Name="Bezier" />
   </Enum>
+  <!-- Values specific to the CLO software. -->
+  <Enum Name="PolylineType">
+    <Value Name="Baseline" Value="iota" />
+    <Value Name="Internal" />
+    <Value Name="Outline" />
+  </Enum>
   <Enum Name="PolySketchMode">
     <Value Name="SketchLines" Value="iota" />
     <Value Name="SketchPolyLines" />

@@ -460,6 +460,13 @@ func TestReadPolylineWithNoVertices(t *testing.T) {
 	assertEqInt(t, 0, len(p.Vertices))
 }
 
+func TestReadPolylineWithCLOValues(t *testing.T) {
+	p := parseEntity(t, "POLYLINE", join(
+		"250", "2",
+	)).(*Polyline)
+	assertEqShort(t, 2, int16(p.CLO_PolylineType))
+}
+
 func TestReadPolylineWithMutlipleVertices(t *testing.T) {
 	p := parseEntity(t, "POLYLINE", join(
 		" 10", "1.0",

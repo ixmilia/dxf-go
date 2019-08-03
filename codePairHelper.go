@@ -1,6 +1,7 @@
 package dxf
 
 func codeTypeName(code int) string {
+	// official code types
 	if between(code, 0, 9) {
 		return "String"
 	} else if between(code, 10, 39) {
@@ -77,6 +78,8 @@ func codeTypeName(code int) string {
 		return "Short"
 	} else if code == 1071 {
 		return "Int"
+	} else if code == 250 { // UNOFFICIAL: used in POLYLINEs by CLO
+		return "Short"
 	} else {
 		return "Unknown"
 	}
