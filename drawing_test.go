@@ -5,6 +5,10 @@ import (
 	"testing"
 )
 
+func TestReadEmptyFile(t *testing.T) {
+	_ = parse(t, "")
+}
+
 func TestDefaultDrawingVersion(t *testing.T) {
 	drawing := *NewDrawing()
 	actual := drawing.String()
