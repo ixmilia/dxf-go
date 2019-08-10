@@ -44,9 +44,28 @@ func (d *Drawing) SaveFile(path string) error {
 	return d.SaveToWriter(f)
 }
 
+// SaveFileBinary writes the current drawing to the specified path as a binary DXF.
+func (d *Drawing) SaveFileBinary(path string) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+
+	return d.SaveToWriterBinary(f)
+}
+
 // SaveToWriter writes the current drawing to the specified io.Writer.
 func (d *Drawing) SaveToWriter(writer io.Writer) error {
 	codePairWriter := newTextCodePairWriter(writer, d.Header.Version)
+	return d.saveToCodePairWriter(codePairWriter)
+}
+
+// SaveToWriterBinary writes the current drawing to the specified io.Writer as a binary DXF.
+func (d *Drawing) SaveToWriterBinary(writer io.Writer) error {
+	codePairWriter, err := newBinaryCodePairWriter(writer, d.Header.Version)
+	if err != nil {
+		return err
+	}
 	return d.saveToCodePairWriter(codePairWriter)
 }
 
@@ -92,15 +111,59 @@ func ReadFile(path string) (Drawing, error) {
 }
 
 // ReadFromReader reads a DXF drawing from the specified io.Reader.
-func ReadFromReader(reader io.Reader) (Drawing, error) {
-	codePairReader := newTextCodePairReader(reader)
-	return readFromCodePairReader(codePairReader)
+func ReadFromReader(reader io.ReadSeeker) (drawing Drawing, err error) {
+	firstLine, err := readLine(reader)
+	if err != nil {
+		if firstLine == "" {
+			// empty file is valid
+			err = nil
+			return
+		}
+
+		return
+	}
+
+	var r codePairReader
+	if firstLine == "AutoCAD Binary DXF\r" {
+		r, err = newBinaryCodePairReader(reader)
+	} else {
+		reader.Seek(0, 0)
+		r = newTextCodePairReader(reader)
+	}
+
+	drawing, err = readFromCodePairReader(r)
+	return
 }
 
 // ParseDrawing returns a drawing as parsed from a `string`.
 func ParseDrawing(content string) (Drawing, error) {
 	stringReader := strings.NewReader(content)
 	return ReadFromReader(stringReader)
+}
+
+func readLine(reader io.Reader) (string, error) {
+	var line string
+	var err error
+	buf := make([]byte, 1)
+	for {
+		n, err := reader.Read(buf)
+		if err != nil {
+			return line, err
+		}
+
+		if n != 1 {
+			err = errors.New("no more bytes")
+			return line, err
+		}
+
+		if buf[0] == '\n' {
+			break
+		} else {
+			line += string(buf[0])
+		}
+	}
+
+	return line, err
 }
 
 func readFromCodePairReader(reader codePairReader) (Drawing, error) {

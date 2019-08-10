@@ -72,3 +72,18 @@ func TestReadTextAsUtf8(t *testing.T) {
 	))
 	assertEqString(t, "Repère pièce", drawing.Header.ProjectName)
 }
+
+func TestReadBinaryFile(t *testing.T) {
+	drawing, err := ReadFile("res/diamond-bin.dxf")
+	if err != nil {
+		t.Error(err)
+	}
+	assertEqInt(t, 12, len(drawing.Entities))
+	switch line := drawing.Entities[0].(type) {
+	case *Line:
+		assertEqPoint(t, Point{45.0, 45.0, 0.0}, line.P1)
+		assertEqPoint(t, Point{45.0, -45.0, 0.0}, line.P2)
+	default:
+		t.Error("expected LINE")
+	}
+}

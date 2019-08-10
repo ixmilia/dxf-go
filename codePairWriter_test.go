@@ -1,6 +1,7 @@
 package dxf
 
 import (
+	"bytes"
 	"testing"
 )
 
@@ -34,4 +35,22 @@ func TestWriteTextAsUtf8(t *testing.T) {
 		"  9", "$PROJECTNAME",
 		"  1", "Repère pièce")
 	assertContains(t, expected, actual)
+}
+
+func TestRoundTripBinaryFile(t *testing.T) {
+	drawing := *NewDrawing()
+	drawing.Header.Version = R2004
+	drawing.Header.ProjectName = "project-name"
+	buf := new(bytes.Buffer)
+	err := drawing.SaveToWriterBinary(buf)
+	if err != nil {
+		t.Error(err)
+	}
+	bs := buf.Bytes()
+	reader := bytes.NewReader(bs)
+	drawing, err = ReadFromReader(reader)
+	if err != nil {
+		t.Error(err)
+	}
+	assertEqString(t, "project-name", drawing.Header.ProjectName)
 }

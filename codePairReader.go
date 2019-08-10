@@ -2,7 +2,10 @@ package dxf
 
 import (
 	"bufio"
+	"encoding/binary"
+	"errors"
 	"io"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -103,6 +106,177 @@ func (a *textCodePairReader) readCodePair() (CodePair, error) {
 
 func (a *textCodePairReader) setUtf8Reader() {
 	a.readAsUtf8 = true
+}
+
+// binary
+type binaryCodePairReader struct {
+	reader bufio.Reader
+}
+
+func newBinaryCodePairReader(reader io.Reader) (rdr codePairReader, err error) {
+	r := *bufio.NewReader(reader)
+	buf := make([]byte, 2)
+	n, err := r.Read(buf)
+	if err != nil {
+		return
+	}
+	if n != 2 {
+		err = errors.New("not enough bytes")
+		return
+	}
+	if buf[0] != 0x1A || buf[1] != 0x00 {
+		err = errors.New("expected 0x1A, 0x00")
+		return
+	}
+	rdr = &binaryCodePairReader{
+		reader: r,
+	}
+	return
+}
+
+func (b *binaryCodePairReader) readCodePair() (CodePair, error) {
+	var pair CodePair
+	var err error
+	code, err := b.readCode()
+	if err != nil {
+		return pair, err
+	}
+
+	switch codeTypeName(code) {
+	case "Bool":
+		value, err := b.readShort()
+		if err != nil {
+			return pair, err
+		}
+		pair = NewBoolCodePair(code, value != 0)
+	case "Double":
+		value, err := b.readDouble()
+		if err != nil {
+			return pair, err
+		}
+		pair = NewDoubleCodePair(code, value)
+	case "Int":
+		value, err := b.readInt()
+		if err != nil {
+			return pair, err
+		}
+		pair = NewIntCodePair(code, int(value))
+	case "Long":
+		value, err := b.readLong()
+		if err != nil {
+			return pair, err
+		}
+		pair = NewLongCodePair(code, value)
+	case "Short":
+		value, err := b.readShort()
+		if err != nil {
+			return pair, err
+		}
+		pair = NewShortCodePair(code, int16(value))
+	case "String":
+		buf := make([]byte, 0)
+		for {
+			c, err := b.readByte()
+			if err != nil {
+				return pair, err
+			}
+			if c == 0x00 {
+				break
+			}
+			buf = append(buf, c)
+		}
+		value := string(buf)
+		pair = NewStringCodePair(code, value)
+	}
+
+	return pair, err
+}
+
+func (b *binaryCodePairReader) readCode() (code int, err error) {
+	bt, err := b.readByte()
+	if err != nil {
+		return
+	}
+	code = int(bt)
+	if code == 255 {
+		var s int16
+		s, err = b.readShort()
+		if err != nil {
+			return
+		}
+		code = int(s)
+	}
+	return
+}
+
+func (b *binaryCodePairReader) readByte() (byte, error) {
+	return b.reader.ReadByte()
+}
+
+func (b *binaryCodePairReader) readShort() (s int16, err error) {
+	b1, err := b.readByte()
+	if err != nil {
+		return
+	}
+	b2, err := b.readByte()
+	if err != nil {
+		return
+	}
+	s = createShort(b1, b2)
+	return
+}
+
+func (b *binaryCodePairReader) readInt() (i int, err error) {
+	buf := make([]byte, 4)
+	n, err := b.reader.Read(buf)
+	if err != nil {
+		return
+	}
+	if n != len(buf) {
+		err = errors.New("not enough bytes")
+		return
+	}
+	u := binary.LittleEndian.Uint32(buf)
+	i = int(u)
+	return i, err
+}
+
+func (b *binaryCodePairReader) readLong() (l int64, err error) {
+	buf := make([]byte, 8)
+	n, err := b.reader.Read(buf)
+	if err != nil {
+		return
+	}
+	if n != len(buf) {
+		err = errors.New("not enough bytes")
+		return
+	}
+	u := binary.LittleEndian.Uint64(buf)
+	l = int64(u)
+	return l, err
+}
+
+func (b *binaryCodePairReader) readDouble() (d float64, err error) {
+	buf := make([]byte, 8)
+	n, err := b.reader.Read(buf)
+	if err != nil {
+		return
+	}
+	if n != len(buf) {
+		err = errors.New("not enough bytes")
+		return
+	}
+	u := binary.LittleEndian.Uint64(buf)
+	d = math.Float64frombits(u)
+	return d, err
+}
+
+func createShort(b1, b2 byte) int16 {
+	return int16(b2)<<8 + int16(b1)
+}
+
+func (b *binaryCodePairReader) setUtf8Reader() {
+	// noop
 }
 
 func parseUtf8(v string) string {
