@@ -136,7 +136,14 @@ func newBinaryCodePairWriter(writer io.Writer, version AcadVersion) (codePairWri
 
 func (b *binaryCodePairWriter) writeCodePair(codePair CodePair) error {
 	var err error
-	if codePair.Code >= 255 {
+	if b.version >= R13 {
+		// after R13 codes are always 2 bytes
+		err = b.writeShort(int16(codePair.Code))
+		if err != nil {
+			return err
+		}
+	} else if codePair.Code >= 255 {
+		// before R13 codes were 1 or 3 bytes
 		err = b.writeByte(255)
 		if err != nil {
 			return err
@@ -196,6 +203,12 @@ func (b *binaryCodePairWriter) writeBoolean(v bool) error {
 	} else {
 		s = 0
 	}
+
+	if b.version >= R13 {
+		// after R13 bools are single bytes
+		return b.writeByte(byte(s))
+	}
+
 	return b.writeShort(s)
 }
 

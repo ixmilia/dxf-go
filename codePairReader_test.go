@@ -1,6 +1,7 @@
 package dxf
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 )
@@ -74,6 +75,7 @@ func TestReadTextAsUtf8(t *testing.T) {
 }
 
 func TestReadBinaryFile(t *testing.T) {
+	// pre R13 binary file
 	drawing, err := ReadFile("res/diamond-bin.dxf")
 	if err != nil {
 		t.Error(err)
@@ -86,4 +88,48 @@ func TestReadBinaryFile(t *testing.T) {
 	default:
 		t.Error("expected LINE")
 	}
+}
+
+func TestReadBinaryPostR13(t *testing.T) {
+	data := make([]byte, 0)
+	// binary header
+	data = append(data, []byte("AutoCAD Binary DXF\r\n")...)
+	data = append(data, []byte{0x1A, 0x00}...)
+
+	// 0/SECTION
+	data = append(data, []byte{0x00, 0x00}...)
+	data = append(data, []byte("SECTION")...)
+	data = append(data, 0x00)
+
+	// 2/HEADER
+	data = append(data, []byte{0x02, 0x00}...)
+	data = append(data, []byte("HEADER")...)
+	data = append(data, 0x00)
+
+	// 9/$LWDISPLAY
+	data = append(data, []byte{0x09, 0x00}...)
+	data = append(data, []byte("$LWDISPLAY")...)
+	data = append(data, 0x00)
+
+	// 290/true
+	data = append(data, []byte{0x22, 0x01}...)
+	data = append(data, 0x01)
+
+	// 0/ENDSEC
+	data = append(data, []byte{0x00, 0x00}...)
+	data = append(data, []byte("ENDSEC")...)
+	data = append(data, 0x00)
+
+	// 0/EOF
+	data = append(data, []byte{0x00, 0x00}...)
+	data = append(data, []byte("EOF")...)
+	data = append(data, 0x00)
+
+	reader := bytes.NewReader(data)
+	drawing, err := ReadFromReader(reader)
+	if err != nil {
+		t.Error(err)
+	}
+
+	assert(t, drawing.Header.DisplayLinewieghtInModelAndLayoutTab, "expected $LWDISPLAY to be true")
 }

@@ -1,6 +1,7 @@
 package dxf
 
 import (
+	"bufio"
 	"bytes"
 	"testing"
 )
@@ -38,19 +39,49 @@ func TestWriteTextAsUtf8(t *testing.T) {
 }
 
 func TestRoundTripBinaryFile(t *testing.T) {
-	drawing := *NewDrawing()
-	drawing.Header.Version = R2004
-	drawing.Header.ProjectName = "project-name"
-	buf := new(bytes.Buffer)
-	err := drawing.SaveToWriterBinary(buf)
-	if err != nil {
-		t.Error(err)
+	for _, version := range []AcadVersion{R12, R13} {
+		t.Logf("Testing binary roundtrip version %s", version.String())
+		drawing := *NewDrawing()
+		drawing.Header.Version = version
+		drawing.Header.CurrentLayer = "current-layer"
+		buf := new(bytes.Buffer)
+		err := drawing.SaveToWriterBinary(buf)
+		if err != nil {
+			t.Error(err)
+		}
+		bs := buf.Bytes()
+		reader := bytes.NewReader(bs)
+		drawing, err = ReadFromReader(reader)
+		if err != nil {
+			t.Error(err)
+		}
+		assertEqString(t, "current-layer", drawing.Header.CurrentLayer)
 	}
-	bs := buf.Bytes()
-	reader := bytes.NewReader(bs)
-	drawing, err = ReadFromReader(reader)
-	if err != nil {
-		t.Error(err)
+}
+
+func TestWriteBinary(t *testing.T) {
+	for _, version := range []AcadVersion{R12, R13} {
+		t.Logf("Testing binary write version %s", version.String())
+		drawing := *NewDrawing()
+		drawing.Header.Version = version
+		buf := new(bytes.Buffer)
+		writer := bufio.NewWriter(buf)
+		err := drawing.SaveToWriterBinary(writer)
+		if err != nil {
+			t.Error(err)
+		}
+		err = writer.Flush()
+		if err != nil {
+			t.Error(err)
+		}
+		bts := buf.Bytes()
+		var expectedSectionText []byte
+		if version < R13 {
+			expectedSectionText = bts[23:30]
+		} else {
+			expectedSectionText = bts[24:31]
+		}
+		actual := string(expectedSectionText)
+		assertEqString(t, "SECTION", actual)
 	}
-	assertEqString(t, "project-name", drawing.Header.ProjectName)
 }

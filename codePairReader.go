@@ -110,7 +110,9 @@ func (a *textCodePairReader) setUtf8Reader() {
 
 // binary
 type binaryCodePairReader struct {
-	reader bufio.Reader
+	reader          bufio.Reader
+	hasReturnedPair bool
+	isPostR13       bool
 }
 
 func newBinaryCodePairReader(reader io.Reader) (rdr codePairReader, err error) {
@@ -129,7 +131,9 @@ func newBinaryCodePairReader(reader io.Reader) (rdr codePairReader, err error) {
 		return
 	}
 	rdr = &binaryCodePairReader{
-		reader: r,
+		reader:          r,
+		hasReturnedPair: false,
+		isPostR13:       false,
 	}
 	return
 }
@@ -144,11 +148,11 @@ func (b *binaryCodePairReader) readCodePair() (CodePair, error) {
 
 	switch codeTypeName(code) {
 	case "Bool":
-		value, err := b.readShort()
+		value, err := b.readBool()
 		if err != nil {
 			return pair, err
 		}
-		pair = NewBoolCodePair(code, value != 0)
+		pair = NewBoolCodePair(code, value)
 	case "Double":
 		value, err := b.readDouble()
 		if err != nil {
@@ -198,7 +202,30 @@ func (b *binaryCodePairReader) readCode() (code int, err error) {
 		return
 	}
 	code = int(bt)
-	if code == 255 {
+
+	if !b.hasReturnedPair && code == 0 {
+		p := make([]byte, 1)
+		p, err = b.reader.Peek(1)
+		if err != nil {
+			return
+		}
+		if p[0] == 0 {
+			// The first code pair in a binary file must be `0/SECTION`; if we're reading the first pair, the code is
+			// `0`, and the next byte is NULL (empty string), then this must be a post R13 file where codes are always
+			// encoded with 2 bytes.
+			b.isPostR13 = true
+		}
+	}
+
+	// potentially read the second byte of the code
+	if b.isPostR13 {
+		var b2 byte
+		b2, err = b.readByte()
+		if err != nil {
+			return
+		}
+		code = int(createShort(bt, b2))
+	} else if code == 255 {
 		var s int16
 		s, err = b.readShort()
 		if err != nil {
@@ -206,11 +233,35 @@ func (b *binaryCodePairReader) readCode() (code int, err error) {
 		}
 		code = int(s)
 	}
+
+	b.hasReturnedPair = true
 	return
 }
 
 func (b *binaryCodePairReader) readByte() (byte, error) {
 	return b.reader.ReadByte()
+}
+
+func (b *binaryCodePairReader) readBool() (r bool, err error) {
+	if b.isPostR13 {
+		// after R13 bools are encoded as a single byte
+		var t byte
+		t, err = b.readByte()
+		if err != nil {
+			return
+		}
+
+		r = t != 0
+	} else {
+		var v int16
+		v, err = b.readShort()
+		if err != nil {
+			return
+		}
+
+		r = v != 0
+	}
+	return
 }
 
 func (b *binaryCodePairReader) readShort() (s int16, err error) {
