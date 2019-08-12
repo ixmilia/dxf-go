@@ -75,6 +75,9 @@ func TestWriteBinary(t *testing.T) {
 			t.Error(err)
 		}
 		bts := buf.Bytes()
+		binarySentinelBits := bts[0:20]
+		binarySentinel := string(binarySentinelBits)
+		assertEqString(t, "AutoCAD Binary DXF\r\n", binarySentinel)
 		var expectedSectionText []byte
 		if version < R13 {
 			expectedSectionText = bts[23:30]
