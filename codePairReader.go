@@ -17,18 +17,28 @@ type codePairReader interface {
 
 // text
 type textCodePairReader struct {
-	scanner    bufio.Scanner
-	readAsUtf8 bool
+	scanner       bufio.Scanner
+	firstLine     string
+	firstLineRead bool
+	readAsUtf8    bool
 }
 
-func newTextCodePairReader(reader io.Reader) codePairReader {
+func newTextCodePairReader(reader io.Reader, firstLine string) codePairReader {
 	return &textCodePairReader{
-		scanner:    *bufio.NewScanner(reader),
-		readAsUtf8: false,
+		scanner:       *bufio.NewScanner(reader),
+		firstLine:     firstLine,
+		firstLineRead: false,
+		readAsUtf8:    false,
 	}
 }
 
 func (a *textCodePairReader) readLine() (line string, err error) {
+	if !a.firstLineRead {
+		line = a.firstLine
+		a.firstLine = ""
+		a.firstLineRead = true
+		return
+	}
 	if !a.scanner.Scan() {
 		err = a.scanner.Err()
 		return

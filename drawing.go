@@ -111,7 +111,7 @@ func ReadFile(path string) (Drawing, error) {
 }
 
 // ReadFromReader reads a DXF drawing from the specified io.Reader.
-func ReadFromReader(reader io.ReadSeeker) (drawing Drawing, err error) {
+func ReadFromReader(reader io.Reader) (drawing Drawing, err error) {
 	firstLine, err := readLine(reader)
 	if err != nil {
 		if firstLine == "" {
@@ -127,8 +127,7 @@ func ReadFromReader(reader io.ReadSeeker) (drawing Drawing, err error) {
 	if firstLine == "AutoCAD Binary DXF\r" {
 		r, err = newBinaryCodePairReader(reader)
 	} else {
-		reader.Seek(0, 0)
-		r = newTextCodePairReader(reader)
+		r = newTextCodePairReader(reader, firstLine)
 	}
 
 	drawing, err = readFromCodePairReader(r)
