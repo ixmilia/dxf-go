@@ -3,8 +3,6 @@ dxf-go
 
 A go package for reading and writing DXF CAD files.
 
-[![Build Status](https://dev.azure.com/ixmilia/public/_apis/build/status/dxf-go?branchName=master)](https://dev.azure.com/ixmilia/public/_build/latest?definitionId=28)
-
 ## Usage
 
 Acquisition:
