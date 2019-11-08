@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"strings"
 	"testing"
+
+	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
 func TestReadEmptyFile(t *testing.T) {
@@ -132,4 +134,23 @@ func TestReadBinaryPostR13(t *testing.T) {
 	}
 
 	assert(t, drawing.Header.DisplayLinewieghtInModelAndLayoutTab, "expected $LWDISPLAY to be true")
+}
+
+func TestReadDrawingWithNonStandardEncoding(t *testing.T) {
+	contents := join(
+		"  0", "SECTION",
+		"  2", "HEADER",
+		"  9", "$PROJECTNAME",
+		"  1", "\xB2\xBB",
+		"  0", "ENDSEC",
+		"  0", "EOF",
+	)
+	data := []byte(contents)
+	reader := bytes.NewReader(data)
+	drawing, err := ReadFromReaderWithEncoding(reader, simplifiedchinese.GB18030)
+	if err != nil {
+		t.Error(err)
+	}
+
+	assertEqString(t, "不", drawing.Header.ProjectName)
 }

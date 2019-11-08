@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"golang.org/x/text/encoding"
 )
 
 // The Drawing struct represents a complete DXF drawing.
@@ -112,7 +114,13 @@ func ReadFile(path string) (Drawing, error) {
 
 // ReadFromReader reads a DXF drawing from the specified io.Reader.
 func ReadFromReader(reader io.Reader) (drawing Drawing, err error) {
-	firstLine, err := readLine(reader)
+	return ReadFromReaderWithEncoding(reader, encoding.Nop)
+}
+
+// ReadFromReaderWithEncoding reads a DXF drawing from the specified io.Reader with the specified default text encoding.
+func ReadFromReaderWithEncoding(reader io.Reader, e encoding.Encoding) (drawing Drawing, err error) {
+	decoder := *e.NewDecoder()
+	firstLine, err := readSingleLine(reader, decoder)
 	if err != nil {
 		if firstLine == "" {
 			// empty file is valid
@@ -124,10 +132,10 @@ func ReadFromReader(reader io.Reader) (drawing Drawing, err error) {
 	}
 
 	var r codePairReader
-	if firstLine == "AutoCAD Binary DXF\r" {
+	if firstLine == "AutoCAD Binary DXF" {
 		r, err = newBinaryCodePairReader(reader)
 	} else {
-		r = newTextCodePairReader(reader, firstLine)
+		r = newTextCodePairReader(reader, decoder, firstLine)
 	}
 
 	drawing, err = readFromCodePairReader(r)
@@ -138,31 +146,6 @@ func ReadFromReader(reader io.Reader) (drawing Drawing, err error) {
 func ParseDrawing(content string) (Drawing, error) {
 	stringReader := strings.NewReader(content)
 	return ReadFromReader(stringReader)
-}
-
-func readLine(reader io.Reader) (string, error) {
-	var line string
-	var err error
-	buf := make([]byte, 1)
-	for {
-		n, err := reader.Read(buf)
-		if err != nil {
-			return line, err
-		}
-
-		if n != 1 {
-			err = errors.New("no more bytes")
-			return line, err
-		}
-
-		if buf[0] == '\n' {
-			break
-		} else {
-			line += string(buf[0])
-		}
-	}
-
-	return line, err
 }
 
 func readFromCodePairReader(reader codePairReader) (Drawing, error) {

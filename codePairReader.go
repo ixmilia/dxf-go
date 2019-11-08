@@ -8,6 +8,10 @@ import (
 	"math"
 	"strconv"
 	"strings"
+
+	"golang.org/x/text/encoding"
+	"golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/transform"
 )
 
 type codePairReader interface {
@@ -17,38 +21,69 @@ type codePairReader interface {
 
 // text
 type textCodePairReader struct {
-	scanner       bufio.Scanner
+	reader        io.Reader
+	decoder       encoding.Decoder
 	firstLine     string
 	firstLineRead bool
 	readAsUtf8    bool
 }
 
-func newTextCodePairReader(reader io.Reader, firstLine string) codePairReader {
+func newTextCodePairReader(reader io.Reader, decoder encoding.Decoder, firstLine string) codePairReader {
 	return &textCodePairReader{
-		scanner:       *bufio.NewScanner(reader),
+		reader:        reader,
+		decoder:       decoder,
 		firstLine:     firstLine,
 		firstLineRead: false,
 		readAsUtf8:    false,
 	}
 }
 
-func (a *textCodePairReader) readLine() (line string, err error) {
+func readSingleLine(reader io.Reader, d encoding.Decoder) (line string, err error) {
+	buffer := make([]byte, 1)
+	bytes := make([]byte, 0)
+
+	for {
+		count, e := reader.Read(buffer)
+		if e != nil {
+			err = e
+			return
+		}
+		if count != 1 {
+			break
+		}
+		if buffer[0] == '\n' {
+			break
+		}
+
+		bytes = append(bytes, buffer[0])
+	}
+
+	line, _, err = transform.String(d.Transformer, string(bytes))
+	if err != nil {
+		return
+	}
+
+	if strings.HasSuffix(line, "\r") {
+		line = line[:len(line)-1]
+	}
+
+	return
+}
+
+func (a *textCodePairReader) readLine(d encoding.Decoder) (line string, err error) {
 	if !a.firstLineRead {
 		line = a.firstLine
 		a.firstLine = ""
 		a.firstLineRead = true
 		return
 	}
-	if !a.scanner.Scan() {
-		err = a.scanner.Err()
-		return
-	}
-	line = a.scanner.Text()
+
+	line, err = readSingleLine(a.reader, d)
 	return
 }
 
 func (a *textCodePairReader) readCode() (int, error) {
-	line, err := a.readLine()
+	line, err := a.readLine(*encoding.Nop.NewDecoder())
 	if err != nil {
 		return 0, err
 	}
@@ -68,7 +103,7 @@ func (a *textCodePairReader) readCodePair() (CodePair, error) {
 		return codePair, err
 	}
 
-	stringValue, err := a.readLine()
+	stringValue, err := a.readLine(a.decoder)
 	if err != nil {
 		return codePair, err
 	}
@@ -115,6 +150,7 @@ func (a *textCodePairReader) readCodePair() (CodePair, error) {
 }
 
 func (a *textCodePairReader) setUtf8Reader() {
+	a.decoder = *unicode.UTF8.NewDecoder()
 	a.readAsUtf8 = true
 }
 
