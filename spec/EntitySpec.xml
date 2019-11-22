@@ -10,6 +10,9 @@
     <Method Signature="maxVersion() AcadVersion" />
     <Method Signature="tryApplyCodePair(pair CodePair)" />
     <Method Signature="typeString() string" />
+    <Method Signature="pointers() (pointers []*pointer)" />
+    <Field Name="Handle" Code="5" Type="Handle" DefaultValue="0" ReadConverter="handleFromString(%v)" WriteConverter="stringFromHandle(%v)" DisableWritingDefault="true" MinVersion="R13" />
+    <Pointer Name="Owner" Code="330" Type="DrawingItem" />
     <Field Name="IsInPaperSpace" Code="67" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" DisableWritingDefault="true" MinVersion="R12" />
     <Field Name="Layer" Code="8" Type="string" DefaultValue='"0"' WriteConverter='defaultIfEmpty(%v, "0")' />
     <Field Name="LineTypeName" Code="6" Type="string" DefaultValue='"BYLAYER"' DisableWritingDefault="true" />
@@ -24,12 +27,12 @@
     <Field Name="Color24Bit" Code="420" Type="int" DefaultValue="0" DisableWritingDefault="true" MinVersion="R2004" />
     <Field Name="ColorName" Code="430" Type="string" DefaultValue='""' MinVersion="R2004" />
     <Field Name="Transparency" Code="440" Type="int" DefaultValue="0" MinVersion="R2004" />
-    <!-- <Pointer Name="PlotStyle" Code="390" Type="IDxfItem" MinVersion="R2007" /> -->
+    <Pointer Name="PlotStyle" Code="390" Type="DrawingItem" MinVersion="R2007" />
     <Field Name="ShadowMode" Code="284" Type="ShadowMode" DefaultValue="ShadowModeCastsAndReceivesShadows" ReadConverter="ShadowMode(%v)" WriteConverter="int16(%v)" MinVersion="R2007" />
     <WriteOrder>
-      <!-- TODO: 5/handle -->
+      <WriteField Field="Handle" />
       <WriteExtensionData />
-      <!-- TODO: 330/owner-handle -->
+      <WritePointer Pointer="Owner" />
       <WriteSpecificValue Code="100" Value='"AcDbEntity"' />
       <WriteField Field="IsInPaperSpace" />
       <WriteField Field="Layer" />
@@ -45,7 +48,7 @@
       <WriteField Field="Color24Bit" />
       <WriteField Field="ColorName" />
       <WriteField Field="Transparency" />
-      <!-- <WriteField Field="PlotStyle" /> -->
+      <WritePointer Pointer="PlotStyle" />
       <WriteField Field="ShadowMode" />
     </WriteOrder>
   </Interface>
@@ -75,14 +78,14 @@
     <Field Name="FormatVersionNumber" Code="70" Type="int16" DefaultValue="1" />
     <Field Name="CustomData" Code="1" Type="string" DefaultValue="[]string{}" AllowMultiples="true" />
     <Field Name="CustomData2" Code="3" Type="string" DefaultValue="[]string{}" AllowMultiples="true" />
-    <!-- <Pointer Name="HistoryObject" Code="350" Type="IDxfItem" MinVersion="R2007" /> -->
+    <Pointer Name="HistoryObject" Code="350" Type="DrawingItem" MinVersion="R2007" />
     <WriteOrder>
       <WriteSpecificValue Code="100" Value='"AcDbModelerGeometry"' />
       <WriteField Field="FormatVersionNumber" />
       <WriteField Field="CustomData" />
       <WriteField Field="CustomData2" />
       <WriteSpecificValue Code="100" Value='"AcDb3dSolid"' MinVersion="R2007" />
-      <!-- <WriteField Field="HistoryObject" /> -->
+      <WritePointer Pointer="HistoryObject" />
     </WriteOrder>
   </Entity>
   <!--

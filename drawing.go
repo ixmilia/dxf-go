@@ -3,6 +3,7 @@ package dxf
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -34,6 +35,24 @@ func NewDrawing() *Drawing {
 		Header:   *NewHeader(),
 		Entities: make([]Entity, 0),
 	}
+}
+
+// GetItemByHandle gets a `DrawingItem` with the appropriate handle.
+func (d *Drawing) GetItemByHandle(h Handle) (item *DrawingItem, err error) {
+	item = nil
+	err = nil
+
+	for i := range d.Entities {
+		e := &d.Entities[i]
+		if (*e).Handle() == h {
+			di := (*e).(DrawingItem)
+			item = &di
+			return
+		}
+	}
+
+	err = fmt.Errorf("Unable to find item with handle '%d'", h)
+	return
 }
 
 // SaveFile writes the current drawing to the specified path.
@@ -82,6 +101,9 @@ func (d *Drawing) String() string {
 }
 
 func (d *Drawing) saveToCodePairWriter(writer codePairWriter) error {
+	assignHandles(d)
+	assignPointers(d)
+
 	err := d.Header.writeHeaderSection(writer)
 	if err != nil {
 		return err
@@ -201,11 +223,49 @@ func readFromCodePairReader(reader codePairReader) (Drawing, error) {
 	// find possible 0/EOF
 	if err != nil {
 		// don't care at this point, the file could be done
-		return drawing, nil
-	}
-	if !nextPair.isEOF() {
+		err = nil
+	} else if !nextPair.isEOF() {
 		return drawing, errors.New("expected 0/EOF")
 	}
 
+	bindPointers(&drawing)
 	return drawing, nil
+}
+
+func assignHandles(d *Drawing) {
+	nextHandle := uint32(1)
+	for i := range d.Entities {
+		e := &d.Entities[i]
+		if (*e).Handle() == 0 {
+			(*e).SetHandle(Handle(nextHandle))
+			nextHandle++
+		}
+	}
+
+	d.Header.NextAvailableHandle = Handle(nextHandle)
+}
+
+func assignPointers(d *Drawing) {
+	for i := range d.Entities {
+		e := &d.Entities[i]
+		for _, p := range (*e).pointers() {
+			if p.handle == 0 && p.value != nil {
+				p.handle = (*p.value).Handle()
+			}
+		}
+	}
+}
+
+func bindPointers(d *Drawing) {
+	for i := range d.Entities {
+		e := &d.Entities[i]
+		for _, p := range (*e).pointers() {
+			if p.handle != 0 {
+				o, err := d.GetItemByHandle(p.handle)
+				if err == nil {
+					p.value = o
+				}
+			}
+		}
+	}
 }

@@ -73,3 +73,44 @@ func TestRoundTripAllDrawingVersions(t *testing.T) {
 		assert(t, parsedLine.P2 == p2, fmt.Sprintf("Expected: %s\nActual: %s", p2.String(), parsedLine.P2.String()))
 	}
 }
+
+func TestReadAndNavigateHandles(t *testing.T) {
+	drawing := parse(t, join(
+		"  0", "SECTION",
+		"  2", "ENTITIES",
+		// artificial parent circle
+		"  0", "CIRCLE",
+		"  5", "9999", // handle
+		" 10", "1.0",
+		" 20", "2.0",
+		" 30", "3.0",
+		// artificial child line
+		"  0", "LINE",
+		"330", "9999", // owner handle
+		"  0", "ENDSEC",
+		"  0", "EOF",
+	))
+	line := drawing.Entities[len(drawing.Entities)-1].(*Line)
+	circle := (*line.Owner()).(*Circle)
+	assertEqPoint(t, Point{1.0, 2.0, 3.0}, circle.Center)
+}
+
+func TestRoundTripOwnerPointers(t *testing.T) {
+	// line sets circle as its owner
+	circle := NewCircle()
+	circle.Center = Point{1.0, 2.0, 3.0}
+	parent := DrawingItem(circle)
+	line := NewLine()
+	line.SetOwner(&parent)
+	drawing := *NewDrawing()
+	drawing.Header.Version = R13 // handles only written on >= R13
+	drawing.Entities = append(drawing.Entities, line)
+	drawing.Entities = append(drawing.Entities, circle)
+	drawingString := drawing.String()
+
+	// verify circle is still owner of line
+	reParsedDrawing := parse(t, drawingString)
+	reParsedLine := reParsedDrawing.Entities[0].(*Line)
+	reParsedCircle := (*reParsedLine.Owner()).(*Circle)
+	assertEqPoint(t, Point{1.0, 2.0, 3.0}, reParsedCircle.Center)
+}

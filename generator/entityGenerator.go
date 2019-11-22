@@ -20,6 +20,7 @@ type xmlInterface struct {
 	Name       string                  `xml:"Name,attr"`
 	Methods    []xmlMethod             `xml:"Method"`
 	Fields     []xmlField              `xml:"Field"`
+	Pointers   []xmlPointer            `xml:"Pointer"`
 	WriteOrder xmlWriteOrderCollection `xml:"WriteOrder"`
 }
 
@@ -41,6 +42,7 @@ type xmlEntity struct {
 	ImplementInterfaces string                  `xml:"ImplementInterfaces,attr"`
 	Tag                 string                  `xml:"Tag,attr"`
 	Fields              []xmlField              `xml:"Field"`
+	Pointers            []xmlPointer            `xml:"Pointer"`
 	WriteOrder          xmlWriteOrderCollection `xml:"WriteOrder"`
 	Interfaces          []string
 }
@@ -62,6 +64,14 @@ type xmlField struct {
 	Flags                 []xmlFlag `xml:"Flag"`
 }
 
+type xmlPointer struct {
+	XMLName    xml.Name `xml:"Pointer"`
+	Name       string   `xml:"Name,attr"`
+	Code       int      `xml:"Code,attr"`
+	Type       string   `xml:"Type,attr"`
+	MinVersion string   `xml:"MinVersion,attr"`
+}
+
 type xmlFlag struct {
 	XMLName xml.Name `xml:"Flag"`
 	Name    string   `xml:"Name,attr"`
@@ -76,6 +86,7 @@ type xmlWriteOrderCollection struct {
 type xmlWriteOrderDirective struct {
 	XMLName        xml.Name
 	Field          string                   `xml:"Field,attr"`
+	Pointer        string                   `xml:"Pointer,attr"`
 	Code           int                      `xml:"Code,attr"`
 	Value          string                   `xml:"Value,attr"`
 	WriteCondition string                   `xml:"WriteCondition,attr"`
@@ -86,6 +97,8 @@ type xmlWriteOrderDirective struct {
 }
 
 type getNamedField func(string) xmlField
+
+type getNamedPointer func(string) xmlPointer
 
 func generateEntities() {
 	specPath := "spec/EntitySpec.xml"
@@ -129,6 +142,12 @@ func generateEntities() {
 			builder.WriteString(fmt.Sprintf("	%s() %s\n", field.Name, fieldType))       // getter
 			builder.WriteString(fmt.Sprintf("	Set%s(val %s)\n", field.Name, fieldType)) // setter
 		}
+		for _, p := range inf.Pointers {
+			builder.WriteString(fmt.Sprintf("	%s() *%s\n", p.Name, p.Type))
+			builder.WriteString(fmt.Sprintf("	Set%s(val *%s)\n", p.Name, p.Type))
+			builder.WriteString(fmt.Sprintf("	get%sPointer() pointer\n", p.Name))
+			builder.WriteString(fmt.Sprintf("	set%sPointerHandle(h Handle)\n", p.Name))
+		}
 		builder.WriteString("}\n")
 		builder.WriteString("\n")
 
@@ -137,6 +156,9 @@ func generateEntities() {
 		builder.WriteString("	switch codePair.Code {\n")
 		for _, field := range inf.Fields {
 			readField(&builder, field, true)
+		}
+		for _, p := range inf.Pointers {
+			readPointer(&builder, p, true)
 		}
 		builder.WriteString("	default:\n")
 		builder.WriteString("		return false\n")
@@ -149,11 +171,14 @@ func generateEntities() {
 		builder.WriteString(fmt.Sprintf("func codePairsFor%s(this %s, version AcadVersion) (pairs []CodePair) {\n", inf.Name, inf.Name))
 		if len(inf.WriteOrder.Directives) > 0 {
 			for _, directive := range inf.WriteOrder.Directives {
-				writeDirective(&builder, directive, inf.getNamedField, true, "")
+				writeDirective(&builder, directive, inf.getNamedField, inf.getNamedPointer, true, "")
 			}
 		} else {
 			for _, field := range inf.Fields {
 				writeField(&builder, field, true, "")
+			}
+			for _, p := range inf.Pointers {
+				writePointer(&builder, p, true, "")
 			}
 		}
 		builder.WriteString("	return\n")
@@ -200,6 +225,18 @@ func generateEntities() {
 			}
 			builder.WriteString(fmt.Sprintf("	%s %s%s\n", field.Name, fieldType, comment))
 		}
+
+		// pointer fields
+		for _, infName := range entity.Interfaces {
+			inf := interfaces[infName]
+			for _, p := range inf.Pointers {
+				builder.WriteString(fmt.Sprintf("	pointer%s pointer\n", p.Name))
+			}
+		}
+		for _, p := range entity.Pointers {
+			builder.WriteString(fmt.Sprintf("	pointer%s pointer\n", p.Name))
+		}
+
 		builder.WriteString("}\n")
 		builder.WriteString("\n")
 
@@ -222,6 +259,61 @@ func generateEntities() {
 		builder.WriteString("	}\n")
 		builder.WriteString("}\n")
 		builder.WriteString("\n")
+
+		// pointer methods
+		builder.WriteString(fmt.Sprintf("func (e *%s) pointers() (pointers []*pointer) {\n", entity.Name))
+		for _, infName := range entity.Interfaces {
+			inf := interfaces[infName]
+			for _, p := range inf.Pointers {
+				builder.WriteString(fmt.Sprintf("	pointers = append(pointers, &e.pointer%s)\n", p.Name))
+			}
+		}
+		for _, p := range entity.Pointers {
+			builder.WriteString(fmt.Sprintf("	pointers = append(pointers, &e.pointer%s)\n", p.Name))
+		}
+		builder.WriteString("	return\n")
+		builder.WriteString("}\n")
+		builder.WriteString("\n")
+
+		for _, infName := range entity.Interfaces {
+			inf := interfaces[infName]
+			for _, p := range inf.Pointers {
+				builder.WriteString(fmt.Sprintf("func (e *%s) get%sPointer() pointer {\n", entity.Name, p.Name))
+				builder.WriteString(fmt.Sprintf("	return e.pointer%s\n", p.Name))
+				builder.WriteString("}\n")
+				builder.WriteString("\n")
+				builder.WriteString(fmt.Sprintf("func (e *%s) set%sPointerHandle(h Handle) {\n", entity.Name, p.Name))
+				builder.WriteString(fmt.Sprintf("	e.pointer%s.handle = h\n", p.Name))
+				builder.WriteString("}\n")
+				builder.WriteString("\n")
+				builder.WriteString(fmt.Sprintf("func (e *%s) %s() *%s {\n", entity.Name, p.Name, p.Type))
+				if p.Type == "DrawingItem" {
+					builder.WriteString(fmt.Sprintf("	return e.pointer%s.value\n", p.Name))
+				} else {
+					builder.WriteString(fmt.Sprintf("	return (*e.pointer%s.value).(%s)\n", p.Name, p.Type))
+				}
+				builder.WriteString("}\n")
+				builder.WriteString("\n")
+				builder.WriteString(fmt.Sprintf("func (e *%s) Set%s(val *%s) {\n", entity.Name, p.Name, p.Type))
+				builder.WriteString(fmt.Sprintf("	e.pointer%s.value = val\n", p.Name))
+				builder.WriteString("}\n")
+				builder.WriteString("\n")
+			}
+		}
+		for _, p := range entity.Pointers {
+			builder.WriteString(fmt.Sprintf("func (e *%s) %s() *%s {\n", entity.Name, p.Name, p.Type))
+			if p.Type == "DrawingItem" {
+				builder.WriteString(fmt.Sprintf("	return e.pointer%s.value\n", p.Name))
+			} else {
+				builder.WriteString(fmt.Sprintf("	return (*e.pointer%s.value).(%s)\n", p.Name, p.Type))
+			}
+			builder.WriteString("}\n")
+			builder.WriteString("\n")
+			builder.WriteString(fmt.Sprintf("func (e *%s) Set%s(val *%s) {\n", entity.Name, p.Name, p.Type))
+			builder.WriteString(fmt.Sprintf("	e.pointer%s.value = val\n", p.Name))
+			builder.WriteString("}\n")
+			builder.WriteString("\n")
+		}
 
 		// base interface getter/setter
 		for _, infName := range entity.Interfaces {
@@ -310,6 +402,9 @@ func generateEntities() {
 			for _, field := range entity.Fields {
 				readField(&builder, field, false)
 			}
+			for _, p := range entity.Pointers {
+				readPointer(&builder, p, false)
+			}
 			builder.WriteString("	default:\n")
 			builder.WriteString("		appliedCodePair := false\n")
 			for i := len(entity.Interfaces) - 1; i >= 0; i-- {
@@ -333,7 +428,7 @@ func generateEntities() {
 			}
 			if len(entity.WriteOrder.Directives) > 0 {
 				for _, directive := range entity.WriteOrder.Directives {
-					writeDirective(&builder, directive, entity.getNamedField, false, "")
+					writeDirective(&builder, directive, entity.getNamedField, entity.getNamedPointer, false, "")
 				}
 			} else {
 				if len(entity.SubclassMarker) > 0 {
@@ -341,6 +436,9 @@ func generateEntities() {
 				}
 				for _, field := range entity.Fields {
 					writeField(&builder, field, false, "")
+				}
+				for _, p := range entity.Pointers {
+					writePointer(&builder, p, false, "")
 				}
 			}
 			builder.WriteString("	return\n")
@@ -419,7 +517,7 @@ func collectionHelpers(builder *strings.Builder, entity xmlEntity, entityName st
 	}
 }
 
-func writeDirective(builder *strings.Builder, directive xmlWriteOrderDirective, getNamedField getNamedField, asFunction bool, indent string) {
+func writeDirective(builder *strings.Builder, directive xmlWriteOrderDirective, getNamedField getNamedField, getNamedPointer getNamedPointer, asFunction bool, indent string) {
 	predicates := directivePredicates(directive)
 	if len(predicates) > 0 {
 		builder.WriteString(fmt.Sprintf("	if %s {\n", strings.Join(predicates, " && ")))
@@ -430,7 +528,7 @@ func writeDirective(builder *strings.Builder, directive xmlWriteOrderDirective, 
 	case "Foreach":
 		builder.WriteString(fmt.Sprintf("%s	for _, item := range this.%s {\n", indent, directive.Field))
 		for _, d := range directive.Directives {
-			writeDirective(builder, d, getNamedField, asFunction, indent+"\t")
+			writeDirective(builder, d, getNamedField, getNamedPointer, asFunction, indent+"\t")
 		}
 		builder.WriteString(indent + "	}\n")
 	case "WriteExtensionData":
@@ -438,6 +536,9 @@ func writeDirective(builder *strings.Builder, directive xmlWriteOrderDirective, 
 	case "WriteField":
 		field := getNamedField(directive.Field)
 		writeField(builder, field, asFunction, indent)
+	case "WritePointer":
+		p := getNamedPointer(directive.Pointer)
+		writePointer(builder, p, asFunction, indent)
 	case "WriteSpecificValue":
 		builder.WriteString(fmt.Sprintf("%s	pairs = append(pairs, New%sCodePair(%d, %s))\n", indent, codeTypeName(directive.Code), directive.Code, directive.Value))
 	default:
@@ -507,6 +608,16 @@ func readField(builder *strings.Builder, field xmlField, asInterface bool) {
 	}
 }
 
+func readPointer(builder *strings.Builder, pointer xmlPointer, asInterface bool) {
+	builder.WriteString(fmt.Sprintf("	case %d:\n", pointer.Code))
+	readValue := "handleFromString(codePair.Value.(StringCodePairValue).Value)"
+	if asInterface {
+		builder.WriteString(fmt.Sprintf("		this.set%sPointerHandle(%s)\n", pointer.Name, readValue))
+	} else {
+		builder.WriteString(fmt.Sprintf("		this.pointer%s.handle = %s\n", pointer.Name, readValue))
+	}
+}
+
 func writeField(builder *strings.Builder, field xmlField, asInterface bool, indent string) {
 	if field.Code < 0 {
 		// specially handled, just needs to exist
@@ -552,6 +663,19 @@ func writeField(builder *strings.Builder, field xmlField, asInterface bool, inde
 	if len(predicates) > 0 {
 		builder.WriteString(indent + "}\n")
 	}
+}
+
+func writePointer(builder *strings.Builder, pointer xmlPointer, asInterface bool, indent string) {
+	var value string
+	if asInterface {
+		value = fmt.Sprintf("this.get%sPointer().handle", pointer.Name)
+	} else {
+		value = fmt.Sprintf("this.pointer%s.handle", pointer.Name)
+	}
+
+	builder.WriteString(fmt.Sprintf("%s	if %s != 0 {\n", indent, value))
+	builder.WriteString(fmt.Sprintf("%s		pairs = append(pairs, NewStringCodePair(%d, stringFromHandle(%s)))\n", indent, pointer.Code, value))
+	builder.WriteString(fmt.Sprintf("%s	}\n", indent))
 }
 
 func fieldPredicates(field xmlField, asInterface bool) (predicates []string) {
@@ -600,6 +724,26 @@ func (inf xmlInterface) getNamedField(name string) xmlField {
 	}
 
 	panic(fmt.Sprintf("Unable to find field %s.%s", inf.Name, name))
+}
+
+func (entity xmlEntity) getNamedPointer(name string) xmlPointer {
+	for _, p := range entity.Pointers {
+		if p.Name == name {
+			return p
+		}
+	}
+
+	panic(fmt.Sprintf("Unable to find pointer %s.%s", entity.Name, name))
+}
+
+func (inf xmlInterface) getNamedPointer(name string) xmlPointer {
+	for _, p := range inf.Pointers {
+		if p.Name == name {
+			return p
+		}
+	}
+
+	panic(fmt.Sprintf("Unable to find pointer %s.%s", inf.Name, name))
 }
 
 func (entity *xmlEntity) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {

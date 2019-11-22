@@ -215,7 +215,7 @@ func afterReadUnderlay(underlay Underlay) {
 
 func collectEntities(entityBuffer *entityBufferReader) (result []Entity) {
 	for entityBuffer.ItemsRemain() {
-		ent := entityBuffer.Peek()
+		ent := *entityBuffer.Peek()
 		entityBuffer.Advance()
 		switch entity := ent.(type) {
 		case *Attribute:
@@ -272,12 +272,12 @@ func collectEntities(entityBuffer *entityBufferReader) (result []Entity) {
 
 func getNextAttribute(entityBuffer *entityBufferReader) (att Attribute, error error) {
 	if entityBuffer.ItemsRemain() {
-		switch next := entityBuffer.Peek().(type) {
+		switch next := (*entityBuffer.Peek()).(type) {
 		case *Attribute:
 			att = *next
 			entityBuffer.Advance()
 			if entityBuffer.ItemsRemain() {
-				switch next := entityBuffer.Peek().(type) {
+				switch next := (*entityBuffer.Peek()).(type) {
 				case *MText:
 					att.MText = *next
 					entityBuffer.Advance()
@@ -295,7 +295,7 @@ func getNextAttribute(entityBuffer *entityBufferReader) (att Attribute, error er
 
 func getNextMText(entityBuffer *entityBufferReader) (mtext MText, error error) {
 	if entityBuffer.ItemsRemain() {
-		switch next := entityBuffer.Peek().(type) {
+		switch next := (*entityBuffer.Peek()).(type) {
 		case *MText:
 			mtext = *next
 			entityBuffer.Advance()
@@ -311,7 +311,7 @@ func getNextMText(entityBuffer *entityBufferReader) (mtext MText, error error) {
 
 func getNextSeqend(entityBuffer *entityBufferReader) (seqend Seqend, error error) {
 	if entityBuffer.ItemsRemain() {
-		switch next := entityBuffer.Peek().(type) {
+		switch next := (*entityBuffer.Peek()).(type) {
 		case *Seqend:
 			seqend = *next
 			entityBuffer.Advance()
@@ -327,7 +327,7 @@ func getNextSeqend(entityBuffer *entityBufferReader) (seqend Seqend, error error
 
 func getNextVertex(entityBuffer *entityBufferReader) (vertex Vertex, error error) {
 	if entityBuffer.ItemsRemain() {
-		switch next := entityBuffer.Peek().(type) {
+		switch next := (*entityBuffer.Peek()).(type) {
 		case *Vertex:
 			vertex = *next
 			entityBuffer.Advance()
