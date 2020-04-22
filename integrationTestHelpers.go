@@ -1,6 +1,7 @@
 package dxf
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -137,6 +138,7 @@ func getOdaPath() (odaPath string, err error) {
 
 	if len(matches) == 0 {
 		// nothing found, don't care
+		err = errors.New("non-fatal, no ODA converter found")
 		return
 	}
 
