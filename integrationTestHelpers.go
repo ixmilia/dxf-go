@@ -49,11 +49,32 @@ func newOdaHelper() (helper *odaHelper, err error) {
 	return
 }
 
-func odaVersionString(v AcadVersion) string {
+func odaVersionString(t *testing.T, v AcadVersion) string {
 	switch v {
+	case R9:
+		return "ACAD9"
+	case R10:
+		return "ACAD10"
+	case R12:
+		return "ACAD12"
+	case R13:
+		return "ACAD13"
+	case R14:
+		return "ACAD14"
 	case R2000:
 		return "ACAD2000"
+	case R2004:
+		return "ACAD2004"
+	case R2007:
+		return "ACAD2007"
+	case R2010:
+		return "ACAD2010"
+	case R2013:
+		return "ACAD2013"
+	case R2018:
+		return "ACAD2018"
 	default:
+		t.Errorf("Unsupported drawing version: %s", v)
 		return "UNSUPPORTED"
 	}
 }
@@ -67,7 +88,7 @@ func (o *odaHelper) convertDrawing(t *testing.T, d *Drawing, v AcadVersion) (res
 	args := []string{
 		o.InputPath,
 		o.OutputPath,
-		odaVersionString(v),
+		odaVersionString(t, v),
 		"DXF", // output file type
 		"0",   // recurse
 		"1",   // audit
