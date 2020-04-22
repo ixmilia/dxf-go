@@ -65,6 +65,27 @@ func TestReadLayers(t *testing.T) {
 	assertEqString(t, "layer-2", drawing.Layers[1].Name)
 }
 
+func TestReadTableWithHandle(t *testing.T) {
+	drawing := parse(t, join(
+		// section decl
+		"  0", "SECTION",
+		"  2", "TABLES",
+		// table decl
+		"  0", "TABLE",
+		"  2", "VPORT",
+		"  5", "ABCD", // n.b., handle is on the table, not the table item
+		// item
+		"  0", "VPORT",
+		"  2", "vport-name",
+		// end
+		"  0", "ENDTAB",
+		"  0", "ENDSEC",
+		"  0", "EOF",
+	))
+	assertEqInt(t, 1, len(drawing.ViewPorts))
+	assertEqString(t, "vport-name", drawing.ViewPorts[0].Name)
+}
+
 func TestUnsupportedTable(t *testing.T) {
 	drawing := parse(t, join(
 		"  0", "SECTION",
