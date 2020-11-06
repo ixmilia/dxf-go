@@ -61,7 +61,7 @@ func codeTypeName(code int) string {
 	} else if between(code, 440, 449) {
 		return "Int"
 	} else if between(code, 450, 459) {
-		return "Long"
+		return "Int"
 	} else if between(code, 460, 469) {
 		return "Double"
 	} else if between(code, 470, 479) {

@@ -1,5 +1,7 @@
 package dxf
 
+import "fmt"
+
 // Color represents a color present in a DXF drawing.
 type Color int16
 
@@ -69,6 +71,6 @@ func (c *Color) String() string {
 	case c.TurnedOff():
 		return "OFF"
 	default:
-		return string(int16(*c))
+		return fmt.Sprint(int16(*c))
 	}
 }
