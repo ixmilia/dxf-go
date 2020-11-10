@@ -88,7 +88,6 @@ type CodePairValue interface {
 
 // BoolCodePairValue represents a boolean code pair value.
 type BoolCodePairValue struct {
-	CodePairValue
 	Value bool
 }
 
@@ -101,7 +100,6 @@ func NewBoolCodePairValue(value bool) CodePairValue {
 
 // DoubleCodePairValue represents a floating point code pair value.
 type DoubleCodePairValue struct {
-	CodePairValue
 	Value float64
 }
 
@@ -114,7 +112,6 @@ func NewDoubleCodePairValue(value float64) CodePairValue {
 
 // IntCodePairValue represents an integer code pair value.
 type IntCodePairValue struct {
-	CodePairValue
 	Value int
 }
 
@@ -127,7 +124,6 @@ func NewIntCodePairValue(value int) CodePairValue {
 
 // LongCodePairValue represents a long integer code pair value.
 type LongCodePairValue struct {
-	CodePairValue
 	Value int64
 }
 
@@ -140,7 +136,6 @@ func NewLongCodePairValue(value int64) CodePairValue {
 
 // ShortCodePairValue represents a short integer code pair value.
 type ShortCodePairValue struct {
-	CodePairValue
 	Value int16
 }
 
@@ -153,7 +148,6 @@ func NewShortCodePairValue(value int16) CodePairValue {
 
 // StringCodePairValue represents a string code pair value.
 type StringCodePairValue struct {
-	CodePairValue
 	Value string
 }
 

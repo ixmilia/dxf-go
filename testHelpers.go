@@ -2,6 +2,7 @@ package dxf
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -27,6 +28,54 @@ func assertContains(t *testing.T, expected, actual string) {
 func assertNotContains(t *testing.T, notExpected, actual string) {
 	if strings.Contains(actual, notExpected) {
 		t.Errorf("Unexpectedly found '%s' in '%s'", notExpected, actual)
+	}
+}
+
+func assertContainsCodePairs(t *testing.T, expected, actual []CodePair) {
+	for i := 0; i < len(actual)-len(expected)+1; i++ {
+		match := true
+		for j := 0; j < len(expected) && match; j++ {
+			match = match && reflect.DeepEqual(actual[i+j], expected[j])
+		}
+
+		if match {
+			return
+		}
+	}
+
+	expectedText := "\n"
+	for _, p := range expected {
+		expectedText += p.String() + "\n"
+	}
+
+	actualText := "\n"
+	for _, p := range actual {
+		actualText += p.String() + "\n"
+	}
+
+	t.Errorf("Unable to find %s in %s", expectedText, actualText)
+}
+
+func assertNotContainsCodePairs(t *testing.T, notExpected, actual []CodePair) {
+	for i := 0; i < len(actual)-len(notExpected)+1; i++ {
+		match := false
+		for j := 0; j < len(notExpected) && !match; j++ {
+			match = match || reflect.DeepEqual(actual[i+j], notExpected[j])
+		}
+
+		if match {
+			notExpectedText := "\n"
+			for _, p := range notExpected {
+				notExpectedText += p.String() + "\n"
+			}
+
+			actualText := "\n"
+			for _, p := range actual {
+				actualText += p.String() + "\n"
+			}
+
+			t.Errorf("Unexpectedly found %s in %s", notExpectedText, actualText)
+		}
 	}
 }
 
@@ -86,6 +135,31 @@ func parse(t *testing.T, content string) Drawing {
 	return drawing
 }
 
+func parseFromCodePairs(t *testing.T, codePairs ...CodePair) Drawing {
+	drawing, err := ParseDrawingFromCodePairs(codePairs...)
+	if err != nil {
+		t.Error(err)
+	}
+
+	return drawing
+}
+
 func expectedActualString(placeholder string) string {
 	return fmt.Sprintf("Expected: %%%s\nActual %%%s", placeholder, placeholder)
+}
+
+func drawingCodePairs(t *testing.T, drawing Drawing) (codePairs []CodePair) {
+	codePairs, err := drawing.CodePairs()
+	if err != nil {
+		t.Error(err)
+	}
+
+	return
+}
+
+func drawingCodePairsFromEntity(t *testing.T, entity Entity, version AcadVersion) (codePairs []CodePair) {
+	drawing := *NewDrawing()
+	drawing.Header.Version = version
+	drawing.Entities = append(drawing.Entities, entity)
+	return drawingCodePairs(t, drawing)
 }

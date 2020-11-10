@@ -13,6 +13,22 @@ type codePairWriter interface {
 	writeCodePair(codePair CodePair) error
 }
 
+// code pairs
+type directCodePairWriter struct {
+	CodePairs []CodePair
+}
+
+func newDirectCodePairWriter() directCodePairWriter {
+	return directCodePairWriter{
+		CodePairs: make([]CodePair, 0),
+	}
+}
+
+func (d *directCodePairWriter) writeCodePair(codePair CodePair) error {
+	d.CodePairs = append(d.CodePairs, codePair)
+	return nil
+}
+
 // text
 type textCodePairWriter struct {
 	writer  io.Writer

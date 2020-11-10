@@ -100,6 +100,18 @@ func (d *Drawing) String() string {
 	return buf.String()
 }
 
+// CodePairs returns the series of `CodePair` that represents the drawing.
+func (d *Drawing) CodePairs() (codePairs []CodePair, err error) {
+	writer := newDirectCodePairWriter()
+	err = d.saveToCodePairWriter(&writer)
+	if err != nil {
+		return
+	}
+
+	codePairs = writer.CodePairs
+	return
+}
+
 func (d *Drawing) saveToCodePairWriter(writer codePairWriter) error {
 	assignHandles(d)
 	assignPointers(d)
@@ -168,6 +180,12 @@ func ReadFromReaderWithEncoding(reader io.Reader, e encoding.Encoding) (drawing 
 func ParseDrawing(content string) (Drawing, error) {
 	stringReader := strings.NewReader(content)
 	return ReadFromReader(stringReader)
+}
+
+// ParseDrawingFromCodePairs returns a drawing as parsed from a sequence of `CodePair`.
+func ParseDrawingFromCodePairs(codePairs ...CodePair) (Drawing, error) {
+	directReader := newDirectCodePairReader(codePairs...)
+	return readFromCodePairReader(directReader)
 }
 
 func readFromCodePairReader(reader codePairReader) (Drawing, error) {

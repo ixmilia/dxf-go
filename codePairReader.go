@@ -19,6 +19,34 @@ type codePairReader interface {
 	setUtf8Reader()
 }
 
+// code pairs
+type directCodePairReader struct {
+	index     int
+	codePairs []CodePair
+}
+
+func newDirectCodePairReader(codePairs ...CodePair) codePairReader {
+	return &directCodePairReader{
+		index:     0,
+		codePairs: codePairs,
+	}
+}
+
+func (d *directCodePairReader) readCodePair() (codePair CodePair, err error) {
+	if d.index >= len(d.codePairs) {
+		err = errors.New("out of data")
+	} else {
+		codePair = d.codePairs[d.index]
+		d.index++
+	}
+
+	return codePair, err
+}
+
+func (d *directCodePairReader) setUtf8Reader() {
+	// noop
+}
+
 // text
 type textCodePairReader struct {
 	reader        io.Reader

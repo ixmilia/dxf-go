@@ -69,17 +69,18 @@ func readEntity(np CodePair, reader codePairReader) (entity Entity, nextPair Cod
 	return
 }
 
+func allCodePairs(e Entity, version AcadVersion) (pairs []CodePair) {
+	beforeWrite(e)
+	pairs = append(pairs, e.codePairs(version)...)
+	pairs = append(pairs, trailingCodePairs(e, version)...)
+	return
+}
+
 func writeEntitiesSection(entities []Entity, writer codePairWriter, version AcadVersion) error {
 	pairs := make([]CodePair, 0)
 	for _, entity := range entities {
 		if version >= entity.minVersion() && version <= entity.maxVersion() {
-			beforeWrite(&entity)
-			for _, pair := range entity.codePairs(version) {
-				pairs = append(pairs, pair)
-			}
-			for _, pair := range trailingCodePairs(&entity, version) {
-				pairs = append(pairs, pair)
-			}
+			pairs = append(pairs, allCodePairs(entity, version)...)
 		}
 	}
 
@@ -101,8 +102,8 @@ func writeEntitiesSection(entities []Entity, writer codePairWriter, version Acad
 	return nil
 }
 
-func trailingCodePairs(entity *Entity, version AcadVersion) (pairs []CodePair) {
-	switch ent := (*entity).(type) {
+func trailingCodePairs(entity Entity, version AcadVersion) (pairs []CodePair) {
+	switch ent := entity.(type) {
 	case *Attribute:
 		pairs = append(pairs, ent.MText.codePairs(version)...)
 	case *AttributeDefinition:
@@ -122,8 +123,8 @@ func trailingCodePairs(entity *Entity, version AcadVersion) (pairs []CodePair) {
 	return
 }
 
-func beforeWrite(entity *Entity) {
-	switch ent := (*entity).(type) {
+func beforeWrite(entity Entity) {
+	switch ent := entity.(type) {
 	case *Image:
 		ent.SetsubclassMarker("AcDbRasterImage")
 	case *Wipeout:
