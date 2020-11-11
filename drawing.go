@@ -83,10 +83,7 @@ func (d *Drawing) SaveToWriter(writer io.Writer) error {
 
 // SaveToWriterBinary writes the current drawing to the specified io.Writer as a binary DXF.
 func (d *Drawing) SaveToWriterBinary(writer io.Writer) error {
-	codePairWriter, err := newBinaryCodePairWriter(writer, d.Header.Version)
-	if err != nil {
-		return err
-	}
+	codePairWriter := newBinaryCodePairWriter(writer, d.Header.Version)
 	return d.saveToCodePairWriter(codePairWriter)
 }
 
@@ -113,10 +110,15 @@ func (d *Drawing) CodePairs() (codePairs []CodePair, err error) {
 }
 
 func (d *Drawing) saveToCodePairWriter(writer codePairWriter) error {
+	err := writer.init()
+	if err != nil {
+		return err
+	}
+
 	assignHandles(d)
 	assignPointers(d)
 
-	err := d.Header.writeHeaderSection(writer)
+	err = d.Header.writeHeaderSection(writer)
 	if err != nil {
 		return err
 	}

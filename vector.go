@@ -48,5 +48,5 @@ func NewZeroVector() *Vector {
 }
 
 func (v *Vector) String() string {
-	return fmt.Sprintf("(%s, %s, %s)", formatFloat64(v.X), formatFloat64(v.Y), formatFloat64(v.Z))
+	return fmt.Sprintf("(%s, %s, %s)", formatFloat64Text(v.X), formatFloat64Text(v.Y), formatFloat64Text(v.Z))
 }

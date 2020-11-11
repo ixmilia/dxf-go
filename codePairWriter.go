@@ -10,6 +10,7 @@ import (
 )
 
 type codePairWriter interface {
+	init() error
 	writeCodePair(codePair CodePair) error
 }
 
@@ -22,6 +23,11 @@ func newDirectCodePairWriter() directCodePairWriter {
 	return directCodePairWriter{
 		CodePairs: make([]CodePair, 0),
 	}
+}
+
+func (d *directCodePairWriter) init() error {
+	// noop
+	return nil
 }
 
 func (d *directCodePairWriter) writeCodePair(codePair CodePair) error {
@@ -42,7 +48,28 @@ func newTextCodePairWriter(writer io.Writer, version AcadVersion) codePairWriter
 	}
 }
 
-func formatFloat64(val float64) string {
+func formatShortText(val int16) string {
+	return fmt.Sprintf("%6d", val)
+}
+
+func formatIntText(val int) string {
+	return fmt.Sprintf("%9d", val)
+}
+
+func formatLongText(val int64) string {
+	return fmt.Sprintf("%d", val)
+}
+
+func formatBoolText(val bool) string {
+	short := 1
+	if !val {
+		short = 0
+	}
+
+	return formatShortText(int16(short))
+}
+
+func formatFloat64Text(val float64) string {
 	// trim trailing zeros
 	display := strings.TrimRight(fmt.Sprintf("%.12f", val), "0")
 
@@ -54,32 +81,8 @@ func formatFloat64(val float64) string {
 	return display
 }
 
-func (a *textCodePairWriter) writeBoolean(val bool) error {
-	short := 1
-	if !val {
-		short = 0
-	}
-	return a.writeShort(int16(short))
-}
-
-func (a *textCodePairWriter) writeDouble(val float64) error {
-	return a.writeString(formatFloat64(val))
-}
-
-func (a *textCodePairWriter) writeInt(val int) error {
-	return a.writeString(fmt.Sprintf("%9d", val))
-}
-
-func (a *textCodePairWriter) writeLong(val int64) error {
-	return a.writeString(fmt.Sprintf("%d", val))
-}
-
-func (a *textCodePairWriter) writeShort(val int16) error {
-	return a.writeString(fmt.Sprintf("%6d", val))
-}
-
-func (a *textCodePairWriter) writeString(val string) error {
-	if a.version <= R2004 {
+func formatStringText(val string, version AcadVersion) string {
+	if version <= R2004 {
 		// escape unicode characters
 		var builder strings.Builder
 		for _, r := range val {
@@ -94,9 +97,39 @@ func (a *textCodePairWriter) writeString(val string) error {
 		val = builder.String()
 	}
 
-	bytes := []byte(fmt.Sprintf("%s\r\n", val))
+	return val
+}
+
+func (a *textCodePairWriter) writeBoolean(val bool) error {
+	return a.writeString(formatBoolText(val))
+}
+
+func (a *textCodePairWriter) writeDouble(val float64) error {
+	return a.writeString(formatFloat64Text(val))
+}
+
+func (a *textCodePairWriter) writeInt(val int) error {
+	return a.writeString(formatIntText(val))
+}
+
+func (a *textCodePairWriter) writeLong(val int64) error {
+	return a.writeString(formatLongText(val))
+}
+
+func (a *textCodePairWriter) writeShort(val int16) error {
+	return a.writeString(formatShortText(val))
+}
+
+func (a *textCodePairWriter) writeString(val string) error {
+	formatted := formatStringText(val, a.version)
+	bytes := []byte(fmt.Sprintf("%s\r\n", formatted))
 	_, err := a.writer.Write(bytes)
 	return err
+}
+
+func (a *textCodePairWriter) init() error {
+	// noop
+	return nil
 }
 
 func (a *textCodePairWriter) writeCodePair(codePair CodePair) error {
@@ -129,25 +162,71 @@ type binaryCodePairWriter struct {
 	version AcadVersion
 }
 
-func newBinaryCodePairWriter(writer io.Writer, version AcadVersion) (codePairWriter, error) {
-	var w codePairWriter
-	var err error
-	sentinel := []byte("AutoCAD Binary DXF\r\n")
-	sentinel = append(sentinel, []byte{0x1A, 0x00}...)
-	n, err := writer.Write(sentinel)
-	if err != nil {
-		return nil, err
-	}
-	if n != len(sentinel) {
-		return nil, errors.New("unable to write binary sentinel")
-	}
-
-	w = &binaryCodePairWriter{
+func newBinaryCodePairWriter(writer io.Writer, version AcadVersion) codePairWriter {
+	return &binaryCodePairWriter{
 		writer:  writer,
 		version: version,
 	}
+}
 
-	return w, nil
+func formatShortBinary(val int16) []byte {
+	buf := make([]byte, 2)
+	binary.LittleEndian.PutUint16(buf, uint16(val))
+	return buf
+}
+
+func formatIntBinary(val int) []byte {
+	buf := make([]byte, 4)
+	binary.LittleEndian.PutUint32(buf, uint32(val))
+	return buf
+}
+
+func formatLongBinary(val int64) []byte {
+	buf := make([]byte, 8)
+	binary.LittleEndian.PutUint64(buf, uint64(val))
+	return buf
+}
+
+func formatBoolBinary(val bool, version AcadVersion) []byte {
+	short := 1
+	if !val {
+		short = 0
+	}
+
+	// after R13 bools are a single byte
+	if version >= R13 {
+		return []byte{byte(short)}
+	}
+
+	return formatShortBinary(int16(short))
+}
+
+func formatFloat64Binary(val float64) []byte {
+	buf := make([]byte, 8)
+	ui := math.Float64bits(val)
+	binary.LittleEndian.PutUint64(buf, ui)
+	return buf
+}
+
+func formatStringBinary(val string) []byte {
+	buf := []byte(val)
+	buf = append(buf, 0x00)
+	return buf
+}
+
+func (b *binaryCodePairWriter) init() error {
+	sentinel := []byte("AutoCAD Binary DXF\r\n")
+	sentinel = append(sentinel, []byte{0x1A, 0x00}...)
+	n, err := b.writer.Write(sentinel)
+	if err != nil {
+		return err
+	}
+
+	if n != len(sentinel) {
+		return errors.New("unable to write binary sentinel")
+	}
+
+	return nil
 }
 
 func (b *binaryCodePairWriter) writeCodePair(codePair CodePair) error {
@@ -174,7 +253,7 @@ func (b *binaryCodePairWriter) writeCodePair(codePair CodePair) error {
 
 	switch t := codePair.Value.(type) {
 	case BoolCodePairValue:
-		return b.writeBoolean(t.Value)
+		return b.writeBoolean(t.Value, b.version)
 	case DoubleCodePairValue:
 		return b.writeDouble(t.Value)
 	case IntCodePairValue:
@@ -206,54 +285,28 @@ func (b *binaryCodePairWriter) writeByte(bt byte) error {
 	return b.writeBytes([]byte{bt})
 }
 
-func (b *binaryCodePairWriter) writeShort(s int16) error {
-	buf := make([]byte, 2)
-	binary.LittleEndian.PutUint16(buf, uint16(s))
-	return b.writeBytes(buf)
+func (b *binaryCodePairWriter) writeShort(val int16) error {
+	return b.writeBytes(formatShortBinary(val))
 }
 
-func (b *binaryCodePairWriter) writeBoolean(v bool) error {
-	var s int16
-	if v {
-		s = 1
-	} else {
-		s = 0
-	}
-
-	if b.version >= R13 {
-		// after R13 bools are single bytes
-		return b.writeByte(byte(s))
-	}
-
-	return b.writeShort(s)
+func (b *binaryCodePairWriter) writeBoolean(val bool, version AcadVersion) error {
+	return b.writeBytes(formatBoolBinary(val, version))
 }
 
-func (b *binaryCodePairWriter) writeInt(v int) error {
-	buf := make([]byte, 4)
-	binary.LittleEndian.PutUint32(buf, uint32(v))
-	return b.writeBytes(buf)
+func (b *binaryCodePairWriter) writeInt(val int) error {
+	return b.writeBytes(formatIntBinary(val))
 }
 
-func (b *binaryCodePairWriter) writeLong(v int64) error {
-	buf := make([]byte, 8)
-	binary.LittleEndian.PutUint64(buf, uint64(v))
-	return b.writeBytes(buf)
+func (b *binaryCodePairWriter) writeLong(val int64) error {
+	return b.writeBytes(formatLongBinary(val))
 }
 
-func (b *binaryCodePairWriter) writeDouble(v float64) error {
-	buf := make([]byte, 8)
-	u := math.Float64bits(v)
-	binary.LittleEndian.PutUint64(buf, u)
-	return b.writeBytes(buf)
+func (b *binaryCodePairWriter) writeDouble(val float64) error {
+	return b.writeBytes(formatFloat64Binary(val))
 }
 
-func (b *binaryCodePairWriter) writeString(v string) error {
-	buf := []byte(v)
-	err := b.writeBytes(buf)
-	if err != nil {
-		return err
-	}
-	return b.writeByte(0x00)
+func (b *binaryCodePairWriter) writeString(val string) error {
+	return b.writeBytes(formatStringBinary(val))
 }
 
 func writeSectionStart(writer codePairWriter, sectionName string) (error error) {
