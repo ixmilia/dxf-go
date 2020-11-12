@@ -15,8 +15,8 @@ go test -v
 if errorlevel 1 goto :error
 
 :: verify examples
-cd examples
-call build.cmd
+go build -v .\examples
+if errorlevel 1 goto :error
 
 goto :eof
 

@@ -9,5 +9,4 @@ go build -v
 go test -v
 
 # verify examples
-cd examples
-./build.sh
+go build -v ./examples
