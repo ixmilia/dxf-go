@@ -2,21 +2,20 @@ package dxf
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 )
 
 func TestReadNonDefaultHeaderVersion(t *testing.T) {
-	header := parseHeader(t, join(
-		"  9", "$UNSUPPORTED_HEADER_VARIABLE",
-		"  1", "UNSUPPORTED_VALUE",
-		"  9", "$ACADVER",
-		"  1", "AC1014",
-		"  9", "$ACADMAINTVER",
-		" 70", "6",
-		"  9", "$UNSUPPORTED_HEADER_VARIABLE",
-		"  1", "UNSUPPORTED_VALUE",
-	))
+	header := parseHeader(t,
+		NewStringCodePair(9, "$UNSUPPORTED_HEADER_VARIABLE"),
+		NewStringCodePair(1, "UNSUPPORTED_VALUE"),
+		NewStringCodePair(9, "$ACADVER"),
+		NewStringCodePair(1, "AC1014"),
+		NewStringCodePair(9, "$ACADMAINTVER"),
+		NewShortCodePair(70, 6),
+		NewStringCodePair(9, "$UNSUPPORTED_HEADER_VARIABLE"),
+		NewStringCodePair(1, "UNSUPPORTED_VALUE"),
+	)
 	assertEqInt(t, int(R14), int(header.Version))
 	assertEqInt(t, 6, int(header.MaintenanceVersion))
 }
@@ -26,18 +25,22 @@ func TestWriteVersionSpecificVariables(t *testing.T) {
 
 	// value is present >= R14
 	header.Version = R14
-	assertContains(t, "$ACADMAINTVER", fileStringFromHeader(header))
+	assertContainsCodePairs(t, []CodePair{
+		NewStringCodePair(9, "$ACADMAINTVER"),
+	}, fileCodePairsFromHeader(t, header))
 
 	// value is missing < R14
 	header.Version = R13
-	assertNotContains(t, "$ACADMAINTVER", fileStringFromHeader(header))
+	assertNotContainsCodePairs(t, []CodePair{
+		NewStringCodePair(9, "$ACADMAINTVER"),
+	}, fileCodePairsFromHeader(t, header))
 }
 
 func TestReadHeaderFlag(t *testing.T) {
-	header := parseHeader(t, join(
-		"  9", "$OSMODE",
-		" 70", "1",
-	))
+	header := parseHeader(t,
+		NewStringCodePair(9, "$OSMODE"),
+		NewShortCodePair(70, 1),
+	)
 	assert(t, header.EndPointSnap(), "expected OSMODE.EndPointSnap")
 	assert(t, !header.MidPointSnap(), "expected !OSMODE.MidPointSnap")
 	assert(t, !header.CenterSnap(), "expected !OSMODE.CenterSnap")
@@ -68,19 +71,19 @@ func TestWriteHeaderFlag(t *testing.T) {
 	header.SetApparentIntersectionSnap(false)
 	header.SetExtensionSnap(false)
 	header.SetParallelSnap(false)
-	assertContains(t, join(
-		"  9", "$OSMODE",
-		" 70", "     1",
-	), fileStringFromHeader(header))
+	assertContainsCodePairs(t, []CodePair{
+		NewStringCodePair(9, "$OSMODE"),
+		NewShortCodePair(70, 1),
+	}, fileCodePairsFromHeader(t, header))
 }
 
 func TestReadPoint(t *testing.T) {
-	header := parseHeader(t, join(
-		"  9", "$INSBASE",
-		" 10", "1",
-		" 20", "2",
-		" 30", "3",
-	))
+	header := parseHeader(t,
+		NewStringCodePair(9, "$INSBASE"),
+		NewDoubleCodePair(10, 1.0),
+		NewDoubleCodePair(20, 2.0),
+		NewDoubleCodePair(30, 3.0),
+	)
 	expected := Point{1.0, 2.0, 3.0}
 	assert(t, header.InsertionBase == expected, fmt.Sprintf("expected %s, got %s", expected.String(), header.InsertionBase.String()))
 }
@@ -88,36 +91,36 @@ func TestReadPoint(t *testing.T) {
 func TestWritePoint(t *testing.T) {
 	header := *NewHeader()
 	header.InsertionBase = Point{1.0, 2.0, 3.0}
-	assertContains(t, join(
-		"  9", "$INSBASE",
-		" 10", "1.0",
-		" 20", "2.0",
-		" 30", "3.0",
-	), fileStringFromHeader(header))
+	assertContainsCodePairs(t, []CodePair{
+		NewStringCodePair(9, "$INSBASE"),
+		NewDoubleCodePair(10, 1.0),
+		NewDoubleCodePair(20, 2.0),
+		NewDoubleCodePair(30, 3.0),
+	}, fileCodePairsFromHeader(t, header))
 }
 
 func TestReadEnumValue(t *testing.T) {
-	header := parseHeader(t, join(
-		"  9", "$DRAGMODE",
-		" 70", "     2",
-	))
+	header := parseHeader(t,
+		NewStringCodePair(9, "$DRAGMODE"),
+		NewShortCodePair(70, 2),
+	)
 	assertEqShort(t, int16(2), int16(header.DragMode))
 }
 
 func TestWriteEnumValue(t *testing.T) {
 	header := *NewHeader()
 	header.DragMode = DragModeAuto
-	assertContains(t, join(
-		"  9", "$DRAGMODE",
-		" 70", "     2",
-	), fileStringFromHeader(header))
+	assertContainsCodePairs(t, []CodePair{
+		NewStringCodePair(9, "$DRAGMODE"),
+		NewShortCodePair(70, 2),
+	}, fileCodePairsFromHeader(t, header))
 }
 
 func TestReadHandleValue(t *testing.T) {
-	header := parseHeader(t, join(
-		"  9", "$DRAGVS",
-		"349", "FF",
-	))
+	header := parseHeader(t,
+		NewStringCodePair(9, "$DRAGVS"),
+		NewStringCodePair(349, "FF"),
+	)
 	assertEqUInt(t, uint32(255), uint32(header.SolidVisualStylePointer))
 }
 
@@ -125,25 +128,33 @@ func TestWriteHandleValue(t *testing.T) {
 	header := *NewHeader()
 	header.Version = R2007 // min version R2007
 	header.SolidVisualStylePointer = Handle(255)
-	assertContains(t, join(
-		"  9", "$DRAGVS",
-		"349", "FF",
-	), fileStringFromHeader(header))
+	assertContainsCodePairs(t, []CodePair{
+		NewStringCodePair(9, "$DRAGVS"),
+		NewStringCodePair(349, "FF"),
+	}, fileCodePairsFromHeader(t, header))
 }
 
-func parseHeader(t *testing.T, content string) Header {
-	drawing := parse(t, join(
-		"  0", "SECTION",
-		"  2", "HEADER",
-	)+"\r\n"+strings.TrimSpace(content)+"\r\n"+join(
-		"  0", "ENDSEC",
-		"  0", "EOF",
-	))
+func parseHeader(t *testing.T, codePairs ...CodePair) Header {
+	allPairs := []CodePair{
+		NewStringCodePair(0, "SECTION"),
+		NewStringCodePair(2, "HEADER"),
+	}
+	allPairs = append(allPairs, codePairs...)
+	allPairs = append(allPairs,
+		NewStringCodePair(0, "ENDSEC"),
+		NewStringCodePair(0, "EOF"),
+	)
+	drawing := parseFromCodePairs(t, allPairs...)
 	return drawing.Header
 }
 
-func fileStringFromHeader(h Header) string {
+func fileCodePairsFromHeader(t *testing.T, h Header) []CodePair {
 	drawing := *NewDrawing()
 	drawing.Header = h
-	return drawing.String()
+	codePairs, err := drawing.CodePairs()
+	if err != nil {
+		t.Error(err)
+	}
+
+	return codePairs
 }
