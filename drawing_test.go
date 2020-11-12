@@ -8,13 +8,17 @@ import (
 
 func TestDefaultDrawingVersion(t *testing.T) {
 	drawing := *NewDrawing()
-	actual := drawing.String()
-	expected := join(
-		"  1", "AC1009")
-	assertContains(t, expected, actual)
+	actual, err := drawing.CodePairs()
+	if err != nil {
+		t.Error(err)
+	}
+	expected := []CodePair{
+		NewStringCodePair(1, "AC1009"),
+	}
+	assertContainsCodePairs(t, expected, actual)
 }
 
-func TestReadFileNewlines(t *testing.T) {
+func TestReadTextFileNewlines(t *testing.T) {
 	vals := []string{
 		"  0", "SECTION",
 		"  2", "HEADER",
@@ -34,26 +38,26 @@ func TestReadFileNewlines(t *testing.T) {
 }
 
 func TestReadingUnsupportedSections(t *testing.T) {
-	drawing := parse(t, join(
+	drawing := parseFromCodePairs(t,
 		// unsupported
-		"  0", "SECTION",
-		"  2", "NOT_ENTITIES",
-		"  0", "NOT_AN_ENTITY",
-		"  0", "ENDSEC",
+		NewStringCodePair(0, "SECTION"),
+		NewStringCodePair(2, "NOT_ENTITIES"),
+		NewStringCodePair(0, "NOT_AN_ENTITY"),
+		NewStringCodePair(0, "ENDSEC"),
 		// header
-		"  0", "SECTION",
-		"  2", "HEADER",
-		"  9", "$ACADVER",
-		"  1", "AC1015",
-		"  0", "ENDSEC",
+		NewStringCodePair(0, "SECTION"),
+		NewStringCodePair(2, "HEADER"),
+		NewStringCodePair(9, "$ACADVER"),
+		NewStringCodePair(1, "AC1015"),
+		NewStringCodePair(0, "ENDSEC"),
 		// unsupported
-		"  0", "SECTION",
-		"  2", "NOT_ENTITIES_AGAIN",
-		"  0", "STILL_NOT_AN_ENTITY",
-		"  0", "ENDSEC",
+		NewStringCodePair(0, "SECTION"),
+		NewStringCodePair(2, "NOT_ENTITIES_AGAIN"),
+		NewStringCodePair(0, "STILL_NOT_AN_ENTITY"),
+		NewStringCodePair(0, "ENDSEC"),
 		// end
-		"  0", "EOF",
-	))
+		NewStringCodePair(0, "EOF"),
+	)
 	expected := R2000
 	assert(t, drawing.Header.Version == R2000, fmt.Sprintf("Expected: %v\nActual: %v", expected, drawing.Header.Version))
 }
@@ -95,21 +99,21 @@ func TestRoundTripAllDrawingVersions(t *testing.T) {
 }
 
 func TestReadAndNavigateHandles(t *testing.T) {
-	drawing := parse(t, join(
-		"  0", "SECTION",
-		"  2", "ENTITIES",
+	drawing := parseFromCodePairs(t,
+		NewStringCodePair(0, "SECTION"),
+		NewStringCodePair(2, "ENTITIES"),
 		// artificial parent circle
-		"  0", "CIRCLE",
-		"  5", "9999", // handle
-		" 10", "1.0",
-		" 20", "2.0",
-		" 30", "3.0",
+		NewStringCodePair(0, "CIRCLE"),
+		NewStringCodePair(5, "9999"), // handle
+		NewDoubleCodePair(10, 1.0),
+		NewDoubleCodePair(20, 2.0),
+		NewDoubleCodePair(30, 3.0),
 		// artificial child line
-		"  0", "LINE",
-		"330", "9999", // owner handle
-		"  0", "ENDSEC",
-		"  0", "EOF",
-	))
+		NewStringCodePair(0, "LINE"),
+		NewStringCodePair(330, "9999"), // ownerhandle
+		NewStringCodePair(0, "ENDSEC"),
+		NewStringCodePair(0, "EOF"),
+	)
 	line := drawing.Entities[len(drawing.Entities)-1].(*Line)
 	circle := (*line.Owner()).(*Circle)
 	assertEqPoint(t, Point{1.0, 2.0, 3.0}, circle.Center)
