@@ -19,6 +19,29 @@ type codePairReader interface {
 	setUtf8Reader()
 }
 
+func codePairReaderFromReader(reader io.Reader, e encoding.Encoding) (r codePairReader, err error) {
+	decoder := *e.NewDecoder()
+	firstLine, err := readSingleLine(reader, decoder)
+	if err != nil {
+		r = newDirectCodePairReader()
+		if firstLine == "" {
+			// empty file is valid
+			err = nil
+			return
+		}
+
+		return
+	}
+
+	if firstLine == "AutoCAD Binary DXF" {
+		r, err = newBinaryCodePairReader(reader)
+	} else {
+		r = newTextCodePairReader(reader, decoder, firstLine)
+	}
+
+	return r, err
+}
+
 // code pairs
 type directCodePairReader struct {
 	index     int
@@ -72,6 +95,9 @@ func readSingleLine(reader io.Reader, d encoding.Decoder) (line string, err erro
 
 	for {
 		count, e := reader.Read(buffer)
+		if e == io.EOF {
+			e = nil
+		}
 		if e != nil {
 			err = e
 			return
@@ -124,6 +150,40 @@ func (a *textCodePairReader) readCode() (int, error) {
 	return code, nil
 }
 
+func readBoolText(line string) (bool, error) {
+	value, err := readShortText(line)
+	result := value != 0
+	return result, err
+}
+
+func readShortText(line string) (int16, error) {
+	value, err := strconv.ParseInt(strings.TrimSpace(line), 10, 16)
+	result := int16(value)
+	return result, err
+}
+
+func readIntText(line string) (int, error) {
+	value, err := strconv.ParseInt(strings.TrimSpace(line), 10, 32)
+	result := int(value)
+	return result, err
+}
+
+func readLongText(line string) (int64, error) {
+	return strconv.ParseInt(strings.TrimSpace(line), 10, 64)
+}
+
+func readDoubleText(line string) (float64, error) {
+	return strconv.ParseFloat(strings.TrimSpace(line), 64)
+}
+
+func readStringText(line string, readAsUtf8 bool) (value string, err error) {
+	if !readAsUtf8 {
+		line = parseUtf8(line)
+	}
+
+	return line, nil
+}
+
 func (a *textCodePairReader) readCodePair() (CodePair, error) {
 	var codePair CodePair
 	code, err := a.readCode()
@@ -138,40 +198,41 @@ func (a *textCodePairReader) readCodePair() (CodePair, error) {
 
 	switch codeTypeName(code) {
 	case "Bool":
-		value, err := strconv.ParseInt(strings.TrimSpace(stringValue), 10, 16)
+		value, err := readBoolText(stringValue)
 		if err != nil {
 			return codePair, err
 		}
-		codePair = NewBoolCodePair(code, value != 0)
+		codePair = NewBoolCodePair(code, value)
 	case "Double":
-		value, err := strconv.ParseFloat(strings.TrimSpace(stringValue), 64)
+		value, err := readDoubleText(stringValue)
 		if err != nil {
 			return codePair, err
 		}
 		codePair = NewDoubleCodePair(code, value)
 	case "Int":
-		value, err := strconv.ParseInt(strings.TrimSpace(stringValue), 10, 32)
+		value, err := readIntText(stringValue)
 		if err != nil {
 			return codePair, err
 		}
-		codePair = NewIntCodePair(code, int(value))
+		codePair = NewIntCodePair(code, value)
 	case "Long":
-		value, err := strconv.ParseInt(strings.TrimSpace(stringValue), 10, 64)
+		value, err := readLongText(stringValue)
 		if err != nil {
 			return codePair, err
 		}
 		codePair = NewLongCodePair(code, value)
 	case "Short":
-		value, err := strconv.ParseInt(strings.TrimSpace(stringValue), 10, 16)
+		value, err := readShortText(stringValue)
 		if err != nil {
 			return codePair, err
 		}
-		codePair = NewShortCodePair(code, int16(value))
+		codePair = NewShortCodePair(code, value)
 	case "String":
-		if !a.readAsUtf8 {
-			stringValue = parseUtf8(stringValue)
+		value, err := readStringText(stringValue, a.readAsUtf8)
+		if err != nil {
+			return codePair, err
 		}
-		codePair = NewStringCodePair(code, stringValue)
+		codePair = NewStringCodePair(code, value)
 	}
 
 	return codePair, nil
@@ -212,6 +273,104 @@ func newBinaryCodePairReader(reader io.Reader) (rdr codePairReader, err error) {
 	return
 }
 
+func readBytes(reader *bufio.Reader, count int) (buf []byte, err error) {
+	buf = make([]byte, count)
+	n, err := reader.Read(buf)
+	if err != nil {
+		return
+	}
+
+	if n != len(buf) {
+		err = errors.New("not enough bytes")
+		return
+	}
+
+	return
+}
+
+func readBoolBinary(data []byte, isPostR13 bool) (val bool, err error) {
+	// after R13 bools are encoded as a single byte
+	if isPostR13 {
+		if len(data) != 1 {
+			err = errors.New("Expected 1 byte to read post R13 bool.")
+			return
+		}
+
+		val = data[0] != 0
+	} else {
+		if len(data) != 2 {
+			err = errors.New("Expected 2 bytes to read pre R13 bool.")
+			return
+		}
+
+		s := createShort(data[0], data[1])
+		val = s != 0
+	}
+
+	return
+}
+
+func readShortBinary(data []byte) (val int16, err error) {
+	if len(data) != 2 {
+		err = errors.New("Expected 2 bytes to read int16.")
+		return
+	}
+
+	val = createShort(data[0], data[1])
+	return
+}
+
+func readIntBinary(data []byte) (val int, err error) {
+	if len(data) != 4 {
+		err = errors.New("Expected 4 bytes to read int.")
+		return
+	}
+
+	uval := binary.LittleEndian.Uint32(data)
+	val = int(uval)
+	return
+}
+
+func readLongBinary(data []byte) (val int64, err error) {
+	if len(data) != 8 {
+		err = errors.New("Expected 8 bytes to read int64.")
+		return
+	}
+
+	uval := binary.LittleEndian.Uint64(data)
+	val = int64(uval)
+	return
+}
+
+func readDoubleBinary(data []byte) (val float64, err error) {
+	if len(data) != 8 {
+		err = errors.New("Expected 8 bytes to read float64.")
+		return
+	}
+
+	uval := binary.LittleEndian.Uint64(data)
+	val = math.Float64frombits(uval)
+	return
+}
+
+func readStringBinary(reader *bufio.Reader) (val string, err error) {
+	buf := make([]byte, 0)
+	for {
+		var c byte
+		c, err = reader.ReadByte()
+		if err != nil {
+			return
+		}
+		if c == 0x00 {
+			break
+		}
+		buf = append(buf, c)
+	}
+
+	val = string(buf)
+	return
+}
+
 func (b *binaryCodePairReader) readCodePair() (CodePair, error) {
 	var pair CodePair
 	var err error
@@ -222,48 +381,64 @@ func (b *binaryCodePairReader) readCodePair() (CodePair, error) {
 
 	switch codeTypeName(code) {
 	case "Bool":
-		value, err := b.readBool()
+		boolByteCount := 2
+		if b.isPostR13 {
+			boolByteCount = 1
+		}
+		data, err := readBytes(&b.reader, boolByteCount)
+		if err != nil {
+			return pair, err
+		}
+		value, err := readBoolBinary(data, b.isPostR13)
 		if err != nil {
 			return pair, err
 		}
 		pair = NewBoolCodePair(code, value)
 	case "Double":
-		value, err := b.readDouble()
+		data, err := readBytes(&b.reader, 8)
+		if err != nil {
+			return pair, err
+		}
+		value, err := readDoubleBinary(data)
 		if err != nil {
 			return pair, err
 		}
 		pair = NewDoubleCodePair(code, value)
 	case "Int":
-		value, err := b.readInt()
+		data, err := readBytes(&b.reader, 4)
 		if err != nil {
 			return pair, err
 		}
-		pair = NewIntCodePair(code, int(value))
+		value, err := readIntBinary(data)
+		if err != nil {
+			return pair, err
+		}
+		pair = NewIntCodePair(code, value)
 	case "Long":
-		value, err := b.readLong()
+		data, err := readBytes(&b.reader, 8)
+		if err != nil {
+			return pair, err
+		}
+		value, err := readLongBinary(data)
 		if err != nil {
 			return pair, err
 		}
 		pair = NewLongCodePair(code, value)
 	case "Short":
-		value, err := b.readShort()
+		data, err := readBytes(&b.reader, 2)
 		if err != nil {
 			return pair, err
 		}
-		pair = NewShortCodePair(code, int16(value))
-	case "String":
-		buf := make([]byte, 0)
-		for {
-			c, err := b.readByte()
-			if err != nil {
-				return pair, err
-			}
-			if c == 0x00 {
-				break
-			}
-			buf = append(buf, c)
+		value, err := readShortBinary(data)
+		if err != nil {
+			return pair, err
 		}
-		value := string(buf)
+		pair = NewShortCodePair(code, value)
+	case "String":
+		value, err := readStringBinary(&b.reader)
+		if err != nil {
+			return pair, err
+		}
 		pair = NewStringCodePair(code, value)
 	}
 
@@ -300,8 +475,13 @@ func (b *binaryCodePairReader) readCode() (code int, err error) {
 		}
 		code = int(createShort(bt, b2))
 	} else if code == 255 {
+		var data []byte
+		data, err = readBytes(&b.reader, 2)
+		if err != nil {
+			return
+		}
 		var s int16
-		s, err = b.readShort()
+		s, err = readShortBinary(data)
 		if err != nil {
 			return
 		}
@@ -314,86 +494,6 @@ func (b *binaryCodePairReader) readCode() (code int, err error) {
 
 func (b *binaryCodePairReader) readByte() (byte, error) {
 	return b.reader.ReadByte()
-}
-
-func (b *binaryCodePairReader) readBool() (r bool, err error) {
-	if b.isPostR13 {
-		// after R13 bools are encoded as a single byte
-		var t byte
-		t, err = b.readByte()
-		if err != nil {
-			return
-		}
-
-		r = t != 0
-	} else {
-		var v int16
-		v, err = b.readShort()
-		if err != nil {
-			return
-		}
-
-		r = v != 0
-	}
-	return
-}
-
-func (b *binaryCodePairReader) readShort() (s int16, err error) {
-	b1, err := b.readByte()
-	if err != nil {
-		return
-	}
-	b2, err := b.readByte()
-	if err != nil {
-		return
-	}
-	s = createShort(b1, b2)
-	return
-}
-
-func (b *binaryCodePairReader) readInt() (i int, err error) {
-	buf := make([]byte, 4)
-	n, err := b.reader.Read(buf)
-	if err != nil {
-		return
-	}
-	if n != len(buf) {
-		err = errors.New("not enough bytes")
-		return
-	}
-	u := binary.LittleEndian.Uint32(buf)
-	i = int(u)
-	return i, err
-}
-
-func (b *binaryCodePairReader) readLong() (l int64, err error) {
-	buf := make([]byte, 8)
-	n, err := b.reader.Read(buf)
-	if err != nil {
-		return
-	}
-	if n != len(buf) {
-		err = errors.New("not enough bytes")
-		return
-	}
-	u := binary.LittleEndian.Uint64(buf)
-	l = int64(u)
-	return l, err
-}
-
-func (b *binaryCodePairReader) readDouble() (d float64, err error) {
-	buf := make([]byte, 8)
-	n, err := b.reader.Read(buf)
-	if err != nil {
-		return
-	}
-	if n != len(buf) {
-		err = errors.New("not enough bytes")
-		return
-	}
-	u := binary.LittleEndian.Uint64(buf)
-	d = math.Float64frombits(u)
-	return d, err
 }
 
 func createShort(b1, b2 byte) int16 {

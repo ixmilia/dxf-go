@@ -31,6 +31,26 @@ func assertNotContains(t *testing.T, notExpected, actual string) {
 	}
 }
 
+func assertEqCodePairs(t *testing.T, expected, actual []CodePair) {
+	isCorrect := len(actual) == len(expected)
+	actualText := ""
+	for _, p := range actual {
+		actualText += p.String() + "\n"
+	}
+	expectedText := ""
+	for _, p := range expected {
+		expectedText += p.String() + "\n"
+	}
+
+	for i := 0; i < len(actual); i++ {
+		isCorrect = isCorrect && reflect.DeepEqual(actual[i], expected[i])
+	}
+
+	if !isCorrect {
+		t.Errorf("Expected code pairs [\n%s] but found [\n%s]", expectedText, actualText)
+	}
+}
+
 func assertContainsCodePairs(t *testing.T, expected, actual []CodePair) {
 	for i := 0; i < len(actual)-len(expected)+1; i++ {
 		match := true

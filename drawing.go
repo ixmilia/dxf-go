@@ -155,25 +155,7 @@ func ReadFromReader(reader io.Reader) (drawing Drawing, err error) {
 
 // ReadFromReaderWithEncoding reads a DXF drawing from the specified io.Reader with the specified default text encoding.
 func ReadFromReaderWithEncoding(reader io.Reader, e encoding.Encoding) (drawing Drawing, err error) {
-	decoder := *e.NewDecoder()
-	firstLine, err := readSingleLine(reader, decoder)
-	if err != nil {
-		if firstLine == "" {
-			// empty file is valid
-			err = nil
-			return
-		}
-
-		return
-	}
-
-	var r codePairReader
-	if firstLine == "AutoCAD Binary DXF" {
-		r, err = newBinaryCodePairReader(reader)
-	} else {
-		r = newTextCodePairReader(reader, decoder, firstLine)
-	}
-
+	r, err := codePairReaderFromReader(reader, e)
 	drawing, err = readFromCodePairReader(r)
 	return
 }

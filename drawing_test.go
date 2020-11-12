@@ -2,6 +2,7 @@ package dxf
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -11,6 +12,25 @@ func TestDefaultDrawingVersion(t *testing.T) {
 	expected := join(
 		"  1", "AC1009")
 	assertContains(t, expected, actual)
+}
+
+func TestReadFileNewlines(t *testing.T) {
+	vals := []string{
+		"  0", "SECTION",
+		"  2", "HEADER",
+		"  9", "$PROJECTNAME",
+		"  1", "test",
+		"  0", "ENDSEC",
+		"  0", "EOF",
+	}
+
+	// parse with "\r\n" (standard)
+	drawing := parse(t, strings.Join(vals, "\r\n"))
+	assertEqString(t, "test", drawing.Header.ProjectName)
+
+	// parse with "\n" (non-standard, but still acceptable)
+	drawing = parse(t, strings.Join(vals, "\n"))
+	assertEqString(t, "test", drawing.Header.ProjectName)
 }
 
 func TestReadingUnsupportedSections(t *testing.T) {
