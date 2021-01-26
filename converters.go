@@ -52,11 +52,11 @@ func ensurePositiveOrDefault(val, defaultValue float64) float64 {
 }
 
 func handleFromString(val string) Handle {
-	handle, err := strconv.ParseUint(val, 16, 32)
+	handle, err := strconv.ParseUint(val, 16, 64)
 	if err != nil {
 		return Handle(0)
 	}
-	return Handle(uint32(handle))
+	return Handle(uint64(handle))
 }
 
 func shortFromBool(val bool) int16 {
@@ -67,7 +67,7 @@ func shortFromBool(val bool) int16 {
 }
 
 func stringFromHandle(h Handle) string {
-	return fmt.Sprintf("%X", uint32(h))
+	return fmt.Sprintf("%X", uint64(h))
 }
 
 func timeFromJulianDays(juliandDays float64) time.Time {

@@ -131,8 +131,8 @@ func assertEqString(t *testing.T, expected, actual string) {
 	}
 }
 
-func assertEqUInt(t *testing.T, expected, actual uint32) {
-	assert(t, expected == actual, fmt.Sprintf(expectedActualString("d"), expected, actual))
+func assertEqUInt64(t *testing.T, expected, actual uint64) {
+	assert(t, expected == actual, fmt.Sprintf(expectedActualString("X"), expected, actual))
 }
 
 func assertEqByteArray(t *testing.T, expected, actual []byte) {

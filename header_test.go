@@ -121,7 +121,7 @@ func TestReadHandleValue(t *testing.T) {
 		NewStringCodePair(9, "$DRAGVS"),
 		NewStringCodePair(349, "FF"),
 	)
-	assertEqUInt(t, uint32(255), uint32(header.SolidVisualStylePointer))
+	assertEqUInt64(t, uint64(255), uint64(header.SolidVisualStylePointer))
 }
 
 func TestWriteHandleValue(t *testing.T) {

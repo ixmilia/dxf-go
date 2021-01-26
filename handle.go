@@ -1,4 +1,4 @@
 package dxf
 
 // Handle represents a unique identifier for various drawing elements.
-type Handle uint32
+type Handle uint64

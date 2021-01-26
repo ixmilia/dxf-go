@@ -35,3 +35,15 @@ func TestConvertDurationToDays(t *testing.T) {
 	delta := expected - actual
 	assert(t, delta < 1e-10, fmt.Sprintf("Expected: %f\nActual: %f", expected, actual))
 }
+
+func TestConvertStringToHandle(t *testing.T) {
+	assertEqUInt64(t, uint64(0x01), uint64(handleFromString("1")))
+	assertEqUInt64(t, uint64(0xABCD), uint64(handleFromString("ABCD")))
+	assertEqUInt64(t, uint64(0xABCDABCDABCDABCD), uint64(handleFromString("ABCDABCDABCDABCD")))
+}
+
+func TestConvertHandleToString(t *testing.T) {
+	assertEqString(t, "1", stringFromHandle(Handle(0x01)))
+	assertEqString(t, "ABCD", stringFromHandle(Handle(0xABCD)))
+	assertEqString(t, "ABCDABCDABCDABCD", stringFromHandle(Handle(uint64(0xABCDABCDABCDABCD))))
+}
