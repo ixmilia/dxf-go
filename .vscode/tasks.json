@@ -1,0 +1,39 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "shell",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "dependsOn": [
+        "generate",
+        "build core",
+        "build examples"
+      ]
+    },
+    {
+      "label": "generate",
+      "type": "shell",
+      "command": "go generate",
+      "problemMatcher": "$go",
+      "group": "build"
+    },
+    {
+      "label": "build core",
+      "type": "shell",
+      "command": "go build",
+      "problemMatcher": "$go",
+      "group": "build"
+    },
+    {
+      "label": "build examples",
+      "type": "shell",
+      "command": "go build ./examples",
+      "problemMatcher": "$go",
+      "group": "build"
+    }
+  ]
+}
