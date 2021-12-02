@@ -13,9 +13,8 @@ jobs:
     steps:
     - uses: actions/setup-go@v1
       with:
-        go-version: 1.16
+        go-version: 1.17
     - uses: actions/checkout@v1
-    - run: go generate
-    - run: go build -v
-    - run: go test -v
-    - run: go build -v ./examples
+    - name: Build and test
+      shell: pwsh
+      run: ./build-and-test.ps1

@@ -1,6 +1,6 @@
 module github.com/ixmilia/dxf-go
 
-go 1.15
+go 1.17
 
 require (
 	github.com/google/uuid v1.1.2
