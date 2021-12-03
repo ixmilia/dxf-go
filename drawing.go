@@ -26,7 +26,19 @@ type Drawing struct {
 	Views        []View
 	ViewPorts    []ViewPort
 
+	Blocks []Block
+
 	Entities []Entity
+
+	appIdTableHandle       Handle
+	blockRecordTableHandle Handle
+	dimStyleTableHandle    Handle
+	layerTableHandle       Handle
+	lineTypeTableHandle    Handle
+	styleTableHandle       Handle
+	ucsTableHandle         Handle
+	viewTableHandle        Handle
+	viewPortTableHandle    Handle
 }
 
 // NewDrawing returns a new, fully initialized drawing.
@@ -53,6 +65,120 @@ func (d *Drawing) GetItemByHandle(h Handle) (item *DrawingItem, err error) {
 
 	err = fmt.Errorf("Unable to find item with handle '%d'", h)
 	return
+}
+
+func (d *Drawing) Normalize() {
+	d.ensureViewPort("*ACTIVE")
+	d.ensureBlock("*MODEL_SPACE")
+	d.ensureBlock("*PAPER_SPACE")
+	d.ensureDimStyle("ANNOTATIVE")
+	d.ensureDimStyle("STANDARD")
+	d.ensureLayer("0")
+	d.ensureLineType("BYLAYER")
+	d.ensureLineType("BYBLOCK")
+	d.ensureLineType("CONTINUOUS")
+	d.ensureStyle("STANDARD")
+	d.ensureStyle("ANNOTATIVE")
+	d.ensureAppId("ACAD")
+	d.ensureAppId("ACADANNOTATIVE")
+	d.ensureAppId("ACAD_MLEADERVER")
+	d.ensureAppId("ACAD_NAV_VCDISPLAY")
+}
+
+func (d *Drawing) ensureBlock(name string) {
+	for _, block := range d.Blocks {
+		if block.Name == name {
+			return
+		}
+	}
+
+	block := *NewBlock()
+	block.Name = name
+	d.Blocks = append(d.Blocks, block)
+}
+
+func (d *Drawing) ensureDimStyle(name string) {
+	for _, dimStyle := range d.DimStyles {
+		if dimStyle.Name == name {
+			return
+		}
+	}
+
+	dimStyle := *NewDimStyle()
+	dimStyle.Name = name
+	d.DimStyles = append(d.DimStyles, dimStyle)
+}
+
+func (d *Drawing) ensureLayer(name string) {
+	for _, layer := range d.Layers {
+		if layer.Name == name {
+			return
+		}
+	}
+
+	layer := *NewLayer()
+	layer.Name = name
+	d.Layers = append(d.Layers, layer)
+}
+
+func (d *Drawing) ensureLineType(name string) {
+	for _, lineType := range d.LineTypes {
+		if lineType.Name == name {
+			return
+		}
+	}
+
+	lineType := *NewLineType()
+	lineType.Name = name
+	d.LineTypes = append(d.LineTypes, lineType)
+}
+
+func (d *Drawing) ensureStyle(name string) {
+	for _, style := range d.Styles {
+		if style.Name == name {
+			return
+		}
+	}
+
+	style := *NewStyle()
+	style.Name = name
+	d.Styles = append(d.Styles, style)
+}
+
+func (d *Drawing) ensureUcs(name string) {
+	for _, ucs := range d.Ucss {
+		if ucs.Name == name {
+			return
+		}
+	}
+
+	ucs := *NewUcs()
+	ucs.Name = name
+	d.Ucss = append(d.Ucss, ucs)
+}
+
+func (d *Drawing) ensureAppId(name string) {
+	for _, appId := range d.AppIds {
+		if appId.Name == name {
+			return
+		}
+	}
+
+	appId := *NewAppId()
+	appId.Name = name
+	d.AppIds = append(d.AppIds, appId)
+}
+
+func (d *Drawing) ensureViewPort(name string) {
+	for _, viewPort := range d.ViewPorts {
+		if viewPort.Name == name {
+			return
+		}
+	}
+
+	viewPort := *NewViewPort()
+	viewPort.Name = name
+	d.ViewPorts = append(d.ViewPorts, viewPort)
 }
 
 // SaveFile writes the current drawing to the specified path.
@@ -115,6 +241,7 @@ func (d *Drawing) saveToCodePairWriter(writer codePairWriter) error {
 		return err
 	}
 
+	d.Normalize()
 	assignHandles(d)
 	assignPointers(d)
 
@@ -124,6 +251,11 @@ func (d *Drawing) saveToCodePairWriter(writer codePairWriter) error {
 	}
 
 	err = writeTablesSection(d, writer, d.Header.Version)
+	if err != nil {
+		return err
+	}
+
+	err = writeBlocksSection(d, writer)
 	if err != nil {
 		return err
 	}
@@ -236,6 +368,13 @@ func readFromCodePairReader(reader codePairReader) (Drawing, error) {
 
 func assignHandles(d *Drawing) {
 	nextHandle := uint32(1)
+	nextHandle = uint32(assignTableHandles(d, Handle(nextHandle)))
+
+	for i := range d.Blocks {
+		b := &d.Blocks[i]
+		nextHandle = b.assignHandles(nextHandle)
+	}
+
 	for i := range d.Entities {
 		e := &d.Entities[i]
 		if (*e).Handle() == 0 {
@@ -270,4 +409,25 @@ func bindPointers(d *Drawing) {
 			}
 		}
 	}
+}
+
+func writeBlocksSection(drawing *Drawing, writer codePairWriter) (err error) {
+	err = writeSectionStart(writer, "BLOCKS")
+	if err != nil {
+		return
+	}
+
+	for i := range drawing.Blocks {
+		block := &drawing.Blocks[i]
+		pairs := block.getBlockPairs(drawing.Header.Version)
+		for _, pair := range pairs {
+			err = writer.writeCodePair(pair)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	err = writeSectionEnd(writer)
+	return
 }

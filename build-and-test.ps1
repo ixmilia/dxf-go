@@ -12,7 +12,6 @@ try {
     go generate || Fail "Error generating code"
     go build -v || Fail "Error building library"
     go test -v || Fail "Error testing library"
-    go build -v ./examples || Fail "Error building examples"
 }
 catch {
     Write-Host $_

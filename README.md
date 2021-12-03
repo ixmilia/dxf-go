@@ -14,4 +14,4 @@ go generate github.com/ixmilia/dxf-go
 
 ## Examples
 
-See the [examples](examples) directory.
+See the [example_test.go](example_test.go) file.

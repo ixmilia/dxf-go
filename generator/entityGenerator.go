@@ -432,7 +432,9 @@ func generateEntities() {
 				}
 			} else {
 				if len(entity.SubclassMarker) > 0 {
-					builder.WriteString(fmt.Sprintf("	pairs = append(pairs, NewStringCodePair(100, \"%s\"))\n", entity.SubclassMarker))
+					builder.WriteString("	if version >= R13 {\n")
+					builder.WriteString(fmt.Sprintf("		pairs = append(pairs, NewStringCodePair(100, \"%s\"))\n", entity.SubclassMarker))
+					builder.WriteString("	}\n")
 				}
 				for _, field := range entity.Fields {
 					writeField(&builder, field, false, "")

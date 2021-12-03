@@ -24,7 +24,6 @@ func TestWriteLayer(t *testing.T) {
 	}
 	assertContainsCodePairs(t, []CodePair{
 		NewStringCodePair(100, "AcDbSymbolTableRecord"),
-		NewStringCodePair(100, "AcDbLayerTableRecord"),
 		NewStringCodePair(2, "layer-name"),
 		NewShortCodePair(70, 0),
 		NewShortCodePair(62, 7),
@@ -38,9 +37,17 @@ func TestRoundTripLayer(t *testing.T) {
 	d := NewDrawing()
 	d.Layers = append(d.Layers, l)
 	r := roundTripDrawing(t, d)
-	assertEqInt(t, 1, len(r.Layers))
-	l2 := r.Layers[0]
-	assertEqString(t, l.Name, l2.Name)
+	var l2 *Layer
+	for i := range r.Layers {
+		l2 = &r.Layers[i]
+		if l2.Name == "layer-name" {
+			break
+		}
+	}
+
+	if l2 == nil {
+		t.Errorf("Layer not found in round-tripped drawing")
+	}
 }
 
 func TestReadLayers(t *testing.T) {

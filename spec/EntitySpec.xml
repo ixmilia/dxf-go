@@ -11,7 +11,7 @@
     <Method Signature="tryApplyCodePair(pair CodePair)" />
     <Method Signature="typeString() string" />
     <Method Signature="pointers() (pointers []*pointer)" />
-    <Field Name="Handle" Code="5" Type="Handle" DefaultValue="0" ReadConverter="handleFromString(%v)" WriteConverter="stringFromHandle(%v)" DisableWritingDefault="true" MinVersion="R13" />
+    <Field Name="Handle" Code="5" Type="Handle" DefaultValue="0" ReadConverter="handleFromString(%v)" WriteConverter="stringFromHandle(%v)" DisableWritingDefault="true" />
     <Pointer Name="Owner" Code="330" Type="DrawingItem" />
     <Field Name="IsInPaperSpace" Code="67" Type="bool" DefaultValue="false" ReadConverter="boolFromShort(%v)" WriteConverter="shortFromBool(%v)" DisableWritingDefault="true" MinVersion="R12" />
     <Field Name="Layer" Code="8" Type="string" DefaultValue='"0"' WriteConverter='defaultIfEmpty(%v, "0")' />
@@ -33,7 +33,7 @@
       <WriteField Field="Handle" />
       <WriteExtensionData />
       <WritePointer Pointer="Owner" />
-      <WriteSpecificValue Code="100" Value='"AcDbEntity"' />
+      <WriteSpecificValue Code="100" Value='"AcDbEntity"' MinVersion="R13" />
       <WriteField Field="IsInPaperSpace" />
       <WriteField Field="Layer" />
       <WriteField Field="LineTypeName" />
